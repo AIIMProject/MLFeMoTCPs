@@ -22,15 +22,12 @@ files = glob.glob('**/'+searchs, recursive=True)
 
 def get_sorted_poscar(poscar_orig: pd.core.series.Series, thissorter: list = [], _wheredirect: int=7):
     POSCAR_corrected = poscar_orig.copy()
-    thisnspecs = np.array(poscar_orig.iloc[_wheredirect-1].strip().split(), dtype=float)
-    thissymbs = np.hstack([ [ascii_lowercase[i]]*int(thisnspecs[i]) for i in range(len(thisnspecs)) ])
+    thisnspecslist = np.array(poscar_orig.iloc[_wheredirect-1].strip().split(), dtype=float)
+    thissymbsfullist = np.hstack([ [ascii_lowercase[i]]*int(thisnspecs[i]) for i in range(len(thisnspecs)) ])
     if len(thissorter) > 0:
-        try:
-            thissymbs = thissymbs[np.array(thissorter) - min(thissorter)]
-        except Exception as E:
-            pdb.set_trace()
-            pass
+            thissymbsfullistsorted = thissymbsfullist[np.array(thissorter) - min(thissorter)]
     sorted_species=[1]
+
     for e in range(1, len(thissymbs)):
         if thissymbs[e] == thissymbs[e-1]:
             sorted_species[-1]+=1
@@ -40,15 +37,9 @@ def get_sorted_poscar(poscar_orig: pd.core.series.Series, thissorter: list = [],
     POSCAR_corrected.iloc[_wheredirect-1] = str(sorted_species)[1:-1].replace(',','')
 
     if len(thissorter) > 0:
-        try:
-            POSCAR_corrected.iloc[np.sort(thissorter)]= poscar_orig.iloc[ thissorter ]
-        except Exception as E:
-            pdb.set_trace() 
-            pass
+        POSCAR_corrected.iloc[np.sort(thissorter)]= poscar_orig.iloc[ thissorter ]
     else:
         POSCAR_corrected.iloc[_wheredirect+1:]= poscar_orig.iloc[_wheredirect+1:]
-#    if POSCAR_corrected.iloc[_wheredirect+1:].str.contains('-0.0*').any():
-#        POSCAR_corrected.iloc[_wheredirect+1:] = POSCAR_corrected.iloc[_wheredirect+1:].map(lambda s: re.sub('-(0.0*)',' 0.', s) )
 
     return POSCAR_corrected
 
