@@ -44,6 +44,9 @@ def get_sorted_poscar(poscar_orig: pd.core.series.Series, thissorter: list = [],
     return POSCAR_corrected
 
 SORTERS = {}
+
+#TODO: make function and check existence of pickle.
+
 for thisfile in tqdm(files):
     #MDF-COMMENT in this loop I am only collecting the sorters for each file
     #MDF-COMMENT and getting the new poscar from the function above.
