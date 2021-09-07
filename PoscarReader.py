@@ -14,9 +14,6 @@ import sys
 from string import ascii_lowercase, ascii_uppercase
 from tqdm import tqdm
 
-#if __name__ == '__main__':
-#    searchs = sys.argv[1]
-
 # files = glob.glob('**/POSCAR-relaxed/**/'+searchs, recursive=True)
 columns = ['header', 'scaled_positions']
 # Files = pd.DataFrame([], columns=columns)

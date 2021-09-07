@@ -14,8 +14,17 @@ import sys
 from pymatgen.io.ase import AseAtomsAdaptor
 from itertools import product
 # sys.path.insert(0, '/home/users/fortimtb/storage/CuadernoTrabajo/bopfoxfeaturizer/')
-from BopFoxFeaturizer.brief_summary_parser import irregular_file_parser, StructSummaryParser
-from BopFoxFeaturizer.parsers import BopFoxParser
+# from BopFoxFeaturizer.brief_summary_parser import irregular_file_parser, StructSummaryParser
+# from BopFoxFeaturizer.parsers import BopFoxParser
+StructSummaryParser = SourceFileLoader(
+        'StructSummaryParser',
+        '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/BopFoxFeaturizer/brief_summary_parser.py'
+        ).load_module().StructSummaryParser
+BopFoxParser = SourceFileLoader(
+        'BopFoxParser',
+        '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/BopFoxFeaturizer/parsers.py'
+        ).load_module().BopFoxParser
+
 from multiprocessing import Pool
 
 # In[5]:
@@ -29,15 +38,16 @@ if os.path.exists(parsed_file) and not Force:
         Parsed = pickle.load(f)
     Parsed = pd.read_pickle(parsed_file)
 else:
-    BS = irregular_file_parser(glob.glob('**/briefsummary.dat', recursive=True))
+    BSparser = StructSummaryParser()
+    BS = BSparser.BriefSummary
     Parsed = BopFoxParser(BS)
     with open(parsed_file,'wb') as f:
         pickle.dump(Parsed, f)
 
 
 for thiscase, (thisrescale, thissubcase) in product(case, zip(rescale_by_atoms, subcase)):
-    print (thiscase, thissubcase, thisrescale)
     database = '**/'+thiscase+'/'
+    print (thiscase, thissubcase, thisrescale, database)
     AtomsFile = 'CrCoW-sorted-'+thiscase+'-'+thissubcase+'-AtomsObjects.pkl'
     if os.path.exists(AtomsFile) and not Force:
         Atoms_Objects = pd.read_pickle(AtomsFile)
