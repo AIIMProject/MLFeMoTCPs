@@ -46,7 +46,7 @@ else:
 
 
 for thiscase, (thisrescale, thissubcase) in product(case, zip(rescale_by_atoms, subcase)):
-    database = '**/'+thiscase+'/'
+    database = '**/'+thiscase
     print (thiscase, thissubcase, thisrescale, database)
     AtomsFile = 'CrCoW-sorted-'+thiscase+'-'+thissubcase+'-AtomsObjects.pkl'
     if os.path.exists(AtomsFile) and not Force:
