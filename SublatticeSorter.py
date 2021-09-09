@@ -20,11 +20,11 @@ if __name__ == '__main__':
 
 def get_file_paths( searchs, csvfile ='LIST_OF_files.csv'):
     if os.path.exists(csvfile) and os.path.getmtime(__file__) < os.path.getmtime(csvfile):
-        with open('LIST_OF_files.csv', 'r') as f: 
-            files = f.readlines('LIST_OF_files.csv')
+        with open(csvfile, 'r') as f: 
+            files = f.readlines(csvfile)
     else:
         files = glob.glob('**/'+searchs, recursive=True)
-        with open('LIST_OF_files.csv', 'w') as f:
+        with open(csvfile, 'w') as f:
             f.writelines('\n'.join(files))
     return files
 
@@ -66,45 +66,44 @@ def get_sorted_sites_indexes(thisposcar):
     for SITE in ascii_uppercase:
         SORTER +=  thisposcar[thisposcar.str.contains('[0-9]\s+'+SITE, regex=True)].index.tolist()
     return SORTER
-def get_sublatticetags_sorted(thisposcarsorted):
-    return POSCAR_SORTED[wheredirect+1:wheredirect+1+natoms].str.findall('[A-Z]').map(get_real_sublattice).values
+
+def get_sublatticetags_sorted(thisposcarsorted, wheredirect, natoms):
+    return thisposcarsorted[wheredirect+1:wheredirect+1+natoms].str.findall('[A-Z]').map(get_real_sublattice).values
 
 def get_sorter_and_sorted_tags(_thisfile, THISSORTER=None, THISSUBLATICETAGS=None):
     TORETURN = ()
-    POSCAR = pd.read_csv(_thisfile, sep='\n', dtype='str', header=None)[0]
+    try:
+        POSCAR = pd.read_csv(_thisfile, sep='\n', dtype='str', header=None)[0]
+    except FileNotFoundError as E:
+        raise E
     wheredirect = get_coord_type_line(POSCAR)
     natoms = get_number_of_atoms(POSCAR, wheredirect)
-    if THISSORTER==None: # return sorter
-        TORETURN += ( get_sorted_sites_indexes(POSCAR), )
+    if THISSORTER is None: # return sorter
+        THISSORTER= get_sorted_sites_indexes(POSCAR)
+        TORETURN += (THISSORTER, )
     POSCAR_SORTED = get_sorted_poscar(POSCAR, THISSORTER, _wheredirect=wheredirect)
     POSCAR_SORTED.to_csv(_thisfile+'-sorted', sep='\n', index=False, header=None)
-    if THISSUBLATICETAGS==None:
-        TORETURN+=(get_sublatticetags_sorted(POSCAR_SORTED), )
+    if THISSUBLATICETAGS is None:
+        THISSUBLATICETAGS = get_sublatticetags_sorted(POSCAR_SORTED, wheredirect, natoms)
+        TORETURN+=(THISSUBLATICETAGS,)
     return TORETURN
 
-def get_list_poscars(files):
+def get_all_sorters_and_tags(files):
     SORTERS = {}
     SUBLATICETAGS = {}
-
     for thisfile in tqdm(files):
-        SORTER[thisfile], SUBLATICETAGS[thisfile]=get_sorter_and_sorted_tags (thisfile)
 
+        SORTERS[thisfile], SUBLATICETAGS[thisfile]=get_sorter_and_sorted_tags (thisfile)
         thisfile_relax = thisfile.replace('-initial','-relaxed').replace('.initial','.relaxed-all')
         try:
-
- #           POSCAR_RLX = pd.read_csv(thisfile_relax, sep='\n', dtype='str', header=None)[0]
- #           wheredirect_rlx = get_coord_type_line(POSCAR_RLX) #POSCAR[POSCAR.str.contains('\s*dir|\s*CAR', regex = True)].index.values[0]
- #           natoms_rlx = get_number_of_atoms(POSCAR_RLX, wheredirect_rlx)
- #           POSCAR_RLX_SORTED = get_sorted_poscar(POSCAR_RLX, SORTER, _wheredirect=wheredirect_rlx)
- #           POSCAR_RLX_SORTED.to_csv(thisfile_relax+'-sorted', index=False, sep='\n', header=None)
- #           SORTERS[thisfile_relax]=SORTER
- #           THISSUBLATTICETAGS=
+            get_sorter_and_sorted_tags(thisfile_relax, SORTERS[thisfile], SUBLATICETAGS[thisfile])
+            SORTERS[thisfile_relax] =SORTERS[thisfile]
+            SUBLATICETAGS[thisfile_relax]=SUBLATICETAGS[thisfile]
         except FileNotFoundError as E:
             pass
-            #print('relaxation nof found for '+thisfile)
 
     return pd.Series(SORTERS), pd.Series(SUBLATICETAGS)
 
 files = get_file_paths(searchs)
-SORTERS, SUBLATICETAGS = get_list_poscars(files)
-print('could sort only ', len(SORTERS),' of ',len(files))
+SORTERS, SUBLATICETAGS = get_all_sorters_and_tags(files)
+print('could sort only ', len(SORTERS[SORTERS.index.str.contains('relaxed-all')]),' relaxations of ',len(files)) 
