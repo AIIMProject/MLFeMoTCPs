@@ -7,7 +7,6 @@ import os
 import glob
 import pandas as pd
 import pdb
-import matplotlib.pyplot as plt
 import numpy as np
 import re
 import sys
@@ -15,13 +14,12 @@ from string import ascii_lowercase, ascii_uppercase
 import os
 from tqdm import tqdm
 
-if __name__ == '__main__':
-    searchs = sys.argv[1]
 
-def get_file_paths( searchs, csvfile ='LIST_OF_files.csv'):
+def get_file_paths( searchs, csvfile ='LIST_OF_files.csv') -> list:
     if os.path.exists(csvfile) and os.path.getmtime(__file__) < os.path.getmtime(csvfile):
         with open(csvfile, 'r') as f: 
-            files = f.readlines(csvfile)
+            files = f.readlines()
+        files = [s.strip() for s in files]
     else:
         files = glob.glob('**/'+searchs, recursive=True)
         with open(csvfile, 'w') as f:
@@ -88,22 +86,46 @@ def get_sorter_and_sorted_tags(_thisfile, THISSORTER=None, THISSUBLATICETAGS=Non
         TORETURN+=(THISSUBLATICETAGS,)
     return TORETURN
 
+def init_sortersfile():
+    sortersfile = 'SORTERS.pkl'
+    if os.path.exists(sortersfile):
+        SORTERS = pd.read_pickle(sortersfile)
+    else:
+        SORTERS = {}
+    return SORTERS
+
+def init_sublatsfile():
+    sortersfile = 'SUBLATICETAGS.pkl'
+    if os.path.exists(sortersfile):
+        SUBLATICETAGS = pd.read_pickle(sortersfile)
+    else:
+        SUBLATICETAGS = {}
+    return SUBLATICETAGS
+
+def need_to_update(_thisfile, _SORTERS, _SUBLATICETAGS):
+    return (_thisfile not in _SORTERS.keys()) and (_thisfile not in  _SUBLATICETAGS.keys())
+
 def get_all_sorters_and_tags(files):
-    SORTERS = {}
-    SUBLATICETAGS = {}
+    sublatsfile = 'SUBLATICETAGS.pkl'
+    SORTERS = init_sortersfile()
+    SUBLATICETAGS = init_sublatsfile()
     for thisfile in tqdm(files):
-
-        SORTERS[thisfile], SUBLATICETAGS[thisfile]=get_sorter_and_sorted_tags (thisfile)
+        if need_to_update(thisfile, SORTERS, SUBLATICETAGS):
+            SORTERS[thisfile], SUBLATICETAGS[thisfile]=get_sorter_and_sorted_tags (thisfile)
         thisfile_relax = thisfile.replace('-initial','-relaxed').replace('.initial','.relaxed-all')
-        try:
-            get_sorter_and_sorted_tags(thisfile_relax, SORTERS[thisfile], SUBLATICETAGS[thisfile])
-            SORTERS[thisfile_relax] =SORTERS[thisfile]
-            SUBLATICETAGS[thisfile_relax]=SUBLATICETAGS[thisfile]
-        except FileNotFoundError as E:
-            pass
-
+        if need_to_update(thisfile_relax, SORTERS, SUBLATICETAGS):
+            try:
+                get_sorter_and_sorted_tags(thisfile_relax, SORTERS[thisfile], SUBLATICETAGS[thisfile])
+                SORTERS[thisfile_relax] =SORTERS[thisfile]
+                SUBLATICETAGS[thisfile_relax]=SUBLATICETAGS[thisfile]
+            except FileNotFoundError as E:
+                pass
     return pd.Series(SORTERS), pd.Series(SUBLATICETAGS)
 
-files = get_file_paths(searchs)
-SORTERS, SUBLATICETAGS = get_all_sorters_and_tags(files)
-print('could sort only ', len(SORTERS[SORTERS.index.str.contains('relaxed-all')]),' relaxations of ',len(files)) 
+if __name__ == '__main__' and sys.argv[1] > 1:
+    searchs = sys.argv[1]
+    files = get_file_paths(searchs)
+    SORTERS, SUBLATICETAGS = get_all_sorters_and_tags(files)
+    SORTERS.to_pickle('SORTERS.pkl')
+    SUBLATICETAGS.to_pickle('SUBLATICETAGS.pkl')
+    print('could sort only ', len(SORTERS[SORTERS.index.str.contains('relaxed-all')]),' relaxations of ',len(files)) 
