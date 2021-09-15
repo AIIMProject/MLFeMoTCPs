@@ -43,7 +43,6 @@ class AverageByPhase:
             self.averages[phase][key] = Positions[key].values.mean()
             self.stds[phase][key] = Positions[key].values.std()
         
-
         
 if __name__=='__main__':
     AVRLX = AverageByPhase()

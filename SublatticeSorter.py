@@ -103,7 +103,7 @@ def init_sublatsfile():
     return SUBLATICETAGS
 
 def need_to_update(_thisfile, _SORTERS, _SUBLATICETAGS):
-    return (_thisfile not in _SORTERS.keys()) and (_thisfile not in  _SUBLATICETAGS.keys())
+    return (_thisfile not in _SORTERS.keys()) or (_thisfile not in  _SUBLATICETAGS.keys())
 
 def get_all_sorters_and_tags(files):
     sublatsfile = 'SUBLATICETAGS.pkl'
@@ -111,7 +111,7 @@ def get_all_sorters_and_tags(files):
     SUBLATICETAGS = init_sublatsfile()
     for thisfile in tqdm(files):
         if need_to_update(thisfile, SORTERS, SUBLATICETAGS):
-            SORTERS[thisfile], SUBLATICETAGS[thisfile]=get_sorter_and_sorted_tags (thisfile)
+            SORTERS[thisfile], SUBLATICETAGS[thisfile]=get_sorter_and_sorted_tags(thisfile)
         thisfile_relax = thisfile.replace('-initial','-relaxed').replace('.initial','.relaxed-all')
         if need_to_update(thisfile_relax, SORTERS, SUBLATICETAGS):
             try:
