@@ -122,7 +122,7 @@ def get_all_sorters_and_tags(files):
                 pass
     return pd.Series(SORTERS), pd.Series(SUBLATICETAGS)
 
-if __name__ == '__main__' and sys.argv[1] > 1:
+if __name__ == '__main__' and len(sys.argv[1]) > 1:
     searchs = sys.argv[1]
     files = get_file_paths(searchs)
     SORTERS, SUBLATICETAGS = get_all_sorters_and_tags(files)

@@ -31,7 +31,6 @@ class AverageByPhase:
         selected_positions = self.atoms_objects[selection]['atoms'].map(lambda a: a.get_scaled_positions())
         IS = []
         Positions= dict()
-
         self.stds = {phase:dict()}
         self.averages = {phase:dict()}
 
@@ -43,6 +42,7 @@ class AverageByPhase:
         for key in Positions.keys():
             self.averages[phase][key] = Positions[key].values.mean()
             self.stds[phase][key] = Positions[key].values.std()
+        
 
         
 if __name__=='__main__':
