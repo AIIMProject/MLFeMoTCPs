@@ -11,7 +11,7 @@ import re
 import numpy  as np
 
 import matplotlib.pyplot as plt
-plt.style.use('seaborn')
+
 plt.rc('figure',figsize=(15,10))
 plt.rc('axes',labelsize=24)
 plt.rc('xtick',labelsize=18)
@@ -32,6 +32,7 @@ plt.hist(
         align='mid', 
         bins=[0.75, 1.25,1.75, 2.25,2.75, 3.25],
         )
+
 plt.xticks(np.arange(1,4), np.arange(1,4).astype(int))
 plt.xlabel('Number of elements in compound')
 plt.ylabel('Sample counts')
@@ -49,23 +50,9 @@ plt.close(fig)
 elements = pd.concat([BS['atom_A'],BS['atom_B'],BS['atom_C']], axis=0).unique()
 
 from  BopFoxFeaturizer.struct_db import struct_db
-#with open('../Intermetallics_ML/clean/structures/binary/list.bcc', 'r') as f:
-#    listbcc = f.readlines()[0].strip().split(' ')
 structdb = struct_db()
 dic, strings = structdb.get_dic_structures() 
 
-#listbcc = ' '.join([re.sub('-.*','',s) for s in listbcc])
-#
-#with open('../Intermetallics_ML/clean/structures/binary/list.fcc', 'r') as f:
-#    listfcc = f.readlines()[0].strip().split(' ')
-#
-#listfcc = ' '.join([re.sub('-.*','',s) for s in listfcc])
-#
-#with open('../Intermetallics_ML/clean/structures/binary/list.hcp', 'r') as f:
-#    listhcp = f.readlines()[0].strip().split(' ')
-#
-#listhcp = ' '.join ([re.sub('-.*','',s) for s in listhcp])
-#
 Target_Class = pd.Series(
     BS.index.str.split('.').map(lambda l: l[1]).map(lambda s: s.split('-')[0]),
     index=BS.index
@@ -96,13 +83,8 @@ plt.ylabel('Density Count')
 plt.savefig('class_counts.pdf')
 plt.close(fig)
 
-# # Build the ground state energies
-
-# In[31]:
-
 
 elements = pd.concat([BS['atom_A'],BS['atom_B'],BS['atom_C']], axis = 0).unique()
-
 
 BS[(BS['atom_A']==elements[0]) & (BS['nelem']==1)]
 BS[(BS['atom_A']==elements[1]) & (BS['nelem']==1)]
