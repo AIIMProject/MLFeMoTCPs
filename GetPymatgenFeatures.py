@@ -1,3 +1,4 @@
+import pickle
 import pdb
 import pandas as pd
 from matminer.featurizers.base import MultipleFeaturizer
@@ -20,18 +21,26 @@ from matminer.featurizers.structure import (SiteStatsFingerprint, StructuralHete
 from matminer.featurizers.conversions import DictToObject
 import os
 
-def calcuate_atomic_features(_BS):
+def need_to_update(filename):
+    if (not os.path.exists(filename) ):
+        return True 
+    elif ( os.path.getmtime(filename) < os.path.getmtime(__file__)  ):
+        return True
+    else:
+        return False
+
+def load_atomic_features(_BS):
     ep_feat = ElementProperty.from_preset(preset_name="magpie")
     result =  ep_feat.featurize_dataframe(_BS, col_id="composition",inplace=False) 
     result.drop(columns=_BS.columns, inplace=True)
     return result
 
-def calculate_density_features(_BS):
+def load_density_features(_BS):
     result = DensityFeatures().featurize_dataframe(_BS, col_id='atoms_objects',inplace=False, ignore_errors=True)
     result.drop(columns=_BS.columns, inplace=True)
     return result
 
-def calculate_composition_features(_BS):
+def load_composition_features(_BS):
     AO = AtomicOrbitals().featurize_dataframe(BS, col_id='composition', inplace=False)[['HOMO_energy','LUMO_energy']]
     BC = BandCenter().featurize_dataframe(BS, col_id='composition', inplace=False)['band center']
     IP = IonProperty().featurize_dataframe(BS, col_id='composition', inplace=False, ignore_errors=True)
@@ -42,34 +51,38 @@ def calculate_composition_features(_BS):
     result = pd.concat([AO, BC, IP,ST ], axis=1)
     return result
 
-def calculate_structure_features(_BS):
+def load_structure_features(_BS):
     featurizer = MultipleFeaturizer([
         SiteStatsFingerprint.from_preset("CoordinationNumber_ward-prb-2017"),
         SiteStatsFingerprint.from_preset("LocalPropertyDifference_ward-prb-2017"),
         StructureComposition(IonProperty(fast=True)),
     ])
     result  = featurizer.featurize_many(BS['atoms_objects'], ignore_errors=True)
+    result.to_pickle(StructureFeaturesPickle)
+    return result
 
-def need_to_update(thefile):
-    return (not os.path.exists(thefile)) or (os.path.getmtime(thefile) < os.path.getmtime(__file__))
 
 def load_features(thepickle, thedata, which='atomic'):
     if need_to_update(thepickle):
         if which == 'atomic':
-            Features = calcuate_atomic_features(thedata)
+            Features = load_atomic_features(thedata)
         elif which == 'density':
-            Features = calculate_density_features(thedata)
+            Features = load_density_features(thedata)
         elif which == 'composition':
-            Features = calculate_composition_features(thedata)
+            Features = load_composition_features(thedata)
         elif which == 'structure':
-            Features = calculate_structure_features(thedata)
+            Features = load_structure_features(thedata)
         common_columns = thedata.columns.intersection(Features.columns)
         if len(common_columns) > 0:
             try:
                 Features.drop(columns=common_columns, inplace=True)
             except Exception as E:
                 pdb.set_trace()
-        Features.to_pickle(thepickle)
+        try:
+            Features.to_pickle(thepickle)
+        except AttributeError as AE:
+            with open(thepickle,'wb') as f:
+                pickle.dump(Features, f)
     else:
         Features = pd.read_pickle(thepickle)
     return Features
@@ -88,7 +101,7 @@ def get_chemical_formula(_BS):
         CHEMFOR += _BS[atom].str.replace('_.*','') + _BS['num_'+atom].map(lambda n: '{}'.format(n))
     return CHEMFOR
 
-case = 'relaxed'
+case = 'MatMinerFeatures'
 mmflatomic = os.path.join(case,'matminer_atomic_features.pkl')
 mmfdensity = os.path.join (case, 'matminer_density_features.pkl')
 mmfcomposition =  os.path.join (case,'matminer_composition_features.pkl')

@@ -25,6 +25,11 @@ def get_frac_of_spec(THEBS, thespec):
             +THEBS['atom_C'].str.contains(thespec)*THEBS['num_atom_C'] 
     return  (X/THEBS['num_atoms']).fillna(0)
 
+def get_fractions_by_components(THEBS, thecomponents):
+    for spec in thecomponents:
+        THEBS[spec] = get_frac_of_spec(THEBS, spec)
+    return THEBS[thecomponents]
+
 
 def clean_briefsummary(THEBS):
     THEBS.rename(columns={'':'Phase'}, inplace=True)
@@ -33,11 +38,6 @@ def clean_briefsummary(THEBS):
     for other in ['D0_19','D03', 'D0', 'B2','D32',  'L12', 'L10']:
         THEBS['Phase'] = THEBS['Phase'].str.replace(other,'hcp', regex=True)
     return THEBS
-
-def get_fractions_by_components(THEBS, thecomponents):
-    for spec in thecomponents:
-        THEBS[spec] = get_frac_of_spec(THEBS, spec)
-    return THEBS[thecomponents]
 
 def ternary_matplotlib(THEBS, thecomponents):
     fig, ax = plt.subplots()

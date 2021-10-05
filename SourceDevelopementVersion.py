@@ -36,5 +36,11 @@ cutoffs_dict = pd.read_pickle(
         '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/BopFoxFeaturizer/tcp_cutoffs.pkl'
         )
 
+HF = SourceFileLoader(
+        'HF',
+        '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/BopFoxFeaturizer/HelperFunctions.py'
+        ).load_module()
+
+
 cutoffs_dict.index = cutoffs_dict.index.str.split('.').map(lambda l: l[1])
 cutoffs_dict['volume_factor'] = cutoffs_dict.apply(lambda l: l['rcutoff']**3/l['atoms'].get_volume(), axis = 1)
