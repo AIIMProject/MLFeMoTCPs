@@ -12,20 +12,20 @@ from BopFoxFeaturizer.Featurizer import Featurizer, BopfoxFeatures
 #from SourceDevelopementVersion import StructSummaryParser, Featurizer, BopfoxFeatures
 
 cutoffs = { 'table': 'TABLECUTOFF','histogram': 'HISTCUTOFF' }
-models = { 'canonicalTB':'CANONICAL', 'orthogonal_TB': 'ORTHOGONAL' }
-modelsfile = { 'canonicalTB': 'canonicaltb.bx' , 'orthogonal_TB': 'models_dimers.bx'}
+models = { 'canonicalTB':'CANONICAL', 'orthogonal_TB': 'ORTHOGONAL', 'orthogonal_sd_os':'ORTHOGONALOS' }
+modelsfile = { 'canonicalTB': 'canonicaltb.bx' , 'orthogonal_TB': 'models_dimers.bx', 'orthogonal_sd_os':'models-dimers-os.bx'}
 atoms = {'initial': 'INITIAL', 'relaxed':'RELAXED'}
 
 
 for keymodel, keyatoms, keycutof in product(models.keys(), atoms.keys(), cutoffs.keys()):
     print('atoms: ', atoms[keyatoms], 'model: ', models[keymodel], '  cutoff: ', cutoffs[keycutof])
     atomspickle = f'CrCoW-sorted-POSCAR-{keyatoms}-rescaled-AtomsObjects.pkl'
-    resultspickle = f'CRCOW_{atoms[keyatoms]}_NSC_{models[keymodel]}_{cutoffs[keycutof]}_WENERGY.pkl'
+    resultspickle = f'CRCOW_{atoms[keyatoms]}_NSC_{models[keymodel]}_{cutoffs[keycutof]}_WUBIND.pkl'
     AtomsObjects = pd.read_pickle(atomspickle).dropna(how='any')
     BOPC = BopfoxFeatures(
             AtomsObjects['atoms'],modelsfile[keymodel], modelname=keymodel,
             cutoffby='table', 
-            binary = '/home/storage/fortimtb/CuadernoTrabajo/oldrepobopfox/src/bopfox_mpi'
+            binary = '/home/storage/fortimtb/CuadernoTrabajo/oldrepobopfox/src/bopfox_noenergy'
             )
     BOPC.calculate_bop_forall(ForceKeepSpecies=True,
             input_pickle = resultspickle
