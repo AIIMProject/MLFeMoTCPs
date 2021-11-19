@@ -81,19 +81,5 @@ for thisfeat in ['NSC_U_bond_atom_list', 'NSC_moments', 'NSC_an', 'NSC_bn', 'NSC
     CNAV_BOP.columns = ['_'.join(v)+'_'+thisfeat if isinstance(v, tuple) else v  for v in CNAV_BOP.columns.values ]
     CNAV_STACK, CNAV_STACK_COLS = stackdata(CNAV_BOP, CNAV_BOP.columns)
     CNAV.append( pd.DataFrame(data = CNAV_STACK, columns = CNAV_STACK_COLS, index = CNAV_BOP.index) )
-
 CNAV_BOP = pd.concat(CNAV, axis=1)
-#print (['_'.join(s) for s in CNAV_BOP.columns.values if len(s) > 1])
-#    if phase not in DB.columns:
-#        CNSHAV[item] += [0]*DB.shape[0]
-#        print(item, CNSHAV[item])
-#    else:
-#        thisaverages = []
-#        for CSH, sublattice in DB[phase].iteritems():
-#            print (item, CSH, sublattice)#, thisindexes)
-#
-#    U_list = BOP [BOP.index.str.contains('A15')]['NSC_U_bond_atom_list'].map(np.array) 
-#    U_CN14 = U_list.map(lambda v: v[indexes_cn14].mean())
-#
-#
-#    U_list.map(lambda v: v[indexes_cn14])
+
