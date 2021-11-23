@@ -3,7 +3,6 @@
 
 # In[1]:
 
-
 import sys
 import re
 import pdb
@@ -12,12 +11,9 @@ sys.path.insert(
 '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/'
 )
 
-
 from BopFoxFeaturizer.struct_db import struct_db
-
-
+from tqdm import tqdm
 import pandas as pd
-
 import numpy as np
 
 from BopFoxFeaturizer.FeatureConcatenate import stackdata
@@ -36,6 +32,7 @@ DB = struct_db().sites_by_structures
 
 # In[3]:
 
+case = 'CRCOW_INITIAL_NSC_CANONICAL_TABLECUTOFF_WUBIND_10.pkl'
 
 BOP = pd.read_pickle('CRCOW_INITIAL_NSC_CANONICAL_TABLECUTOFF_WUBIND_10.pkl')
 
@@ -69,12 +66,14 @@ cnshs = DB.index.sort_values()
 
 SAMPLE = BOP
 CNAV = []
-for thisfeat in ['NSC_U_bond_atom_list', 'NSC_moments', 'NSC_an', 'NSC_bn', 'NSC_SIGMA', 'NSC_Ainf', 'NSC_Binf']:
+features_list = ['NSC_U_bond_atom_list', 'NSC_moments', 'NSC_an', 'NSC_bn', 'NSC_SIGMA', 'NSC_Ainf', 'NSC_Binf']
+progress = tqdm(features_list)
+for thisfeat in progress:
     CNSHAV = {}
     for item, bop in SAMPLE[thisfeat].iteritems():
         phase =  get_structure_from_index(item)
         CNSHAV[item] = {}
-        CNSHAV[item]['all'] = np.average(bop, axis=0) # average across all lattice sites
+        CNSHAV[item]['all'+thisfeat] = np.average(bop, axis=0) # average across all lattice sites
         CNSHAV[item].update({thiscnsh: get_average_of( phase, bop, thiscnsh) for thiscnsh in cnshs})
         pass
     CNAV_BOP = pd.DataFrame.from_dict(CNSHAV, orient='index')
@@ -82,4 +81,4 @@ for thisfeat in ['NSC_U_bond_atom_list', 'NSC_moments', 'NSC_an', 'NSC_bn', 'NSC
     CNAV_STACK, CNAV_STACK_COLS = stackdata(CNAV_BOP, CNAV_BOP.columns)
     CNAV.append( pd.DataFrame(data = CNAV_STACK, columns = CNAV_STACK_COLS, index = CNAV_BOP.index) )
 CNAV_BOP = pd.concat(CNAV, axis=1)
-
+CNAV_BOP.to_pickle('CNAveraged'+case)
