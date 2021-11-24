@@ -15,6 +15,7 @@ from BopFoxFeaturizer.struct_db import struct_db
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
+from itertools import product
 
 from BopFoxFeaturizer.FeatureConcatenate import stackdata
 
@@ -27,7 +28,6 @@ np.set_printoptions(precision=1)
 
 # In[2]:
 
-
 DB = struct_db().sites_by_structures
 
 # In[3]:
@@ -37,6 +37,8 @@ case = 'CRCOW_INITIAL_NSC_CANONICAL_TABLECUTOFF_WUBIND_10.pkl'
 BOP = pd.read_pickle('CRCOW_INITIAL_NSC_CANONICAL_TABLECUTOFF_WUBIND_10.pkl')
 
 strucs = pd.Series(BOP.index.str.split('.').map(lambda s: s[1].split('-')[0]), index=BOP.index)
+
+cnshs = DB.index.sort_values()
 
 def get_structure_from_index(thisindex):
     fields = re.split('-|\.', thisindex)
@@ -53,31 +55,46 @@ def orders_of_thebop(thisbop):
 
 def get_average_of(thephase, thebop, thecnsh):
     # asume axis 1 is for order of the quantity
+    if isinstance(thobop, float):
+        return thebop
     if phase not in DB.columns:
         return [0]*orders_of_thebop(thebop) # np.array(thebop).shape[-1]
     thisphasedb = DB[phase].dropna()
     thisindexes = thisphasedb[thecnsh == thisphasedb.index]
-    if thisindexes.size > 0:
+    if thisindexes.size > 0 and isinstance(thebop, np.ndarray):
         return np.array(thebop)[np.hstack(thisindexes)].mean(axis=0)
     else:
         return [0]*orders_of_thebop(thebop)
 
-cnshs = DB.index.sort_values()
+def single_string(thetuple, thefeat):
+    if isinstance(thetuple, tuple):
+        A =  '_'.join(thetuple)
+    elif isinstance(thetuple, str):
+        A = thetuple
+    return A+'_'+thefeat
 
-SAMPLE = BOP
+def average_by_cnsh(thephase, thebop, thefeat):
+    return {single_string(thiscnsh, thefeat): get_average_of( phase, bop, thiscnsh) for thiscnsh in cnshs}
+
+def average_all_sites(thefeat, thesample):
+    Q = BOP[thefeat][thesample]
+    if isinstance(Q, np.ndarray):
+        R = np.average(Q, axis=0)
+    elif isinstance(Q,float):
+        R = Q
+    return {'all_'+thisfeat: R }
+
+
 CNAV = []
-features_list = ['NSC_U_bond_atom_list', 'NSC_moments', 'NSC_an', 'NSC_bn', 'NSC_SIGMA', 'NSC_Ainf', 'NSC_Binf']
-progress = tqdm(features_list)
+progress = tqdm(BOP.columns)
 for thisfeat in progress:
     CNSHAV = {}
-    for item, bop in SAMPLE[thisfeat].iteritems():
-        phase =  get_structure_from_index(item)
-        CNSHAV[item] = {}
-        CNSHAV[item]['all'+thisfeat] = np.average(bop, axis=0) # average across all lattice sites
-        CNSHAV[item].update({thiscnsh: get_average_of( phase, bop, thiscnsh) for thiscnsh in cnshs})
-        pass
+    for thissample, bop in BOP[thisfeat].iteritems():
+        phase =  get_structure_from_index(thissample)
+        CNSHAV[thissample] = {}
+        CNSHAV[thissample].update(average_all_sites(thisfeat, thissample)) 
+        CNSHAV[thissample].update(average_by_cnsh(phase, bop, thisfeat))
     CNAV_BOP = pd.DataFrame.from_dict(CNSHAV, orient='index')
-    CNAV_BOP.columns = ['_'.join(v)+'_'+thisfeat if isinstance(v, tuple) else v  for v in CNAV_BOP.columns.values ]
     CNAV_STACK, CNAV_STACK_COLS = stackdata(CNAV_BOP, CNAV_BOP.columns)
     CNAV.append( pd.DataFrame(data = CNAV_STACK, columns = CNAV_STACK_COLS, index = CNAV_BOP.index) )
 CNAV_BOP = pd.concat(CNAV, axis=1)
