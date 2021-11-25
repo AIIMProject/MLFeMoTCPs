@@ -32,9 +32,9 @@ DB = struct_db().sites_by_structures
 
 # In[3]:
 
-case = 'CRCOW_INITIAL_NSC_CANONICAL_TABLECUTOFF_WUBIND_10.pkl'
+case = 'CRCOW_INITIAL_NSC_ORTHOGONALOS_TABLECUTOFF_WUBIND_15.pkl'
 
-BOP = pd.read_pickle('CRCOW_INITIAL_NSC_CANONICAL_TABLECUTOFF_WUBIND_10.pkl')
+BOP = pd.read_pickle(case)
 
 strucs = pd.Series(BOP.index.str.split('.').map(lambda s: s[1].split('-')[0]), index=BOP.index)
 
@@ -55,16 +55,15 @@ def orders_of_thebop(thisbop):
 
 def get_average_of(thephase, thebop, thecnsh):
     # asume axis 1 is for order of the quantity
-    if isinstance(thobop, float):
-        return thebop
-    if phase not in DB.columns:
-        return [0]*orders_of_thebop(thebop) # np.array(thebop).shape[-1]
-    thisphasedb = DB[phase].dropna()
-    thisindexes = thisphasedb[thecnsh == thisphasedb.index]
-    if thisindexes.size > 0 and isinstance(thebop, np.ndarray):
-        return np.array(thebop)[np.hstack(thisindexes)].mean(axis=0)
-    else:
-        return [0]*orders_of_thebop(thebop)
+    R = [0]*orders_of_thebop(thebop)
+    if phase in DB.columns:
+        thisphasedb = DB[phase].dropna()
+        thisindexes = thisphasedb[thecnsh == thisphasedb.index]
+        if thisindexes.size > 0 and isinstance(thebop, list):
+            R = np.array(thebop)[np.hstack(thisindexes)].mean(axis=0)
+        elif isinstance(thebop, float):
+            R =  [thebop]
+    return R
 
 def single_string(thetuple, thefeat):
     if isinstance(thetuple, tuple):
@@ -78,12 +77,9 @@ def average_by_cnsh(thephase, thebop, thefeat):
 
 def average_all_sites(thefeat, thesample):
     Q = BOP[thefeat][thesample]
-    if isinstance(Q, np.ndarray):
-        R = np.average(Q, axis=0)
-    elif isinstance(Q,float):
-        R = Q
-    return {'all_'+thisfeat: R }
-
+    if isinstance(Q, list):
+        Q = np.average(Q, axis=0)
+    return {'all_'+thisfeat: Q }
 
 CNAV = []
 progress = tqdm(BOP.columns)
@@ -93,9 +89,13 @@ for thisfeat in progress:
         phase =  get_structure_from_index(thissample)
         CNSHAV[thissample] = {}
         CNSHAV[thissample].update(average_all_sites(thisfeat, thissample)) 
-        CNSHAV[thissample].update(average_by_cnsh(phase, bop, thisfeat))
-    CNAV_BOP = pd.DataFrame.from_dict(CNSHAV, orient='index')
-    CNAV_STACK, CNAV_STACK_COLS = stackdata(CNAV_BOP, CNAV_BOP.columns)
-    CNAV.append( pd.DataFrame(data = CNAV_STACK, columns = CNAV_STACK_COLS, index = CNAV_BOP.index) )
+        if isinstance(bop, list) or isinstance(bop, np.ndarray):
+            CNSHAV[thissample].update(average_by_cnsh(phase, bop, thisfeat))
+    df = pd.DataFrame.from_dict(CNSHAV, orient='index')
+    try:
+        CNAV_STACK, CNAV_STACK_COLS = stackdata(df, df.columns)
+    except Exception as E:
+        pass
+    CNAV.append( pd.DataFrame(data = CNAV_STACK, columns = CNAV_STACK_COLS, index = df.index) )
 CNAV_BOP = pd.concat(CNAV, axis=1)
 CNAV_BOP.to_pickle('CNAveraged'+case)
