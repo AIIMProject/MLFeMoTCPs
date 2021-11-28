@@ -36,9 +36,11 @@ case = 'CRCOW_INITIAL_NSC_ORTHOGONALOS_TABLECUTOFF_WUBIND_15.pkl'
 
 BOP = pd.read_pickle(case)
 
+BS = pd.read_pickle('parsedbs.pkl')
+
 strucs = pd.Series(BOP.index.str.split('.').map(lambda s: s[1].split('-')[0]), index=BOP.index)
 
-cnshs = DB.index.sort_values()
+cnshs = DB.index.levels[0].sort_values()
 
 def get_structure_from_index(thisindex):
     fields = re.split('-|\.', thisindex)
@@ -53,12 +55,15 @@ def orders_of_thebop(thisbop):
         return 1
 
 
-def get_average_of(thephase, thebop, thecnsh):
+def get_average_of(thephase, thebop, thecnsh, with_sublattice=False):
     # asume axis 1 is for order of the quantity
     R = [0]*orders_of_thebop(thebop)
     if phase in DB.columns:
-        thisphasedb = DB[phase].dropna()
-        thisindexes = thisphasedb[thecnsh == thisphasedb.index]
+        thisphasedb = DB[phase].dropna().reset_index()
+        if with_sublattice:
+            thisindexes = thisphasedb[thecnsh == thisphasedb.index]
+        else:
+            thisindexes = thisphasedb[thisphasedb['POLY']==thecnsh].iloc[:,-1]
         if thisindexes.size > 0 and isinstance(thebop, list):
             R = np.array(thebop)[np.hstack(thisindexes)].mean(axis=0)
         elif isinstance(thebop, float):

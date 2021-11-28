@@ -140,7 +140,7 @@ if  __name__ == '__main__':
     groundstates=Features.get_ground_states_energies()
     BS['EF'] = Features.get_formation_energy(ground_states_dic=groundstates)
     BS['composition'] = StrToComposition().featurize_dataframe(BS, "chemical_formula")['composition']
-    BSsample=BS.sample(n=100)
+#    BSsample=BS.sample(n=100)
     AtomicFeaturesMagpie = load_features(mmflatomic, BS, which='atomic')
     DensitiFeatures= load_features(mmfdensity, BS, which='density')
     CompositionFeatures = load_features(mmfcomposition, BS, which='composition')
