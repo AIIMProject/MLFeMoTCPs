@@ -4,6 +4,7 @@
 # In[1]:
 
 import sys
+import os
 import re
 import pdb
 sys.path.insert(
@@ -32,11 +33,6 @@ DB = struct_db().sites_by_structures
 
 # In[3]:
 
-case = 'CRCOW_INITIAL_NSC_ORTHOGONALOS_TABLECUTOFF_WUBIND_15.pkl'
-
-BOP = pd.read_pickle(case)
-
-BS = pd.read_pickle('parsedbs.pkl')
 
 strucs = pd.Series(BOP.index.str.split('.').map(lambda s: s[1].split('-')[0]), index=BOP.index)
 
@@ -86,21 +82,35 @@ def average_all_sites(thefeat, thesample):
         Q = np.average(Q, axis=0)
     return {'all_'+thisfeat: Q }
 
-CNAV = []
-progress = tqdm(BOP.columns)
-for thisfeat in progress:
-    CNSHAV = {}
-    for thissample, bop in BOP[thisfeat].iteritems():
-        phase =  get_structure_from_index(thissample)
-        CNSHAV[thissample] = {}
-        CNSHAV[thissample].update(average_all_sites(thisfeat, thissample)) 
-        if isinstance(bop, list) or isinstance(bop, np.ndarray):
-            CNSHAV[thissample].update(average_by_cnsh(phase, bop, thisfeat))
-    df = pd.DataFrame.from_dict(CNSHAV, orient='index')
-    try:
-        CNAV_STACK, CNAV_STACK_COLS = stackdata(df, df.columns)
-    except Exception as E:
-        pass
-    CNAV.append( pd.DataFrame(data = CNAV_STACK, columns = CNAV_STACK_COLS, index = df.index) )
-CNAV_BOP = pd.concat(CNAV, axis=1)
-CNAV_BOP.to_pickle('CNAveraged'+case)
+def average_features(BOP):
+    CNAV = []
+    progress = tqdm(BOP.columns)
+    for thisfeat in progress:
+        CNSHAV = {}
+        for thissample, bop in BOP[thisfeat].iteritems():
+            phase =  get_structure_from_index(thissample)
+            CNSHAV[thissample] = {}
+            CNSHAV[thissample].update(average_all_sites(thisfeat, thissample)) 
+            if isinstance(bop, list) or isinstance(bop, np.ndarray):
+                CNSHAV[thissample].update(average_by_cnsh(phase, bop, thisfeat))
+        df = pd.DataFrame.from_dict(CNSHAV, orient='index')
+        try:
+            CNAV_STACK, CNAV_STACK_COLS = stackdata(df, df.columns)
+        except Exception as E:
+            pass
+        CNAV.append( pd.DataFrame(data = CNAV_STACK, columns = CNAV_STACK_COLS, index = df.index) )
+    CNAV_BOP = pd.concat(CNAV, axis=1)
+    return CNAV_BOP
+
+def load_features(picklefile):
+    if os.path.exists(picklefile):
+        return pd.read_pickle(picklefile)
+    else:
+        raise FileNotFoundError('pickle file does not exist. Should you calculate the moments ?')
+
+if __name__ == ' __main__':
+    case = 'CRCOW_INITIAL_NSC_ORTHOGONALOS_TABLECUTOFF_WUBIND_15.pkl'
+    BS = pd.read_pickle('parsedbs.pkl')
+    BOP = load_features(case)
+    CNAV_BOP = average_features(BOP)
+    CNAV_BOP.to_pickle('CNAveraged'+case)
