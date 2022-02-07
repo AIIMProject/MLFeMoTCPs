@@ -57,16 +57,16 @@ class Evcurves(object):
     def read_index(theindex):
         composition, structure, mag =  theindex.split('.')
         remove_count_last_element = re.sub('[0-9]$','', composition)
-        elements_without_counts = re.sub('[0-9]+','-', elements)
+        elements_without_counts = re.sub('[0-9]+', '-', remove_count_last_element)
         return elements_without_counts, structure, mag
 
-    def make_selection(self, theindex):
+    def make_selection(self, theindex, thisdeltaks, thisencut):
         elements, structure, mag = self.read_index(theindex)
-        pdb.set_trace()
         select_elements = self.EVFILES.str.contains(elements) & (~ self.EVFILES.str.contains(elements+'-'))
         select_structure = self.EVFILES.str.contains(structure)
         select_mag = self.EVFILES.str.contains(mag)
-        return select_elements & select_structure & select_mag
+        select_params = self.EVFILES.str.contains(thisdeltaks) & self.EVFILES.str.contains(thisencut) 
+        return select_elements & select_structure & select_mag & select_params
 
     def get_curves_for_params(self, params, curve_files):
         curves = {}
@@ -86,22 +86,21 @@ class Evcurves(object):
         #    curves[thisparam] = json.loads(curves[thisparam].to_json(orient='columns'))
         return curves
 
-    def get_evcurves(self, Indexes = None):
+    def get_evcurves(self, Indexes = None, deltaks=None, encuts=None):
         EVCURVES = {}
         progress = tqdm(Indexes, total=len(Indexes))
         for thisindex in progress:
-            selection = self.make_selection(thisindex)
+            selection = self.make_selection(thisindex, deltaks[thisindex], encuts[thisindex])
             curve_files = self.EVFILES[selection]
             params = self.Paths[selection].iloc[:,-2]
-            pdb.set_trace()
-            EVCURVES[thisindex] = pd.Series(self.get_curves_for_params(params, curve_files), name=Root)
+            EVCURVES[thisindex] = pd.Series(self.get_curves_for_params(params, curve_files),name=thisindex )
         return pd.Series(EVCURVES)
 
-    def load_evcurves(self, Indexes = None):
+    def load_evcurves(self, Indexes = None, deltaks=None, encuts=None):
         if not need_to_update(self.evcurves_file):
             self.evcurves = pd.read_pickle(self.evcurves_file)
         else:
-            self.evcurves = self.get_evcurves(Indexes)
+            self.evcurves = self.get_evcurves(Indexes, deltaks, encuts)
 #            self.evcurves.to_pickle(self.evcurves_file)
 
     def load_files_matching(self, search_str):
@@ -142,7 +141,7 @@ if __name__ == '__main__':
     Parsed_Briefsumary = 'ParsedBS.pkl'
     BOPF = load_parsed(Parsed_Briefsumary)
     EV = Evcurves(atoms=['Cr','Co','W'], search_str='data/**/volume_relaxed/**/volume-energy.dat')
-    EV.load_evcurves(BOPF.data.index)
+    EV.load_evcurves(BOPF.data.index, deltaks = BOPF.data['deltak'], encuts = BOPF.data['encut'])
     EV.clean_index([('/bulk/','_'),('/volume_relaxed','_'), ('/data/','_')])
     EV.to_json('evcurves.json')
 
