@@ -68,6 +68,19 @@ class Evcurves(object):
         select_params = self.EVFILES.str.contains(thisdeltaks) & self.EVFILES.str.contains(thisencut) 
         return select_elements & select_structure & select_mag & select_params
 
+    def get_ev_fit_results(self, params, curve_files):
+        results_dict = {} 
+        pdb.set_trace()
+        directory = os.path.dirname(curve_files.values[0])
+        fit_result_file = os.path.join(directory, 'fit_results.dat')
+        if os.path.exists(fit_result_file):
+            results = pd.read_csv(fit_result_file, sep = '\s+', header=None, comment='#')
+            results = results[results[0].str.contains('_murn')]
+            results_dict = {}
+            for index, res in results.iterrows():
+                results_dict[res[0]] = res[1]
+        return results_dict
+
     def get_curves_for_params(self, params, curve_files):
         curves = {}
         for thisparam in params:
@@ -93,14 +106,18 @@ class Evcurves(object):
             selection = self.make_selection(thisindex, deltaks[thisindex], encuts[thisindex])
             curve_files = self.EVFILES[selection]
             params = self.Paths[selection].iloc[:,-2]
-            EVCURVES[thisindex] = pd.Series(self.get_curves_for_params(params, curve_files),name=thisindex )
+            pdb.set_trace()
+            EVCURVES[thisindex] ={
+                    'evcurves': pd.Series(self.get_curves_for_params(params, curve_files),name=thisindex ),
+                    'ev_fit_results': self.get_ev_fit_results(params, curve_files)
+                    }
         return pd.Series(EVCURVES)
 
     def load_evcurves(self, Indexes = None, deltaks=None, encuts=None):
-        if not need_to_update(self.evcurves_file):
-            self.evcurves = pd.read_pickle(self.evcurves_file)
-        else:
-            self.evcurves = self.get_evcurves(Indexes, deltaks, encuts)
+        #if not need_to_update(self.evcurves_file):
+        #    self.evcurves = pd.read_pickle(self.evcurves_file)
+        #else:
+        self.evcurves = self.get_evcurves(Indexes, deltaks, encuts)
 #            self.evcurves.to_pickle(self.evcurves_file)
 
     def load_files_matching(self, search_str):
@@ -142,7 +159,6 @@ if __name__ == '__main__':
     BOPF = load_parsed(Parsed_Briefsumary)
     EV = Evcurves(atoms=['Cr','Co','W'], search_str='data/**/volume_relaxed/**/volume-energy.dat')
     EV.load_evcurves(BOPF.data.index, deltaks = BOPF.data['deltak'], encuts = BOPF.data['encut'])
-    EV.clean_index([('/bulk/','_'),('/volume_relaxed','_'), ('/data/','_')])
-    EV.to_json('evcurves.json')
-
-    plot_sample_curves(EV.evcurves)
+#    EV.clean_index([('/bulk/','_'),('/volume_relaxed','_'), ('/data/','_')])
+    EV.evcurves.to_json('evcurves.json')
+#    plot_sample_curves(EV.evcurves)
