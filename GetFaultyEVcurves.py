@@ -13,8 +13,7 @@ import warnings
 
 
 def get_eos_goodness(thecurve):
-    pdb.set_trace()
-    if len(thecurve['ev_fit_results']) > 0:
+    if thecurve == thecurve  and len(thecurve['ev_fit_results']) > 0:
         V0 = thecurve['ev_fit_results']['V_murn']
         E0 = thecurve['ev_fit_results']['E_murn']
         B0 = thecurve['ev_fit_results']['B_murn']
@@ -49,23 +48,24 @@ def get_goodness(EVcurves):
     goodness = {}
     fiteos = {}
     r2 = {}
-    progress = tqdm(EVcurves.iteritems(), total = len(EVcurves))
+    progress = tqdm(EVcurves.sample(n=10).iteritems(), total = len(EVcurves))
     for thisid, curvedata in progress:
         goodness[thisid] =  {}
         fiteos[thisid] = {}
         r2[thisid] = {}
-        for key in curvedata.keys():
-            fiteos[thisid][key], r2[thisid][key] = get_eos_goodness(curvedata[key])
-            if fiteos[thisid][key] is None:
-                goodness[thisid].update({ key: False })
+        for paramspec, paramcurve in curvedata.items():
+            pdb.set_trace()
+            fiteos[thisid][paramspec], r2[thisid][paramspec] = get_eos_goodness(paramcurve)
+            if fiteos[thisid][paramspec] is None:
+                goodness[thisid].update({ paramspec: False })
                 continue
-            v0 = fiteos[thisid][key][-1]
-            vmax = np.max( curvedata[key]['evcurve']['V'] )
-            vmin = np.min( curvedata[key]['evcurve']['V'] )
-            if  r2[thisid][key] < 0.99 or (v0 < vmin or v0 > vmax):
-                goodness[thisid].update({ key: False })
+            v0 = fiteos[thisid][paramspec][-1]
+            vmax = np.max( curvedata[paramspec]['evcurve']['V'] )
+            vmin = np.min( curvedata[paramspec]['evcurve']['V'] )
+            if  r2[thisid][paramspec] < 0.99 or (v0 < vmin or v0 > vmax):
+                goodness[thisid].update({ paramspec: False })
             else:
-                goodness[thisid].update({ key: True })
+                goodness[thisid].update({ paramspec: True })
     df = pd.Series(goodness)
     df.to_json('goodness.json')
     return df, fiteos, r2
@@ -92,3 +92,4 @@ if __name__ == '__main__':
                 fig.tight_layout()
                 pdf.savefig(fig)
                 plt.close(fig)
+

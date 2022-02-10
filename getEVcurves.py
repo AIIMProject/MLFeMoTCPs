@@ -56,13 +56,19 @@ class Evcurves(object):
         composition, structure, mag =  theindex.split('.')
         remove_count_last_element = re.sub('[0-9]$','', composition)
         elements_without_counts = re.sub('[0-9]+', '-', remove_count_last_element)
-        return elements_without_counts, structure, mag
+        elements_without_trailing_slash = re.sub('-$','', elements_without_counts)
+        return elements_without_trailing_slash, structure, mag
 
     def make_selection(self, theindex, thisdeltaks, thisencut):
         elements, structure, mag = self.read_index(theindex)
         select_elements = self.EVFILES.str.contains(elements) & (~ self.EVFILES.str.contains(elements+'-'))
         select_structure = self.EVFILES.str.contains(structure)
-        select_mag = self.EVFILES.str.contains(mag)
+        if mag == 'FM':
+            select_mag = self.EVFILES.str.contains(mag)
+        elif ( 'U' in mag ) or ( 'D' in mag ):
+            select_mag = self.EVFILES.str.contains(mag)
+        else:
+            select_mag = ~self.EVFILES.str.contains('FM')
         select_params = self.EVFILES.str.contains(thisdeltaks) & self.EVFILES.str.contains(thisencut) 
         return select_elements & select_structure & select_mag & select_params
 
@@ -91,8 +97,9 @@ class Evcurves(object):
 
     def get_evcurves(self, Indexes = None, deltaks=None, encuts=None):
         EVCURVES = {}
-        progress = tqdm(Indexes, total=len(Indexes))
+        progress = tqdm(Indexes, total=len(Indexes))# 
         for thisindex in progress:
+            progress.set_description(thisindex)
             selection = self.make_selection(thisindex, deltaks[thisindex], encuts[thisindex])
             curve_files = self.EVFILES[selection]
             params = self.Paths[selection].iloc[:,-2]
@@ -139,4 +146,5 @@ if __name__ == '__main__':
     EV = Evcurves(atoms=['Cr','Co','W'], search_str='data/**/volume_relaxed/**/volume-energy.dat')
     EV.load_evcurves(BOPF.data.index, deltaks = BOPF.data['deltak'], encuts = BOPF.data['encut'])
     EV.evcurves.to_json('evcurves.json')
+    print(EV.evcurves['Co_pv30.sigma.NM'])
 #    plot_sample_curves(EV.evcurves)
