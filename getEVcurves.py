@@ -28,13 +28,13 @@ def need_to_update(file):
     return  not os.path.exists(file) # and (os.path.getmtime(file) > os.path.getmtime(__file__))
 
 def load_parsed(Parsed_Briefsummary):
-    if os.path.exists(os.path.join(os.path.dirname(__file__),Parsed_Briefsumary)): #not_need_to_update(Parsed_Briefsumary):
-        with open(Parsed_Briefsumary,'rb') as f:
+    if os.path.exists(os.path.join(os.path.dirname(__file__),Parsed_Briefsummary)): #not_need_to_update(Parsed_Briefsumary):
+        with open(Parsed_Briefsummary,'rb') as f:
             BOPF = pkl.load(f)
     else:
         BS =  StructSummaryParser().BriefSummary
         BOPF = Featurizer(BS)
-        with open(Parsed_Briefsumary, 'wb') as f:
+        with open(Parsed_Briefsummary, 'wb') as f:
             pkl.dump(BOPF, f)
     return BOPF
 

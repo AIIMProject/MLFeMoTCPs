@@ -25,7 +25,7 @@ def get_eos_goodness(thecurve):
             results, pcov = curve_fit(birchmurnaghan, vdata, edata, param_guess)
             e =  birchmurnaghan(vdata, *results) 
         except RuntimeError as RE:
-            results = [np.mean(edata),  1e36, 1e36, np.mean(vdata)]
+            results = [np.mean(edata),  0, 0, np.mean(vdata)]
             e = [np.mean(edata)]*len(vdata)
         r2 = r2_score(edata, e)
     else:
@@ -48,13 +48,12 @@ def get_goodness(EVcurves):
     goodness = {}
     fiteos = {}
     r2 = {}
-    progress = tqdm(EVcurves.sample(n=10).iteritems(), total = len(EVcurves))
+    progress = tqdm(EVcurves.iteritems(), total = len(EVcurves))
     for thisid, curvedata in progress:
         goodness[thisid] =  {}
         fiteos[thisid] = {}
         r2[thisid] = {}
         for paramspec, paramcurve in curvedata.items():
-            pdb.set_trace()
             fiteos[thisid][paramspec], r2[thisid][paramspec] = get_eos_goodness(paramcurve)
             if fiteos[thisid][paramspec] is None:
                 goodness[thisid].update({ paramspec: False })
@@ -70,26 +69,31 @@ def get_goodness(EVcurves):
     df.to_json('goodness.json')
     return df, fiteos, r2
     
-if __name__ == '__main__':
-    EVcurves = pd.read_json('evcurves.json') 
-    goodness, fiteos, r2  = get_goodness(EVcurves)         
-    progress = tqdm(EVcurves.iteritems(), total = len(EVcurves))
-    with PdfPages('multipage_fitted_curves.pdf') as pdf:
+
+def plot_curves(thegoodness, thecurves, pdffile):
+    progress = tqdm(thecurves.iteritems(), total = len(thecurves))
+    with PdfPages(pdffile) as pdf:
 #        with PdfPages('bad_evcurves_multipage.pdf') as badpdf:
         for thisid, curvedata in progress:
-            if any(goodness[thisid].values()):
+            if any(thegoodness[thisid].values()):
                 fig, ax = plt.subplots(1,1)
                 plotted_lines = []
                 for key, thisdata in curvedata.items():
-                    if goodness[thisid][key]:
+                    if thegoodness[thisid][key]:
                         plotted_lines += plot_fitted_curve (thisdata['evcurve'], fiteos[thisid][key],r2[thisid][key],  fig=fig, ax=ax)
-                try:
                     ax.legend()
-                except Exception as E:
-                    pdb.set_trace()
-                    pass
                 fig.suptitle(thisid)
                 fig.tight_layout()
                 pdf.savefig(fig)
                 plt.close(fig)
+
+def invert_goodness(thegoodness):
+    return goodness.map(lambda d: {key: not value for key, value in d.items()} )
+
+if __name__ == '__main__':
+    EVcurves = pd.read_json('evcurves.json', typ='series') 
+    goodness, fiteos, r2  = get_goodness(EVcurves)         
+    plot_curves (goodness, EVcurves, 'multipage_fitted_curves.pdf')
+    plot_curves (invert_goodness(goodness), EVcurves, 'multipage_bad_curves.pdf')
+    
 
