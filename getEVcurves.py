@@ -70,33 +70,35 @@ class Evcurves(object):
 
     def get_ev_fit_results(self, params, curve_files):
         results_dict = {} 
-        pdb.set_trace()
-        directory = os.path.dirname(curve_files.values[0])
-        fit_result_file = os.path.join(directory, 'fit_results.dat')
-        if os.path.exists(fit_result_file):
-            results = pd.read_csv(fit_result_file, sep = '\s+', header=None, comment='#')
-            results = results[results[0].str.contains('_murn')]
-            results_dict = {}
-            for index, res in results.iterrows():
-                results_dict[res[0]] = res[1]
+        for curvefile in curve_files:
+            directory = os.path.dirname(curvefile)
+            fit_result_file = os.path.join(directory, 'fit_results.dat')
+            if os.path.exists(fit_result_file):
+                try:
+                    results = pd.read_csv(fit_result_file, sep = '\s+', header=None, comment='#')
+                except Exception as E:
+                    pdb.set_trace()
+                    pass
+                results = results[results[0].str.contains('_murn')]
+                for index, res in results.iterrows():
+                    results_dict[res[0]] = res[1]
         return results_dict
 
-    def get_curves_for_params(self, params, curve_files):
+    def get_curves_for_params(self, param, curve_files):
         curves = {}
-        for thisparam in params:
-            try:
-                curves[thisparam] = pd.read_csv(
-                        curve_files[curve_files.str.contains(thisparam)].values[0], 
-                        sep='\s',
-                        header=None)
-            except pd.errors.EmptyDataError as E:
-                curves[thisparam] = pd.DataFrame(np.array([[np.nan]*3]))
-                pass
-            if curves[thisparam].shape[1]==2:
-                curves[thisparam].columns=['V', 'E']
-            elif curves[thisparam].shape[1]==3:
-                curves[thisparam].columns=['V', 'E','P']
-        #    curves[thisparam] = json.loads(curves[thisparam].to_json(orient='columns'))
+        try:
+            curves = pd.read_csv(
+                    curve_files[curve_files.str.contains(param)].values[0], 
+                    sep='\s',
+                    header=None)
+        except pd.errors.EmptyDataError as E:
+            curves = pd.DataFrame(np.array([[np.nan]*3]))
+            pass
+        if curves.shape[1]==2:
+            curves.columns=['V', 'E']
+        elif curves.shape[1]==3:
+            curves.columns=['V', 'E','P']
+        curves = json.loads(curves.to_json(orient='columns'))
         return curves
 
     def get_evcurves(self, Indexes = None, deltaks=None, encuts=None):
@@ -106,11 +108,14 @@ class Evcurves(object):
             selection = self.make_selection(thisindex, deltaks[thisindex], encuts[thisindex])
             curve_files = self.EVFILES[selection]
             params = self.Paths[selection].iloc[:,-2]
-            pdb.set_trace()
-            EVCURVES[thisindex] ={
-                    'evcurves': pd.Series(self.get_curves_for_params(params, curve_files),name=thisindex ),
-                    'ev_fit_results': self.get_ev_fit_results(params, curve_files)
-                    }
+            EVCURVES[thisindex] ={}
+            for param in params.values:
+                EVCURVES[thisindex][param] ={
+                        'evcurve': self.get_curves_for_params(param, curve_files),
+                        'ev_fit_results': self.get_ev_fit_results(params, curve_files)
+                        }
+            pass
+        pdb.set_trace()
         return pd.Series(EVCURVES)
 
     def load_evcurves(self, Indexes = None, deltaks=None, encuts=None):
@@ -160,5 +165,6 @@ if __name__ == '__main__':
     EV = Evcurves(atoms=['Cr','Co','W'], search_str='data/**/volume_relaxed/**/volume-energy.dat')
     EV.load_evcurves(BOPF.data.index, deltaks = BOPF.data['deltak'], encuts = BOPF.data['encut'])
 #    EV.clean_index([('/bulk/','_'),('/volume_relaxed','_'), ('/data/','_')])
-    EV.evcurves.to_json('evcurves.json')
+    pdb.set_trace()
+    EV.evcurves.to_pickle('evcurves.json')
 #    plot_sample_curves(EV.evcurves)

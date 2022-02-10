@@ -13,6 +13,7 @@ import warnings
 
 
 def get_eos_goodness(thecurve):
+    pdb.set_trace()
     if len(thecurve['ev_fit_results']) > 0:
         V0 = float(thecurve['ev_fit_results']['V_murn'])
         E0 = float(thecurve['ev_fit_results']['E_murn'])
@@ -54,12 +55,14 @@ def get_goodness(EVcurves):
     goodness = {}
     fiteos = {}
     r2 = {}
-    progress = tqdm(EVcurves.iterrows(), total = len(EVcurves))
+    progress = tqdm(EVcurves.iteritems(), total = len(EVcurves))
     for thisid, curvedata in progress:
         goodness[thisid] =  {}
         fiteos[thisid] = {}
         r2[thisid] = {}
-        for key in curvedata['evcurve'].keys():
+        pdb.set_trace()
+        for key in curvedata.keys():
+            pdb.set_trace()
             fiteos[thisid][key], r2[thisid][key] = get_eos_goodness(curvedata['evcurve'][key])
             if fiteos[thisid][key] is None:
                 goodness[thisid].update({ key: False })
@@ -76,9 +79,9 @@ def get_goodness(EVcurves):
     return df, fiteos, r2
     
 if __name__ == '__main__':
-    EVcurves = pd.read_json('evcurves.json', orient='index')
+    EVcurves = pd.read_pickle('evcurves.json') #, orient='index')
     goodness, fiteos, r2  = get_goodness(EVcurves)         
-    progress = tqdm(EVcurves.iterrows(), total = len(EVcurves))
+    progress = tqdm(EVcurves.iteritems(), total = len(EVcurves))
     with PdfPages('multipage_fitted_curves.pdf') as pdf:
 #        with PdfPages('bad_evcurves_multipage.pdf') as badpdf:
         for thisid, curvedata in progress:
