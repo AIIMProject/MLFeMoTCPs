@@ -39,9 +39,9 @@ def clean_briefsummary(THEBS):
         THEBS['Phase'] = THEBS['Phase'].str.replace(other,'hcp', regex=True)
     return THEBS
 
-def ternary_matplotlib(THEBS, thecomponents):
+def ternary_matplotlib(THEBS, thecomponents, phasein = 'Phase'):
     fig, ax = plt.subplots()
-    for phase, group in THEBS.groupby(['Phase']):
+    for phase, group in THEBS.groupby([phasein]):
         ax =group[thecomponents].pyroplot.scatter(
                 label=phase, marker='o', ax=ax, s = 10*group['num_atoms'], alpha=0.5
                 )
