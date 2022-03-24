@@ -11,7 +11,7 @@ from matminer.featurizers.conversions import StrToComposition, CompositionToOxid
 from matminer.featurizers.composition import ElementProperty
 from matminer.featurizers.structure import DensityFeatures, SiteStatsFingerprint, StructuralHeterogeneity, ChemicalOrdering,\
         StructureComposition, MaximumPackingEfficiency, RadialDistributionFunction, ElectronicRadialDistributionFunction
-from SourceDevelopementVersion import BopfoxFeatures, Featurizer, StructSummaryParser
+#from SourceDevelopementVersion import BopfoxFeatures, Featurizer, StructSummaryParser
 from matminer.featurizers.conversions import DictToObject
 from matminer.featurizers.site import SOAP, AGNIFingerprints, CrystalNNFingerprint, VoronoiFingerprint, ChemEnvSiteFingerprint
 
@@ -78,9 +78,9 @@ def load_composition_features(_BS):
 
 
 def load_soap_features(_BS):
-    SOAPER = SOAP(rcut=4 ,nmax=10,lmax=5, sigma=0.1, rbf='gto', periodic=True, crossover=True) 
-    SOAPF = SOAPER.fit_featurize_dataframe(_BS, col_id = 'atoms_objects', ignore_errors=True, fit_args=aver)
     pdb.set_trace()
+    SOAPER = SOAP(rcut=4 ,nmax=10,lmax=5, sigma=0.1, rbf='gto', periodic=True, crossover=True) 
+    SOAPF = SOAPER.fit_featurize_dataframe(_BS, col_id = 'atoms_objects', ignore_errors=True)
     return SOAPF
 
 def load_features(thepickle, thedata, which='atomic'):
