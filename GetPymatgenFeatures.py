@@ -9,9 +9,15 @@ from matminer.featurizers.conversions import DictToObject
 from tqdm import tqdm_notebook as tqdm
 from matminer.featurizers.conversions import StrToComposition, CompositionToOxidComposition
 from matminer.featurizers.composition import ElementProperty
-from matminer.featurizers.structure import DensityFeatures, SiteStatsFingerprint, StructuralHeterogeneity, ChemicalOrdering,\
-        StructureComposition, MaximumPackingEfficiency, RadialDistributionFunction, ElectronicRadialDistributionFunction
-#from SourceDevelopementVersion import BopfoxFeatures, Featurizer, StructSummaryParser
+from matminer.featurizers.structure import DensityFeatures
+from matminer.featurizers.structure import SiteStatsFingerprint
+from matminer.featurizers.structure import StructuralHeterogeneity
+from matminer.featurizers.structure import ChemicalOrdering 
+from matminer.featurizers.structure import StructureComposition
+from matminer.featurizers.structure import MaximumPackingEfficiency
+from matminer.featurizers.structure import RadialDistributionFunction
+from matminer.featurizers.structure import ElectronicRadialDistributionFunction
+from SourceDevelopementVersion import BopfoxFeatures, Featurizer, StructSummaryParser
 from matminer.featurizers.conversions import DictToObject
 from matminer.featurizers.site import SOAP, AGNIFingerprints, CrystalNNFingerprint, VoronoiFingerprint, ChemEnvSiteFingerprint
 
@@ -66,7 +72,7 @@ def load_composition_features(_BS):
     Featurizers = [
         AtomicOrbitals(),
         BandCenter(),
-        IonProperty(),
+        #IonProperty(),
         Stoichiometry(),
         ElectronegativityDiff(),
     ]
@@ -78,9 +84,8 @@ def load_composition_features(_BS):
 
 
 def load_soap_features(_BS):
-    pdb.set_trace()
     SOAPER = SOAP(rcut=4 ,nmax=10,lmax=5, sigma=0.1, rbf='gto', periodic=True, crossover=True) 
-    SOAPF = SOAPER.fit_featurize_dataframe(_BS, col_id = 'atoms_objects', ignore_errors=True)
+    SOAPF = SOAPER.fit_featurize_dataframe(_BS.dropna(), col_id = 'atoms_objects', ignore_errors=True)
     return SOAPF
 
 def load_features(thepickle, thedata, which='atomic'):
@@ -132,17 +137,17 @@ mmfstructure =  os.path.join (case,'matminer_structure_features.pkl')
 mmsoapfeatures = os.path.join(case, 'matminer_soap_features.pkl')
 
 if  __name__ == '__main__':
-    BS = pd.read_pickle('parsedbs.pkl')
-    BS['atoms_objects'] = pd.read_pickle('CrCoW-sorted-POSCAR-{}-rescaled-PymatgenStructures.pkl'.format(case)).dropna()
+    BS = pd.read_pickle('CuratedParsedBriefSummary.pkl').dropna()
+    BS['atoms_objects' ] = pd.read_pickle(f'CrCoW-sorted-POSCAR-initial-rescaled-PymatgenStructures.pkl')
     BS['chemical_formula'] = get_chemical_formula(BS)
     Features = Featurizer(BS)
     BS['Mag'] = Features.Mag[BS.index].map(make_magnetic_feature)
     groundstates=Features.get_ground_states_energies()
     BS['EF'] = Features.get_formation_energy(ground_states_dic=groundstates)
     BS['composition'] = StrToComposition().featurize_dataframe(BS, "chemical_formula")['composition']
-#    BSsample=BS.sample(n=100)
+    BSsample=BS.sample(n=100)
     AtomicFeaturesMagpie = load_features(mmflatomic, BS, which='atomic')
     DensitiFeatures= load_features(mmfdensity, BS, which='density')
     CompositionFeatures = load_features(mmfcomposition, BS, which='composition')
-    StructureFeatures = load_features(mmfstructure, BS, which='structure')
-    #SOAPFeatures = load_features(mmsoapfeatures,BS,  which ='soap')
+    #StructureFeatures = load_features(mmfstructure, BS, which='structure')
+    #SOAPFeatures = load_features(mmsoapfeatures,BS.dropna(),  which ='soap')

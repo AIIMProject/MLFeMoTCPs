@@ -16,12 +16,13 @@ from tqdm import tqdm
 
 
 def get_file_paths( searchs, csvfile ='LIST_OF_files.csv') -> list:
-    if os.path.exists(csvfile) and os.path.getmtime(__file__) < os.path.getmtime(csvfile):
-        with open(csvfile, 'r') as f: 
-            files = f.readlines()
-        files = [s.strip() for s in files]
-    else:
-        files = glob.glob('**/'+searchs, recursive=True)
+    #if os.path.exists(csvfile) and os.path.getmtime(__file__) < os.path.getmtime(csvfile):
+    #    with open(csvfile, 'r') as f: 
+    #        files = f.readlines()
+    #    files = [s.strip() for s in files]
+    #else:
+    if True:
+        files = glob.glob('data/**/'+searchs, recursive=True)
         with open(csvfile, 'w') as f:
             f.writelines('\n'.join(files))
     return files
@@ -71,7 +72,7 @@ def get_sublatticetags_sorted(thisposcarsorted, wheredirect, natoms):
 def get_sorter_and_sorted_tags(_thisfile, THISSORTER=None, THISSUBLATICETAGS=None):
     TORETURN = ()
     try:
-        POSCAR = pd.read_csv(_thisfile, sep='\n', dtype='str', header=None)[0]
+        POSCAR = pd.read_csv(_thisfile, dtype='str', header=None)[0] #, sep='\n'
     except FileNotFoundError as E:
         raise E
     wheredirect = get_coord_type_line(POSCAR)
