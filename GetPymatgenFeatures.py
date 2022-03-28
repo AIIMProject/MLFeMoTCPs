@@ -17,7 +17,7 @@ from matminer.featurizers.structure import StructureComposition
 from matminer.featurizers.structure import MaximumPackingEfficiency
 from matminer.featurizers.structure import RadialDistributionFunction
 from matminer.featurizers.structure import ElectronicRadialDistributionFunction
-from SourceDevelopementVersion import BopfoxFeatures, Featurizer, StructSummaryParser
+#from SourceDevelopementVersion import BopfoxFeatures, Featurizer, StructSummaryParser
 from matminer.featurizers.conversions import DictToObject
 from matminer.featurizers.site import SOAP, AGNIFingerprints, CrystalNNFingerprint, VoronoiFingerprint, ChemEnvSiteFingerprint
 
@@ -47,13 +47,12 @@ def load_structure_features(_BS):
     Featurizers = [
             SiteStatsFingerprint.from_preset("CoordinationNumber_ward-prb-2017"),
             SiteStatsFingerprint.from_preset("LocalPropertyDifference_ward-prb-2017"),
-#            StructureComposition(),
+            #StructureComposition(),
             StructuralHeterogeneity(),
             ChemicalOrdering(), 
             MaximumPackingEfficiency()
             ]
     DFS = run_list_of_featurizers(Featurizers, _BS, 'atoms_objects')
-    print([DF.columns for DF in DFS ])
     result = pd.concat(DFS, axis=1)
     return result
 
@@ -72,9 +71,10 @@ def load_composition_features(_BS):
     Featurizers = [
         AtomicOrbitals(),
         BandCenter(),
-        #IonProperty(),
+        IonProperty(),
         Stoichiometry(),
         ElectronegativityDiff(),
+        ElementProperty.from_preset(preset_name='magpie')
     ]
     #ED = ElectronegativityDiff().featurize_dataframe(BS, col_id='composition', inplace=False, ignore_errors=True)
     #Odf = CompositionToOxidComposition().featurize_dataframe(_BS, 'composition', ignore_errors=True)
