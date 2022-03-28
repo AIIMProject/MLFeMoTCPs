@@ -38,9 +38,9 @@ def plot_fitted_curve(evcurve, thefit, r2, fig=None,  ax=None):
     if thefit is not None:
         v = np.linspace(min(evcurve['V']), max(evcurve['V']), 100)
         e =  birchmurnaghan(v,*thefit) #  thefit[0], thefit[1], thefit[2], thefit[3])
-        l.append(ax.plot(v,e,'-', label = 'fit')[0])
-        thecovlabel = f'$R^2 = $ {r2:.3f}' 
-        l.append(ax.plot(evcurve['V'], evcurve['E'], 'o', color=l[-1].get_color(), label=thecovlabel))
+        thecovlabel = f'fit $R^2 = $ {r2:.3f}' 
+        l.append(ax.plot(v,e,'-', label = thecovlabel)[0])
+        l.append(ax.plot(evcurve['V'], evcurve['E'], 'o', color=l[-1].get_color(), label='calculations'))
         fig.tight_layout()
     return l
 
@@ -61,16 +61,15 @@ def get_goodness(EVcurves):
             v0 = fiteos[thisid][paramspec][-1]
             vmax = np.max( curvedata[paramspec]['evcurve']['V'] )
             vmin = np.min( curvedata[paramspec]['evcurve']['V'] )
-            if  r2[thisid][paramspec] < 0.99 or (v0 < vmin or v0 > vmax):
+            if  r2[thisid][paramspec] < 0.95 or (v0 < vmin or v0 > vmax):
                 goodness[thisid].update({ paramspec: False })
             else:
                 goodness[thisid].update({ paramspec: True })
     df = pd.Series(goodness)
     df.to_json('goodness.json')
-    return df, fiteos, r2
+    return df, pd.Series(fiteos), pd.Series(r2)
     
-
-def plot_curves(thegoodness, thecurves, pdffile):
+def plot_curves_topdf(thegoodness, thecurves, pdffile):
     progress = tqdm(thecurves.iteritems(), total = len(thecurves))
     with PdfPages(pdffile) as pdf:
 #        with PdfPages('bad_evcurves_multipage.pdf') as badpdf:
@@ -93,7 +92,7 @@ def invert_goodness(thegoodness):
 if __name__ == '__main__':
     EVcurves = pd.read_json('evcurves.json', typ='series') 
     goodness, fiteos, r2  = get_goodness(EVcurves)         
-    plot_curves (goodness, EVcurves, 'multipage_fitted_curves.pdf')
+    plot_curves_topdf (goodness, EVcurves, 'multipage_fitted_curves.pdf')
     plot_curves (invert_goodness(goodness), EVcurves, 'multipage_bad_curves.pdf')
     
 

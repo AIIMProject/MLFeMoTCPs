@@ -40,8 +40,10 @@ def load_parsed(Parsed_Briefsummary):
 
 class Evcurves(object):
 
-    def __init__(self, atoms = ['Co', 'Ti', 'W'], search_str = '**/volume-energy.dat'):
-        self.EVFILES = self.load_files_matching(search_str)
+    def __init__(self, dataset, atoms = ['Co', 'Ti', 'W'], search_str = '**/volume-energy.dat'):
+        self.dataset = dataset
+        self.search_str = search_str
+        self.EVFILES = self.load_files_matching()
         self.Paths = pd.DataFrame(np.vstack(self.EVFILES.str.split('/')))
         self.Roots = pd.Series(
                 self.Paths.iloc[:,:-2].apply(lambda p: '/'.join(p), axis = 1).unique(),
@@ -114,25 +116,27 @@ class Evcurves(object):
     def load_evcurves(self, Indexes = None, deltaks=None, encuts=None):
         self.evcurves = self.get_evcurves(Indexes, deltaks, encuts)
 
-    def load_files_matching(self, search_str):
-        saved_list = 'list_of_outcars.csv'
+    def load_files_matching(self):
+        saved_list = os.path.join(self.dataset, 'list_of_outcars.csv')
+        fullsearchstring = f'{self.dataset}/rawdata/**/volume_relaxed/{self.search_str}'
         if not need_to_update(saved_list):
             list_of_files = pd.read_csv(saved_list, squeeze=True, header=None)
         else:
-            list_of_files = pd.Series(glob.glob(search_str, recursive=True))
+            list_of_files = pd.Series(glob.glob(fullsearchstring,  recursive=True))
             list_of_files.name = 'full_path'
             list_of_files.to_csv(saved_list, header=False, index=False)
         return list_of_files
 
-def plot_sample_curves(thecurves: pd.core.series.Series) -> FigureType:
-    with PdfPages('evcurves_multipage.pdf') as pdf:
+def plot_sample_curves(thecurves: pd.core.series.Series, location='.') -> FigureType:
+    multipdf = os.path.join(location, 'evcurves_multipage.pdf')
+    with PdfPages(multipdf) as pdf:
         progress = tqdm(thecurves.iteritems(), total = len(thecurves))
-        for index, curve in progress:
+        for index, data in progress:
             fig, ax = plt.subplots(1,1)
             ax.set_xlabel(index, fontsize=12)
-            for subcurve in curve.keys():
+            for params, curve in data.items():
                 try:
-                    ax.plot(curve[subcurve]['V'], curve[subcurve]['E'],'o', label=subcurve)
+                    ax.plot(curve['evcurve']['V'], curve['evcurve']['E'],'o', label=params)
                 except IndexError as E:
                     pass
             ax.legend(fontsize=8)
@@ -140,7 +144,6 @@ def plot_sample_curves(thecurves: pd.core.series.Series) -> FigureType:
             pdf.savefig(fig)
 
 if __name__ == '__main__':
-
     Parsed_Briefsumary = 'ParsedBS.pkl'
     BOPF = load_parsed(Parsed_Briefsumary)
     EV = Evcurves(atoms=['Cr','Co','W'], search_str='data/**/volume_relaxed/**/volume-energy.dat')
