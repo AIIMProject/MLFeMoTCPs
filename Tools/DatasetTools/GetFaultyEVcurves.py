@@ -68,23 +68,36 @@ def get_goodness(EVcurves):
     df = pd.Series(goodness)
     df.to_json('goodness.json')
     return df, pd.Series(fiteos), pd.Series(r2)
-    
-def plot_curves_topdf(thegoodness, thecurves, pdffile):
-    progress = tqdm(thecurves.iteritems(), total = len(thecurves))
+
+def plot_the_sample(theindex, thedata, thefit_data, r2_data):
+    fig, ax = plt.subplots(1,1)
+    ax.set_title(theindex)
+    ax.set_xlabel('V ($\AA ^3$)')
+    ax.set_ylabel('E (eV)')
+    legendhandles = []
+    for (params, curve), fit, r2 in zip(thedata.items(), thefit_data.values(), r2_data.values()):
+        l = plot_fitted_curve(curve['evcurve'], fit, r2, ax=ax, fig=fig)
+    ax.legend()
+    return fig, ax
+
+def plot_curves(thesample: pd.core.series.Series, thefits: pd.core.series.Series, ther2s: pd.core.series.Series):
+    fig_collection = []
+    ax_collection = []
+    for (index, data ), fit_data, r2_data in zip(thesample.items(), thefits.values, ther2s.values):
+        fig, ax = plot_the_sample(index, data, fit_data, r2_data)
+        fig_collection.append(fig)
+        ax_collection.append(ax)
+    return fig_collection, ax_collection
+
+def plot_curves_topdf(thecurves: pd.core.series.Series, thefits: pd.core.series.Series, ther2: pd.core.series.Series, pdffile: str):
+    collection = zip(thecurves.iteritems(), thefit.values, ther2s.values)
+    progress = tqdm(collection, total = len(collection))
     with PdfPages(pdffile) as pdf:
-#        with PdfPages('bad_evcurves_multipage.pdf') as badpdf:
         for thisid, curvedata in progress:
-            if any(thegoodness[thisid].values()):
-                fig, ax = plt.subplots(1,1)
-                plotted_lines = []
-                for key, thisdata in curvedata.items():
-                    if thegoodness[thisid][key]:
-                        plotted_lines += plot_fitted_curve (thisdata['evcurve'], fiteos[thisid][key],r2[thisid][key],  fig=fig, ax=ax)
-                    ax.legend()
-                fig.suptitle(thisid)
-                fig.tight_layout()
-                pdf.savefig(fig)
-                plt.close(fig)
+            fig, ax = plot_the_sample(thisid, curvedata)
+            fig.tight_layout()
+            pdf.savefig(fig)
+            plt.close(fig)
 
 def invert_goodness(thegoodness):
     return goodness.map(lambda d: {key: not value for key, value in d.items()} )
