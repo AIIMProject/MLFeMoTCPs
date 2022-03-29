@@ -2,6 +2,14 @@ import pdb
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+def need_to_update(afile):
+    result = True
+    if os.path.exists(afile):
+        if os.path.getmtime(afile) > os.path.getmtime(__file__):
+            result = False
+    return result
 
 class CaseNamer:
 

@@ -13,19 +13,9 @@ from itertools import product
 # sys.path.insert(0, '/home/users/fortimtb/storage/CuadernoTrabajo/bopfoxfeaturizer/')
 # from BopFoxFeaturizer.brief_summary_parser import irregular_file_parser, StructSummaryParser
 # from BopFoxFeaturizer.parsers import BopFoxParser
-StructSummaryParser = SourceFileLoader(
-        'StructSummaryParser',
-        '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/BopFoxFeaturizer/brief_summary_parser.py'
-        ).load_module().StructSummaryParser
-BopFoxParser = SourceFileLoader(
-        'BopFoxParser',
-        '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/BopFoxFeaturizer/parsers.py'
-        ).load_module().BopFoxParser
 
 from multiprocessing import Pool
 
-def need_to_update(afile):
-    return os.path.exists(afile) and os.path.getmtime(afile) < os.path.getmtime(__file__)
     
 def get_parser() -> BopFoxParser:
     if need_to_update(parsed_file):
