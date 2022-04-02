@@ -1,28 +1,17 @@
 /========================================================================
 /
-/   TB bond parameters for homoatomic and heteroatomic dimers
+/   TB bond parameters from DFT projections including onsite levels.
 /
 /========================================================================
 /
-/   Supplemental Material:
+/   Taken from supplemental material:
 /
 /   Tight-binding bond parameters for dimers across the periodic table 
 /   from density-functional theory
 /
 /   J. Jenke, A.N. Ladines, T. Hammerschmidt, D.G. Pettifor, R. Drautz
+/   ***********add DOI*********
 /   
-/========================================================================
-/
-/   Tight-binding (TB) parametrizations of the orthogonal TB model (H)
-/   and the non-orthogonal TB model (H, S) of different combinations of 
-/   elements. Details on the density functional theory reference, the 
-/   downfolding procedure and the parametrization procedure are given 
-/   in the accompanying publication. The entries are in alphabetical
-/   order from Ag to Zr. The subsections include the combinations with 
-/   the same element and alphabetically following elements. Onsite 
-/   levels and stopping distances for the parameterization are included.
-/   The units are eV and Angstroem. 
-/
 /============================= INFORMATION ==============================
 /   Functional forms:
 /   sum_exp: sum_i p(3i)*np.exp(-p(1+3i)*(x**p(2+3i)))
@@ -38,11 +27,11 @@ model = projections_os
 /========================================================================
 
 version     = bop                    
-moments     = 9   
-terminator  = constantabn
-bandwidth   = findeminemax
-bopkernel   = jackson
-nexpmoments = 200
+moments     = 20                     
+terminator  = constantabn            
+bandwidth   = findeminemax           
+bopkernel   = jackson                
+nexpmoments = 200                    
 
 /========================================================================
 / atom parameters
