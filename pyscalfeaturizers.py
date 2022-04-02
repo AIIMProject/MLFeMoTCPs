@@ -25,6 +25,7 @@ def get_sys_cn(thissys):
     return [atom.coordination for atom in thissys.atoms]
 
 def get_sys_steinhardt(thissys):
+    thissys.find_neighbors(method='cutoff', cutoff = 0)
     thissys.calculate_q([4,6])
     return thissys.get_qvals([4,6])
 
@@ -35,10 +36,6 @@ def get_cn(theatoms):
 def get_steinhardt(theatoms):
     thesys = load_pyscal(theatoms)
     return get_sys_steinhardt(thesys)
-
-def featurize_row (theatoms, atomfeaturizer = [get_cn]):
-    return atomfaturizer(theatoms)
-    
 
 from tqdm.contrib.concurrent import process_map
 
@@ -56,10 +53,13 @@ def featurize_dataframe(df, colid='atoms', featurizer=get_cn, max_workers=3):
     Result = process_map(featurizer, df[colid],  max_workers = max_workers, chunksize=1)
     return Result
 
+def featurize_many(AtomsObjects, featurizerlist):
+    Features = {thisfeaturizer.__name__: featurize_dataframe(AtomsObjects,featurizer=thisfeaturizer, max_workers=3) for thisfeaturizer in featurizerlist}
+    return Features
+
 if __name__=='__main__':
     AtomsObjects = pd.read_pickle('Cr-Co-W/CrCoW-sorted-POSCAR-initial-rescaled-AtomsObjects.pkl').dropna()
-    CNS = {}
     featurizers = [get_cn, get_steinhardt]
-    CNS =  {thisfeaturizer.__name__: featurize_dataframe(AtomsObjects,featurizer=thisfeaturizer, max_workers=3) for thisfeaturizer in featurizers}
+    Features = featurize_many(AtomsObjects, featurizers)
     with open('pyscal_features.kpl','wb') as pkl:
-        pickle.dump(CNS, pkl)
+        pickle.dump(Features, pkl)
