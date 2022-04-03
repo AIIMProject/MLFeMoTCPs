@@ -38,7 +38,7 @@ import pandas as pd
 
 dataset = 'Cr-Co-W'
 components = dataset.replace('-','')
-models =['canonical_W','projections', 'projections_os']
+models = ['canonical','projections', 'projections_os']
 cutoff = 'table'
 atoms = 'initial'
 moments = 16
@@ -56,6 +56,18 @@ atomspickle =  os.path.join(dataset, f'{components}-sorted-POSCAR-{atoms}-rescal
 
 
 AtomsObjects = pd.read_pickle(atomspickle).dropna(how='any')
+
+
+# In[5]:
+
+
+from time import time
+
+
+# In[6]:
+
+
+results = {}
 for model in models:
     modelsfile = os.path.join('models', f'{components}_{model}.bx')
     print('atoms: ', atoms, 'model: ', model, '  cutoff: ', cutoff, ' moments:', moments)
@@ -69,11 +81,108 @@ for model in models:
     BOPC.calculate_bop_forall(ForceKeepSpecies=True,
             input_pickle = resultspickle
             )
+    results[model] = BOPC.RESULTS
     BOPC.RESULTS.to_pickle(resultspickle)
 
 
 # In[ ]:
 
 
-BOPC.RESULTS
+
+
+
+# In[ ]:
+
+
+upper = {}
+
+
+# In[ ]:
+
+
+lower1 = {1: {'a': 'lista'}}
+lower2 = {1: {'b': 'listb'}}
+
+
+# In[ ]:
+
+
+upper.update(lower1)
+
+
+# In[ ]:
+
+
+upper.update(lower2)
+
+
+# In[ ]:
+
+
+upper
+
+
+# In[ ]:
+
+
+results['canonical']['sigma']
+
+
+# In[ ]:
+
+
+import re
+
+
+# In[ ]:
+
+
+import tarfile
+
+
+# In[ ]:
+
+
+import gzip
+
+
+# In[ ]:
+
+
+with tarfile.open('bopfoxASE_Co10Cr8W6_2022-03-31_11:22:11gmt.out.tar.gz','r') as thistar:
+    logbx = thistar.extract('log.bx')
+    with open('log.bx', 'r') as f:
+        loglines = f.readlines()
+
+
+# In[ ]:
+
+
+sigmalines = [re.match(' sigma \( atom = (.*), orbital = (.*)\) (.*)', logline) for logline in loglines]
+
+
+# In[ ]:
+
+
+import numpy as np
+
+
+# In[ ]:
+
+
+sigmas = {}
+for (atom, orbital, thissigmas) in [sigmaline.groups() for sigmaline in sigmalines if sigmaline != None]:
+    sigmas[atom+' '+orbital] = np.fromstring(thissigmas.strip(), sep=' ')
+
+
+# In[ ]:
+
+
+sigmas
+
+
+# In[ ]:
+
+
+
 
