@@ -3,6 +3,8 @@
 # In[1]:
 
 
+import sys
+import os
 import pyscal as pc
 import pandas as pd
 import numpy as np
@@ -49,9 +51,11 @@ def featurize_many(AtomsObjects, featurizerlist, colid='atoms'):
     return Features
 
 if __name__=='__main__':
-    AtomsObjects = pd.read_pickle('Cr-Co-W/CrCoW-sorted-POSCAR-initial-rescaled-AtomsObjects.pkl').dropna().sample(n=10)
-    featurizers = [copyval] #[get_cn, get_steinhardt]
-    values = AtomsObjects.index.tolist()
-    iterable = pd.DataFrame(values, index=values, columns=[ 'value' ])
-    results = featurize_many(iterable,  featurizers, colid='value')
-    Features = pd.Series(results, index=AtomsObjects.index)
+    AtomsObjects = pd.read_pickle('Cr-Co-W/CrCoW-sorted-POSCAR-initial-rescaled-AtomsObjects.pkl').dropna()
+    sys.path.insert(0, '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/')
+    dataset = 'Cr-Co-W'
+    AtomsObjects = pd.read_pickle('Cr-Co-W/CrCoW-sorted-POSCAR-initial-rescaled-AtomsObjects.pkl').dropna()
+    featurizers = [pyscal_steinhardt, pyscal_cn] #, get_steinhardt]
+    pyscal_features = [feature.__name__ for feature in featurizers]
+    FeaturesFile = os.path.join(dataset, 'Descriptors', 'pyscal_features.kpl')
+    Features = featurize_many(AtomsObjects,  featurizers, colid='atoms')
