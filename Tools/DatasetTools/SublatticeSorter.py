@@ -12,7 +12,7 @@ import re
 import sys
 from string import ascii_lowercase, ascii_uppercase
 import os
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from .Tools import need_to_update
 
 
@@ -20,6 +20,9 @@ def get_file_paths(dataset, searchs, csvfile ='LIST_OF_files.csv') -> list:
     csvfile = os.path.join(dataset, csvfile)
     globsearch = f'{dataset}/data/**/{searchs}'
     if not need_to_update(csvfile):
+        with open(csvfile, 'r') as f:
+            files = f.readlines()
+    else:
         files = glob.glob(globsearch, recursive=True)
         with open(csvfile, 'w') as f:
             f.writelines('\n'.join(files))
@@ -107,7 +110,7 @@ def get_all_sorters_and_tags(dataset, files):
     SUBLATICETAGS = init_sublatsfile()
     for thisfile in tqdm(files):
         if need_to_update(thisfile):
-            SORTERS[thisfile], SUBLATICETAGS[thisfile]=get_sorter_and_sorted_tags(thisfile)
+            SORTERS[thisfile], SUBLATICETAGS[thisfile]=get_sorter_and_sorted_tags(thisfile.strip())
         thisfile_relax = thisfile.replace('-initial','-relaxed').replace('.initial','.relaxed-all')
         if need_to_update(thisfile_relax):
             try:
