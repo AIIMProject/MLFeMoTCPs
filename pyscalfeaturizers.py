@@ -21,7 +21,8 @@ def load_pyscal(thisatoms):
 
 def get_sys_cn(thissys):
     thissys.find_neighbors(method='cutoff', cutoff = 'adaptive')
-    return [atom.coordination for atom in thissys.atoms]
+    result = np.array([atom.coordination for atom in thissys.atoms])
+    return result
 
 def get_sys_steinhardt(thissys):
     thissys.find_neighbors(method='cutoff', cutoff = 0)
