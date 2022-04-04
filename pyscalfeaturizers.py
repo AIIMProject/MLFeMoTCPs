@@ -49,7 +49,6 @@ def featurize_many(AtomsObjects, featurizerlist, colid='atoms'):
     return Features
 
 if __name__=='__main__':
-    sys.path.insert(0, '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/')
     dataset = 'Cr-Co-W'
     AtomsObjects = pd.read_pickle('Cr-Co-W/CrCoW-sorted-POSCAR-initial-rescaled-AtomsObjects.pkl').dropna()
     featurizers = [pyscal_steinhardt, pyscal_cn] #, get_steinhardt]
