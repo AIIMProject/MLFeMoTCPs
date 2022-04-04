@@ -37,32 +37,15 @@ def pyscal_steinhardt(theatoms):
     return get_sys_steinhardt(thesys)
 
 
-def timeit(func):
-    def inner(*args, **kwargs):
-        t1 = time()
-        result = func(*args, **kwargs)
-        print( time() - t1 )
-        return result
-    return inner
-
 def featurize_dataframe(df, colid='atoms', featurizer=pyscal_cn, max_workers=3):
-    cz = int(len(df) / max_workers)
     print(featurizer.__name__)
     Result = process_map(featurizer, (df[colid]),  max_workers = max_workers, chunksize=1)
     return Result
-
-def copyval(string):
-    cpstring = string.strip()
-    return cpstring
 
 def featurize_many(AtomsObjects, featurizerlist, colid='atoms'):
     Features = pd.DataFrame([], index=AtomsObjects.index, columns=[featurizer.__name__ for featurizer in featurizerlist])
     for thisfeaturizer in featurizerlist:
         Features[thisfeaturizer.__name__] = featurize_dataframe(AtomsObjects,featurizer=thisfeaturizer, colid=colid, max_workers=3)
-
-    #Features = {
-    #        thisfeaturizer.__name__: featurize_dataframe(AtomsObjects,featurizer=thisfeaturizer, colid=colid, max_workers=3) for thisfeaturizer in featurizerlist
-    #        }
     return Features
 
 if __name__=='__main__':
@@ -72,5 +55,3 @@ if __name__=='__main__':
     iterable = pd.DataFrame(values, index=values, columns=[ 'value' ])
     results = featurize_many(iterable,  featurizers, colid='value')
     Features = pd.Series(results, index=AtomsObjects.index)
-#    with open('pyscal_features.kpl','wb') as pkl:
-#        pickle.dump(Features, pkl)
