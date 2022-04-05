@@ -37,6 +37,11 @@ def pyscal_steinhardt(theatoms):
     thesys = load_pyscal(theatoms)
     return get_sys_steinhardt(thesys)
 
+def expand_features(_Features, _featurename):
+    ExpandedFeatures = {}
+    for index, Matrix in _Features.iteritems():
+        ExpandedFeatures[index] = {f'{_featurename}_{i}': atomarray for i, atomarray in enumerate(Matrix)}
+    return pd.DataFrame.from_dict(ExpandedFeatures, orient='index')
 
 def featurize_dataframe(df, colid='atoms', featurizer=pyscal_cn, max_workers=3):
     print(featurizer.__name__)
