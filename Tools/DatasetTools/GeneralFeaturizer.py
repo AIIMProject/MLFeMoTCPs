@@ -13,9 +13,10 @@ def cn_average(vectorfeature, coordination): # *args): #iterable, coordinations,
     _, coord = coordination
     natoms = len(atomarray)
     for polyhedra, nneighbours in neighbours.items():
+        average['_0'] = atomarray.sum()/natoms
         average[f'_{polyhedra}'] = atomarray[np.array(coord) == nneighbours].sum()/natoms
     AveragedFeatures  = {index: average}
-    return
+    return AveragedFeatures
 
 def cnaverage_dataframe(_Features, colids, _Coordinations, nworkers = 3):
     result = {}
