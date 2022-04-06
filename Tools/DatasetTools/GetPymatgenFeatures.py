@@ -59,7 +59,7 @@ def load_structure_features(_BS):
 def load_atomic_features(_BS):
     ep_feat = ElementProperty.from_preset(preset_name="magpie")
     result =  ep_feat.featurize_dataframe(_BS, col_id="composition",inplace=False) 
-    result.drop(columns=_BS.columns, inplace=True)
+    #result.drop(columns=_BS.columns, inplace=True)
     return result
 
 def load_density_features(_BS):
@@ -74,11 +74,8 @@ def load_composition_features(_BS):
         IonProperty(),
         Stoichiometry(),
         ElectronegativityDiff(),
-        ElementProperty.from_preset(preset_name='magpie')
+#        ElementProperty.from_preset(preset_name='magpie')
     ]
-    #ED = ElectronegativityDiff().featurize_dataframe(BS, col_id='composition', inplace=False, ignore_errors=True)
-    #Odf = CompositionToOxidComposition().featurize_dataframe(_BS, 'composition', ignore_errors=True)
-    #OS = OxidationStates.featurize_dataframe(Odf, 'composition_oxid')
     result = run_list_of_featurizers(Featurizers, _BS, 'composition')
     return pd.concat(result, axis=1)
 
