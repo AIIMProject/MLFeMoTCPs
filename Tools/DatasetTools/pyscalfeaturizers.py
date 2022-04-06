@@ -3,17 +3,16 @@
 # In[1]:
 
 
+import sys
+import os
 import pyscal as pc
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
-from tqdm.notebook import tqdm_notebook
 from time import time
 import pickle
 import pdb
-tqdm_notebook.pandas()
-
-CNS = {'CN12': 12, 'CN14': 14, 'CN15': 15, 'CN16': 16}
+from tqdm.contrib.concurrent import process_map
 
 def load_pyscal(thisatoms):
     thesys = pc.System()
@@ -22,44 +21,43 @@ def load_pyscal(thisatoms):
 
 def get_sys_cn(thissys):
     thissys.find_neighbors(method='cutoff', cutoff = 'adaptive')
-    return [atom.coordination for atom in thissys.atoms]
+    result = np.array([atom.coordination for atom in thissys.atoms])
+    return result
 
 def get_sys_steinhardt(thissys):
     thissys.find_neighbors(method='cutoff', cutoff = 0)
     thissys.calculate_q([4,6])
     return thissys.get_qvals([4,6])
 
-def get_cn(theatoms):
+def pyscal_cn(theatoms):
     thissys = load_pyscal(theatoms)
     return get_sys_cn(thissys)
 
-def get_steinhardt(theatoms):
+def pyscal_steinhardt(theatoms):
     thesys = load_pyscal(theatoms)
     return get_sys_steinhardt(thesys)
 
-from tqdm.contrib.concurrent import process_map
+def expand_features(_Features, _featurename):
+    ExpandedFeatures = {}
+    for index, Matrix in _Features.iteritems():
+        ExpandedFeatures[index] = {f'{_featurename}_{i}': atomarray for i, atomarray in enumerate(Matrix)}
+    return pd.DataFrame.from_dict(ExpandedFeatures, orient='index')
 
-def timeit(func):
-    def inner(*args, **kwargs):
-        t1 = time()
-        result = func(*args, **kwargs)
-        print( time() - t1 )
-        return result
-    return inner
-
-def featurize_dataframe(df, colid='atoms', featurizer=get_cn, max_workers=3):
-    cz = int(len(df) / max_workers)
+def featurize_dataframe(df, colid='atoms', featurizer=pyscal_cn, max_workers=3):
     print(featurizer.__name__)
-    Result = process_map(featurizer, df[colid],  max_workers = max_workers, chunksize=1)
+    Result = process_map(featurizer, (df[colid]),  max_workers = max_workers, chunksize=1)
     return Result
 
-def featurize_many(AtomsObjects, featurizerlist):
-    Features = {thisfeaturizer.__name__: featurize_dataframe(AtomsObjects,featurizer=thisfeaturizer, max_workers=3) for thisfeaturizer in featurizerlist}
+def featurize_many(AtomsObjects, featurizerlist, colid='atoms'):
+    Features = pd.DataFrame([], index=AtomsObjects.index, columns=[featurizer.__name__ for featurizer in featurizerlist])
+    for thisfeaturizer in featurizerlist:
+        Features[thisfeaturizer.__name__] = featurize_dataframe(AtomsObjects,featurizer=thisfeaturizer, colid=colid, max_workers=3)
     return Features
 
 if __name__=='__main__':
+    dataset = 'Cr-Co-W'
     AtomsObjects = pd.read_pickle('Cr-Co-W/CrCoW-sorted-POSCAR-initial-rescaled-AtomsObjects.pkl').dropna()
-    featurizers = [get_cn, get_steinhardt]
-    Features = featurize_many(AtomsObjects, featurizers)
-    with open('pyscal_features.kpl','wb') as pkl:
-        pickle.dump(Features, pkl)
+    featurizers = [pyscal_steinhardt, pyscal_cn] #, get_steinhardt]
+    pyscal_features = [feature.__name__ for feature in featurizers]
+    FeaturesFile = os.path.join(dataset, 'Descriptors', 'pyscal_features.kpl')
+    Features = featurize_many(AtomsObjects,  featurizers, colid='atoms')
