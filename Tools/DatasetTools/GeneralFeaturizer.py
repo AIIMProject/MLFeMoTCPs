@@ -3,9 +3,12 @@ import pandas as pd
 from tqdm.auto import tqdm
 import pdb
 
-neighbours  = {'CN12': 12, 'CN14': 14, 'CN15': 15, 'CN16': 16}
+neighbours  = {'CN12': 12, 'CN13': 13, 'CN14': 14, 'CN15': 15, 'CN16': 16}
 
 def cn_average(vectorfeature, coordination): # *args): #iterable, coordinations, axis=1):
+    """
+    vectorfeature should be one value per site, the array for one site only should be given
+    """
     average = {}
     index, atomarray = vectorfeature
     _, coord = coordination
