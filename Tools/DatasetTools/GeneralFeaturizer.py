@@ -5,27 +5,46 @@ import pdb
 
 neighbours  = {'CN12': 12, 'CN13': 13, 'CN14': 14, 'CN15': 15, 'CN16': 16}
 
-def cn_average(vectorfeature, coordination): # *args): #iterable, coordinations, axis=1):
+def get_normalization(_normoption, _coincidences, _n):
+    norma_ = len(_coincidences)
+    if _normoption == 'NCP':
+        norma_ = _n  # get_normalization(normalization, coincidences)
+    return norma_
+
+def get_array_average(_array,  _coincidence, _norma):
+    cases = _array[_coincidence]
+    return np.sum(cases)/_norma
+
+def cn_average(vectorfeature, coordination, normalization = 'natoms'): # *args): #iterable, coordinations, axis=1):
     """
     vectorfeature should be one value per site, the array for one site only should be given
+    normaliztion = ['natoms', 'NCP'] where NCP stands for number of vertices in coordination polyhedra.
     """
     average = {}
     index, atomarray = vectorfeature
     _, coord = coordination
-    natoms = len(atomarray)
+    norma = []
+    average['_0'] = np.sum(atomarray)/len(atomarray)
     for polyhedra, nneighbours in neighbours.items():
-        average['_0'] = np.sum(atomarray)/natoms
-        average[f'_{polyhedra}'] = np.array(atomarray)[np.array(coord) == nneighbours].sum()/natoms
+        coincidences = np.array(coord) == nneighbours
+        norma = get_normalization(normalization, coincidences, nneighbours)
+        average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
     AveragedFeatures  = {index: average}
     return AveragedFeatures
 
-def cnaverage_dataframe(_Features, colids, _Coordinations, nworkers = 3):
+def cn_composition(chemicalsymbols, coordination):
+    compo = {}
+    for polyhedra, nneighbours in neighbours.items():
+        count[f'_{polyhedra}'] = chemicalsymbolas[ np.array(coord) == nneighbours ]
+    return count
+
+def cnaverage_dataframe(_Features, colids, _Coordinations, **kwargs):
     result = {}
     progress = tqdm(colids)
     for colid in progress:
         progress.set_description(colid)
         iterator  = zip(_Features[colid].iteritems(), _Coordinations.iteritems())
-        thisresult = [cn_average(atomfeature, atomcoordinations) for atomfeature, atomcoordinations in iterator]
+        thisresult = [cn_average(atomfeature, atomcoordinations, **kwargs) for atomfeature, atomcoordinations in iterator]
         thisresult =  dict(map(dict.popitem, thisresult) )
         result.update({colid: pd.DataFrame.from_dict(thisresult,orient='index' )})
     return  result
