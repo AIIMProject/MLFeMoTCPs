@@ -40,11 +40,32 @@ def cn_composition(_chemicalsymbols, _coordination):
         compo[f'_{polyhedra}'] = np.unique(np.array(chemicalsymbols)[ np.array(coordination) == nneighbours ])
     return {index: compo}
 
-def featurize_dataframe(_Feature, _Coordinations, featurizer=cn_average, **kwargs):
+def featurize_series(_Feature, _Coordinations, featurizer=cn_average, **kwargs):
     iterator  = zip(_Feature.iteritems(), _Coordinations.iteritems())
     thisresult = [featurizer(atomfeature, atomcoordinations, **kwargs) for atomfeature, atomcoordinations in iterator]
     thisresult =  dict(map(dict.popitem, thisresult))
     return pd.DataFrame.from_dict(thisresult,orient='index' )
+
+def featurize_dataframe(_Features, _coordination, featurizer=cn_average, **kwargs):
+    result = []
+    for colid, feature in _Features.iteritems():
+        result.append(featurize_series(feature, _coordination, featurizer, **kwargs))
+        columns = result[-1].columns
+        newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
+        result[-1].columns = newcolumns
+    return pd.concat(result, axis=1)
+        
+
+def featurize_many(_Features, _Coordinations, featurizers=[cn_average], **kwargs):
+    progress = tqdm(featurizers) #,  bar_format='{percentage:3.0f}%|{bar:100}{r_bar}{desc}')
+    result = []
+    for featurizer  in progress:
+        progress.set_description(f'{featurizer.__name__}')
+        result.append(featurize_dataframe(_Features, _Coordinations, featurizer = featurizer))
+        #columns = result[-1].columns
+        #newcolumns = [f'{featurizer.__name__}{thiscol}' for thiscol in columns]
+        #result[-1].columns = newcolumns
+    return pd.concat(result, axis=1)
 
 
 
