@@ -29,7 +29,15 @@ def cn_average(vectorfeature, coordination, normalization = 'natoms', return0 = 
     for polyhedra, nneighbours in neighbours.items():
         coincidences = np.array(coord) == nneighbours
         norma = get_normalization(normalization, coincidences, nneighbours)
-        average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
+        try:
+            average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
+        except:
+            pdb.set_trace()
+            average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
+            pass
+
+
+
     return {index: average}
 
 def cn_composition(_chemicalsymbols, _coordination):
@@ -49,7 +57,13 @@ def featurize_series(_Feature, _Coordinations, featurizer=cn_average, **kwargs):
 def featurize_dataframe(_Features, _coordination, featurizer=cn_average, **kwargs):
     result = []
     for colid, feature in _Features.iteritems():
-        result.append(featurize_series(feature, _coordination, featurizer, **kwargs))
+        try:
+            result.append(featurize_series(feature, _coordination, featurizer, **kwargs))
+        except Exception as E:
+            pdb.set_trace()
+            featurize_series(feature, _coordination, featurizer, **kwargs)
+            pass
+
         columns = result[-1].columns
         newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
         result[-1].columns = newcolumns
