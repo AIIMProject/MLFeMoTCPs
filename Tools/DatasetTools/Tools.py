@@ -79,23 +79,26 @@ class Plotting:
         ax.legend(bbox_to_anchor=[1,1], markerscale=2)
         return figV
 
-    def histoff_realfeatures(DATA, columns, titles, figsize_, ncols = 5):
-        axg = []
-        fig = plt.figure(figsize=figsize_)
-        # remember feature_titles
-        nrows = np.ceil(len(columns)/5).astype(int)
+    def histoff_realfeatures(DATA, columns, titles, figsize_, ncols = 5, fig_ax = None):
+        if fig_ax == None:
+            axg = []
+            nrows = np.ceil(len(columns)/ncols).astype(int)
+            fig = plt.figure(figsize=figsize_) 
+        else: 
+            fig, axg = fig_ax
         feature = []
         for c, col in enumerate(columns):
-            bins, edges = np.histogram(DATA[col], bins=100, density=True)
-            axg.append( fig.add_subplot(nrows, ncols, c+1 ) ) 
-            axg[-1].bar(edges[:-1], bins, color='steelblue',width=np.diff(edges))
-            t = axg[-1].text(0.5, 0.5, titles.iloc[c], fontsize=24 , transform=axg[-1].transAxes)
+            bins, edges = np.histogram(DATA[col], bins=100)#, density=True)
+            if len(axg) < c+1:
+                axg.append( fig.add_subplot(nrows, ncols, c+1 ) ) 
+            axg[c].bar(edges[:-1], bins,width=np.diff(edges)) # color='steelblue'
+            t = axg[c].text(0.5, 0.5, titles.iloc[c], fontsize=24 , transform=axg[c].transAxes)
             t.set_bbox(dict(facecolor='white', alpha=0.75))
-            axg[-1].set_yticks([])
-            axg[-1].set_xticks([])
+            axg[c].set_yticks([])
+            axg[c].set_xticks([])
             feature.append(col)
         fig.subplots_adjust(hspace=0.1, wspace=0.1)
-        return fig
+        return fig, axg
 
     def plot_learning_curve(
             thescores, 
