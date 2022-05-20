@@ -32,7 +32,6 @@ def cn_average(vectorfeature, coordination, normalization = 'natoms', return0 = 
         try:
             average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
         except:
-            pdb.set_trace()
             average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
             pass
 
@@ -102,7 +101,9 @@ def array_expansions(Features, columnstoexpand):
         df[feature] = {}
         for index, compound in Features[feature].iteritems():
             m = np.array(compound)
-            natoms, nm = get_dimensions(m)
+            if len(m.shape) == 1:
+                m = np.vstack([ np.zeros_like(m), m ]).transpose()
+            natoms, nm = m.shape #eget_dimensions(m)
             df[feature][index] = {f'{feature}_{this}' :  m[:,this] for this in range(1,nm)}
         df[feature] = pd.DataFrame.from_dict(df[feature], orient='index')
     return pd.concat(df.values(), axis=1)
