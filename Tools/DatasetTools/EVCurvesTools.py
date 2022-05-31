@@ -145,24 +145,24 @@ def plot_curves_topdf(thecurves: pd.core.series.Series, thefits: pd.core.series.
             plt.close(fig)
 
 def invert_goodness(thegoodness):
-    return goodness.map(lambda d: {key: not value for key, value in d.items()} )
+    return thegoodness.map(lambda d: {key: not value for key, value in d.items()} )
 
 
 
 class Evcurves(object):
 
-    def __init__(self, dataset, atoms = ['Co', 'Ti', 'W'], search_str = '**/volume-energy.dat'):
+    def __init__(self, dataset, Indexes = None,  atoms = ['Co', 'Ti', 'W'], search_str = '**/volume-energy.dat'):
+        self.Indexes = Indexes
         self.dataset = dataset
         self.search_str = search_str
+        self.atoms = atoms
         self.EVFILES = self.load_files_matching()
-        self.Paths = pd.DataFrame(np.vstack(self.EVFILES.str.split('/')))
+        self.Paths = pd.DataFrame(np.vstack(self.EVFILES.str.split('/')), index = self.EVFILES.index)
         self.Roots = pd.Series(
                 self.Paths.iloc[:,:-2].apply(lambda p: '/'.join(p), axis = 1).unique(),
                 name='-'.join(atoms)
                 )
-        self.Index = self.Roots.str.replace('/bulk/','_').str.replace('/volume_relaxed','')
-        self.atoms = atoms
-    
+#        self.Index = self.Roots.str.replace('/bulk/','_').str.replace('/volume_relaxed','')
 
     @staticmethod
     def read_index(theindex):
@@ -197,25 +197,29 @@ class Evcurves(object):
 
     def get_curves_for_params(self, param, curve_files):
         curves = {}
-        try:
+        if len(curve_files) > 0:
+        #    try:
             curves = pd.read_csv(
                     curve_files[curve_files.str.contains(param)].values[0], 
                     sep='\s',
                     header=None)
-        except pd.errors.EmptyDataError as E:
-            curves = pd.DataFrame(np.array([[np.nan]*3]))
-            pass
-        curves = {'V': curves[0].values, 'E': curves[1].values} 
+        #    except pd.errors.EmptyDataError as E:
+        #        curves = pd.DataFrame(np.array([[np.nan]*3]))
+        #        pass
+            curves = {'V': curves[0].values, 'E': curves[1].values} 
         return curves
 
     def get_evcurves(self, Indexes = None, deltaks=None, encuts=None):
         EVCURVES = {}
-        progress = tqdm(Indexes, total=len(Indexes))# 
+        progress = tqdm(self.Indexes, total=len(self.Indexes))# 
         for thisindex in progress:
             progress.set_description(thisindex)
             selection = self.make_selection(thisindex, deltaks[thisindex], encuts[thisindex])
             curve_files = self.EVFILES[selection]
-            params = self.Paths[selection].iloc[:,-2]
+            if self.Paths.shape[1] > 1:
+                params = self.Paths[selection].iloc[:,-2]
+            else:
+                params = pd.Series(['dk']*len(selection))
             EVCURVES[thisindex] ={}
             for param in params.values:
                 EVCURVES[thisindex][param] ={
@@ -224,8 +228,8 @@ class Evcurves(object):
                         }
         return pd.Series(EVCURVES)
 
-    def load_evcurves(self, Indexes = None, deltaks=None, encuts=None):
-        self.evcurves = self.get_evcurves(Indexes, deltaks, encuts)
+    def load_evcurves(self, deltaks=None, encuts=None):
+        self.evcurves = self.get_evcurves(self, deltaks, encuts)
 
     def load_files_matching(self):
         saved_list = os.path.join(self.dataset, 'list_of_outcars.csv')
@@ -236,4 +240,7 @@ class Evcurves(object):
             list_of_files = pd.Series(glob.glob(fullsearchstring,  recursive=True))
             list_of_files.name = 'full_path'
             list_of_files.to_csv(saved_list, header=False, index=False)
-        return list_of_files
+        if len( list_of_files ) > 0:
+            return list_of_files
+        else:
+            return pd.Series(['']*len(self.Indexes), index=self.Indexes)
