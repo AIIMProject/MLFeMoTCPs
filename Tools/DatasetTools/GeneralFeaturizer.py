@@ -29,14 +29,7 @@ def cn_average(vectorfeature, coordination, normalization = 'natoms', return0 = 
     for polyhedra, nneighbours in neighbours.items():
         coincidences = np.array(coord) == nneighbours
         norma = get_normalization(normalization, coincidences, nneighbours)
-        try:
-            average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
-        except:
-            average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
-            pass
-
-
-
+        average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
     return {index: average}
 
 def cn_composition(_chemicalsymbols, _coordination):
