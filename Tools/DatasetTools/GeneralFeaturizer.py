@@ -5,11 +5,16 @@ import pdb
 
 neighbours  = {'CN12': 12, 'CN13': 13, 'CN14': 14, 'CN15': 15, 'CN16': 16}
 
-def get_normalization(_normoption, _coincidences, _n):
+def get_normalization(_normoption, _coincidences):
     norma_ = len(_coincidences)
+    # this is overkill but this works like this. 
+    # if I want to normalize averages over all atoms, len coincidence works.
     if _normoption == 'NCP':
-        norma_ = _n  # get_normalization(normalization, coincidences)
-    return norma_
+    # otherwise, I want to normalize the average tothe number of sites with same CP, I need the 
+    # len of coincidence == true
+        norma_ = len(_coincidences[_coincidences]) # get_normalization(normalization, coincidences)
+    # but if there are no coincidences for this CP, I just return one so the average is not NaN
+    return np.max([1,norma_])
 
 def get_array_average(_array,  _coincidence, _norma):
     cases = _array[_coincidence]
@@ -28,7 +33,7 @@ def cn_average(vectorfeature, coordination, normalization = 'natoms', return0 = 
         average['_0'] = np.sum(atomarray)/len(atomarray)
     for polyhedra, nneighbours in neighbours.items():
         coincidences = np.array(coord) == nneighbours
-        norma = get_normalization(normalization, coincidences, nneighbours)
+        norma = get_normalization(normalization, coincidences)
         average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
     return {index: average}
 
