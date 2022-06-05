@@ -2,8 +2,31 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 import pdb
+import re
 
 neighbours  = {'CN12': 12, 'CN13': 13, 'CN14': 14, 'CN15': 15, 'CN16': 16}
+
+cn_dict = {
+        'A15': [ 'Z14a', 'Z14a', 'Z14a', 'Z14b', 'Z14b', 'Z14b', 'Z12a', 'Z12b' ], 
+        'C14': ['Z16', 'Z16', 'Z16', 'Z16', 'Z12a', 'Z12a', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12b' ],
+        'C15':['Z16', 'Z16', 'Z12', 'Z12', 'Z12', 'Z12'],
+        'C36': ['Z16a', 'Z16a', 'Z16a', 'Z16a', 'Z16b', 'Z16b', 'Z16b', 'Z16b', 'Z12a', 'Z12a', 'Z12a', 'Z12a', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12c', 'Z12c', 'Z12c', 'Z12c', 'Z12c', 'Z12c'  ], 
+        'bcc': ['Z14'],
+        'chi': ['Z16a', 'Z16b', 'Z16b', 'Z16b', 'Z16b', 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z13' , 'Z12' , 'Z12' , 'Z12' , 'Z12' , 'Z12' , 'Z12' , 'Z12' , 'Z12' , 'Z12' , 'Z12' , 'Z12' , 'Z12'], 
+        'fcc': ['Z12'],
+        'hcp': ['Z12','Z12'],
+        'mu': ['Z12a', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z15' , 'Z15' , 'Z16' , 'Z16' , 'Z14' , 'Z14'],
+
+        'sigma': ['Z12a' , 'Z12a' , 'Z15a' , 'Z15a' , 'Z15a' , 'Z15a' , 'Z14a' , 'Z14a' , 'Z14a' , 'Z14a' , 'Z14a' , 'Z14a' , 'Z14a' , 'Z14a' , 'Z12b' , 'Z12b' , 'Z12b' , 'Z12b' , 'Z12b' , 'Z12b' , 'Z12b' , 'Z12b' , 'Z14b' , 'Z14b' , 'Z14b' , 'Z14b' , 'Z14b' , 'Z14b' , 'Z14b' , 'Z14b'  ], 
+        'R': [
+'Z12a', 'Z12b', 'Z12b', 'Z12c', 'Z12c', 'Z12c', 'Z12c', 'Z12c', 'Z12c', 'Z12d', 'Z12d', 'Z12d', 'Z12d', 'Z12d', 'Z12d', 'Z12e', 'Z12e', 'Z12e', 'Z12e', 'Z12e', 'Z12e', 'Z12f', 'Z12f', 'Z12f', 'Z12f', 'Z12f', 'Z12f', 'Z14a', 'Z14a', 'Z14a', 'Z14a', 'Z14a', 'Z14a', 'Z14b', 'Z14b', 'Z14b', 'Z14b', 'Z14b', 'Z14b', 'Z15a', 'Z15a', 'Z15a', 'Z15a', 'Z15a', 'Z15a', 'Z16a', 'Z16a', 'Z16b', 'Z16b', 'Z16b', 'Z16b', 'Z16b', 'Z16b'],
+        'delta': []
+        }
+
+def tags_to_cns(cptaglist):
+    return np.array( [re.sub('[A-Za-z]','', tag) for tag in cptaglist] ).astype(int)
+
+cn_persite = {structure:  tags_to_cns(sites) for structure, sites in cn_dict.items()}
 
 def get_normalization(_normoption, _coincidences):
     norma_ = len(_coincidences)
