@@ -59,7 +59,6 @@ class TestGeneralFeaturizer(unittest.TestCase):
 
     def test_samplec14_has_order(self):
         samplec14order = np.array([12, 12, 16, 16, 16, 16, 12, 12, 12, 12, 12, 12])
-        print(mod.df.sorters[self.test_sample])
         np.testing.assert_equal(samplec14order, mod.df.sitecn[self.test_sample])
         #self.assertSequenceEqual(samplec14order, mod.df.sitecn[self.test_sample])
 
