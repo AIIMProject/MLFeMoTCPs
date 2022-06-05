@@ -72,10 +72,7 @@ def get_sublatticetags_sorted(thisposcarsorted, wheredirect, natoms):
 
 def get_sorter_and_sorted_tags(_thisfile, THISSORTER=None, THISSUBLATICETAGS=None):
     TORETURN = ()
-    try:
-        POSCAR = pd.read_csv(_thisfile, dtype='str', header=None)[0] #, sep='\n'
-    except FileNotFoundError as E:
-        raise E
+    POSCAR = pd.read_csv(_thisfile, dtype='str', header=None)[0] #, sep='\n'
     wheredirect = get_coord_type_line(POSCAR)
     natoms = get_number_of_atoms(POSCAR, wheredirect)
     if THISSORTER is None: # return sorter
