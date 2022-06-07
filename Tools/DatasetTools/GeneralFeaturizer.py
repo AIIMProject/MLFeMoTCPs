@@ -23,10 +23,55 @@ cn_dict = {
         'delta': []
         }
 
+specialphases = ['hcp', 'bcc', 'fcc']
+
 def tags_to_cns(cptaglist):
     return np.array( [re.sub('[A-Za-z]','', tag) for tag in cptaglist] ).astype(int)
 
 cn_persite = {structure:  tags_to_cns(sites) for structure, sites in cn_dict.items()}
+
+def get_relevant_sorters(AtomsObjects, Sorters: pd.core.series.Series):
+    return Sorters[AtomsObjects.file.map(lambda f: f[0])]
+
+def sorting_feature(
+        AtomsObjects: pd.core.frame.DataFrame,
+        Sorters: pd.core.series.Series
+        ):
+    relevantsorters = get_relevant_sorters(AtomsObjects, Sorters)
+    df = {}
+    for index, file in AtomsObjects.file.iteritems():
+        df[index] = {'sorters': np.array(relevantsorters[file[0]]), 'file' : file[0]}
+    return pd.DataFrame.from_dict(df, orient='index')
+
+def correct_sortings_fromphases( 
+    AtomsObjects: pd.core.frame.DataFrame,
+    phase_feature: pd.core.series.Series,
+    sorting_features: pd.core.series.Series
+    ):
+
+    fixed_sorters = sorting_features.copy()
+    samplephase = phase_feature[AtomsObjects.index]
+    sampleinspecial = samplephase.map(lambda p: p in specialphases)
+    fixed_sorters[sampleinspecial] = AtomsObjects.atoms[sampleinspecial].map(lambda a: np.arange(len(a)))
+    return  fixed_sorters.map(lambda s: np.array(s-s.min()))
+
+def get_sitecn(
+        phase_feature: pd.core.series.Series,
+        atoms_objects: pd.core.series.Series, 
+        sorters_feature: pd.core.series.Series, 
+        ):
+    sitecn = {}
+    progress = tqdm(phase_feature.iteritems(), total=phase_feature.shape[0])
+    for index, phase in progress:
+        if phase in specialphases:
+            sitecn[index] = np.tile(cn_persite[phase], len(atoms_objects[index]))
+        elif len(cn_persite[phase] ) == 0:
+            sitecn[index] = []
+        else:
+            sitecn[index] = np.zeros_like(sorters_feature[index])
+            sitecn[index][sorters_feature[index]]  = cn_persite[phase]
+    return pd.Series(sitecn)
+
 
 def get_normalization(_normoption, _coincidences):
     norma_ = len(_coincidences)
