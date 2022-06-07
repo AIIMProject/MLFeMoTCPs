@@ -19,46 +19,26 @@ sublaticesorters.index = sublaticesorters.index.str.strip()
 AtomsObjects = pd.read_pickle(os.path.join(rootlocation, 'Atomsobjects', 'FeMo-POSCAR-initial-rescaled-AtomsObjects.pkl'))
 Features = Featurizer(BS)
 
-# atoms objects have multiple entries in the file list if there is no occupation string in 
-# file name, because they match the search criterial
-# I have to fix the file path so that in those cases, I choose allways the one with min len (no occupation string)
-
-AtomsObjects.file = AtomsObjects.file.map(lambda v: min(v, key=len))
-
-relevantsorters = sublaticesorters[AtomsObjects.file]
-relevanttags = sublaticetags[relevantsorters.index]
+relevantsorters = gf.get_relevant_sorters(AtomsObjects, sublaticesorters)
+df = gf.sorting_feature(AtomsObjects, sublaticesorters)
 
 
-df = {}
-for index, file in AtomsObjects.file.iteritems():
-    df[index] = {'sorters': np.array(relevantsorters[file]), 'sublaticetags': relevanttags[file], 'file' : file}
-df = pd.DataFrame.from_dict(df, orient='index')
+df['sorters'] = gf.correct_sortings_fromphases(AtomsObjects, BS.Phase, df.sorters)
 
-df['CNList'] = df['sublaticetags']
+specialphases = gf.specialphases #['hcp', 'bcc', 'fcc']
 
-specialphases = ['hcp', 'bcc', 'fcc']
+#sitecn = {}
+##import pdb
+#progress = tqdm(BS['Phase'].iteritems(), total=BS.shape[0])
+#for index, phase in progress:
+#    if phase in specialphases:
+#        sitecn[index] = np.tile(gf.cn_persite[phase], len(AtomsObjects.atoms[index]))
+#    elif len(gf.cn_persite[phase] ) == 0:
+#        sitecn[index] = []
+#    else:
+#        sitecn[index] = np.zeros_like(df.sorters[index])
+#        sitecn[index][df.sorters[index]]  = gf.cn_persite[phase]
 
-samplephase = BS['Phase'][df.index]
-
-sampleinspecial = samplephase.map(lambda p: p in specialphases)
-
-df.sorters[sampleinspecial] = AtomsObjects.atoms[sampleinspecial].map(lambda a: np.arange(len(a)))
-
-
-df.sorters = df.sorters.map(lambda s: s-s.min())
-
-sitecn = {}
-#import pdb
-progress = tqdm(BS['Phase'].iteritems(), total=BS.shape[0])
-for index, phase in progress:
-    if phase in specialphases:
-        sitecn[index] = np.tile(gf.cn_persite[phase], len(AtomsObjects.atoms[index]))
-    elif len(gf.cn_persite[phase] ) == 0:
-        sitecn[index] = []
-    else:
-        sitecn[index] = np.zeros_like(df.sorters[index])
-        sitecn[index][df.sorters[index]]  = gf.cn_persite[phase]
-
-df['sitecn'] = pd.Series(sitecn)
+df['CNList'] = gf.get_sitecn(BS.Phase, AtomsObjects.atoms, df.sorters)
 
 
