@@ -1,62 +1,30 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-from importlib.machinery import SourceFileLoader
-import glob
-import pandas as pd
-import pdb
-import os
-import pickle
 import sys
+import os
+sys.path.insert(0, '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/')
+sys.path.insert(1, os.path.dirname(__file__))
+import pandas as pd
+from BopFoxFeaturizer.Featurizer import Featurizer
+from Tools import need_to_update
 from pymatgen.io.ase import AseAtomsAdaptor
-from itertools import product
-# sys.path.insert(0, '/home/users/fortimtb/storage/CuadernoTrabajo/bopfoxfeaturizer/')
-# from BopFoxFeaturizer.brief_summary_parser import irregular_file_parser, StructSummaryParser
-# from BopFoxFeaturizer.parsers import BopFoxParser
 
-from multiprocessing import Pool
-
-    
-def get_parser() -> BopFoxParser:
-    if need_to_update(parsed_file):
-        with open(parsed_file, 'rb') as f:
-            Parsed = pickle.load(f)
-    #    Parsed = pd.read_pickle(parsed_file)
-    else:
-        BSparser = StructSummaryParser()
-        BS = BSparser.BriefSummary
-        Parsed = BopFoxParser(BS)
-        with open(parsed_file,'wb') as f:
-            pickle.dump(Parsed, f)
-    return Parsed
-
-case=['POSCAR-initial', 'POSCAR-relaxed']
-rescale_by_atoms=[True, False]
-subcase = [ 'rescaled' ,  'noscaled' ]
+dataset = 'Fe-Mo'
+case='POSCAR-initial' #, 'POSCAR-relaxed']
+rescale_by_atoms=True #, False]
+subcase = 'rescaled' # ,  'noscaled' ]
 Force= True
-parsed_file = 'parsed_briefsummaries.pkl'
+CuratedBS = os.path.join(dataset,'CuratedParsedBriefSummary.pkl')
+atomsobjectslocation = os.path.join(dataset,'Atomsobjects')
+
+components = dataset.replace('-','')
+
+BS = pd.read_pickle(CuratedBS)
+
+Features = Featurizer(BS)
+
+database = f'{dataset}/**/{case}'
+AtomsFile = os.path.join(atomsobjectslocation,f'{components}-{case}-{subcase}-AtomsObjects.pkl')
+Atoms_Objects, CantMake_Atoms_Object = Features.get_atoms_object(database=database,rescale_by_atoms=True, reset_chemistry=True,file_filter = 'initial$')
+Atoms_Objects.to_pickle(AtomsFile)
+Atoms_Objects.dropna(inplace=True)
 
 
-
-if __name__ == '__main__':
-    Parsed = get_parser()
-
-    for thiscase, (thisrescale, thissubcase) in product(case, zip(rescale_by_atoms, subcase)):
-        database = '**/'+thiscase
-        print (thiscase, thissubcase, thisrescale, database)
-        AtomsFile = 'CrCoW-sorted-'+thiscase+'-'+thissubcase+'-AtomsObjects.pkl'
-        if need_to_update(AtomsFile):  #os.path.exists(AtomsFile) and not Force:
-            Atoms_Objects = pd.read_pickle(AtomsFile)
-        else:
-            Atoms_Objects, CantMake_Atoms_Object = Parsed.get_atoms_object(database=database,rescale_by_atoms=thisrescale, reset_chemistry=True, file_filter = 'sorted')
-            Atoms_Objects.to_pickle(AtomsFile)
-# In[ ]:
-        Atoms_Objects.dropna(inplace=True)
-        pymatgenfile = AtomsFile.replace('AtomsObjects','PymatgenStructures')
-        Pymatgen_Structures = Atoms_Objects.copy()
-        if need_to_update(pymatgenfile):
-            Pymatgen_Structures = pd.read_pickle(pymatgenfile)
-        else:
-            Pymatgen_Structures = Atoms_Objects['atoms'].apply(AseAtomsAdaptor.get_structure)
-            Pymatgen_Structures['file'] = Atoms_Objects['file']
-            Pymatgen_Structures.to_pickle(pymatgenfile)
