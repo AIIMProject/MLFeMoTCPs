@@ -27,18 +27,6 @@ df['sorters'] = gf.correct_sortings_fromphases(AtomsObjects, BS.Phase, df.sorter
 
 specialphases = gf.specialphases #['hcp', 'bcc', 'fcc']
 
-#sitecn = {}
-##import pdb
-#progress = tqdm(BS['Phase'].iteritems(), total=BS.shape[0])
-#for index, phase in progress:
-#    if phase in specialphases:
-#        sitecn[index] = np.tile(gf.cn_persite[phase], len(AtomsObjects.atoms[index]))
-#    elif len(gf.cn_persite[phase] ) == 0:
-#        sitecn[index] = []
-#    else:
-#        sitecn[index] = np.zeros_like(df.sorters[index])
-#        sitecn[index][df.sorters[index]]  = gf.cn_persite[phase]
-
 df['CNList'] = gf.get_sitecn(BS.Phase, AtomsObjects.atoms, df.sorters)
 
 
