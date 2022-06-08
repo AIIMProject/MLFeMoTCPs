@@ -64,7 +64,7 @@ def get_sitecn(
     progress = tqdm(phase_feature.iteritems(), total=phase_feature.shape[0])
     for index, phase in progress:
         if phase in specialphases:
-            sitecn[index] = np.tile(cn_persite[phase], len(atoms_objects[index]))
+            sitecn[index] = np.tile(np.unique(cn_persite[phase]), len(atoms_objects[index]))
         elif len(cn_persite[phase] ) == 0:
             sitecn[index] = []
         else:
