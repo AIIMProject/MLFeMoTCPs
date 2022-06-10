@@ -35,12 +35,14 @@ def get_relevant_sorters(AtomsObjects, Sorters: pd.core.series.Series):
 
 def sorting_feature(
         AtomsObjects: pd.core.frame.DataFrame,
-        Sorters: pd.core.series.Series
+        Sorters: pd.core.series.Series,
+        SublatticeTags: pd.core.series.Series
         ):
     relevantsorters = get_relevant_sorters(AtomsObjects, Sorters)
+    relevanttags = SublatticeTags[relevantsorters.index]
     df = {}
     for index, file in AtomsObjects.file.iteritems():
-        df[index] = {'sorters': np.array(relevantsorters[file[0]]), 'file' : file[0]}
+        df[index] = {'sorters': np.array(relevantsorters[file[0]]), 'sublatticetags': relevanttags[file[0]], 'file' : file[0]}
     return pd.DataFrame.from_dict(df, orient='index')
 
 def correct_sortings_fromphases( 
@@ -54,6 +56,19 @@ def correct_sortings_fromphases(
     sampleinspecial = samplephase.map(lambda p: p in specialphases)
     fixed_sorters[sampleinspecial] = AtomsObjects.atoms[sampleinspecial].map(lambda a: np.arange(len(a)))
     return  fixed_sorters.map(lambda s: np.array(s-s.min()))
+
+def correct_occupation_fromphases(
+        occupation_feature: pd.core.series.Series,
+        phase_feature: pd.core.series.Series,
+        sublattice_feature: pd.core.series.Series,
+        ):
+    fixed_tags = sublattice_feature.copy()
+#    samplephase = phase_feature[sublattice_feature]
+    samplenoocup = occupation_feature[occupation_feature == '']
+    fixed_tags[samplenoocup.index] = sublattice_feature[samplenoocup.index].map(np.unique)
+    return fixed_tags
+
+
 
 def get_sitecn(
         phase_feature: pd.core.series.Series,
