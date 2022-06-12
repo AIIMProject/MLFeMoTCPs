@@ -37,7 +37,7 @@ import pdb
 # In[2]:
 
 
-dataset = 'Fe-Mo'
+dataset = 'Cr-Co-W'
 components = dataset.replace('-','')
 models = ['canonical','projections', 'projections_os']
 cutoff = 'table'
