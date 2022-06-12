@@ -55,17 +55,20 @@ def correct_sortings_fromphases(
     samplephase = phase_feature[AtomsObjects.index]
     sampleinspecial = samplephase.map(lambda p: p in specialphases)
     fixed_sorters[sampleinspecial] = AtomsObjects.atoms[sampleinspecial].map(lambda a: np.arange(len(a)))
+    samplenull = fixed_sorters.map(len)==0
+    fixed_sorters[samplenull] = AtomsObjects.atoms[samplenull].map(lambda a: np.arange(len(a)))
     return  fixed_sorters.map(lambda s: np.array(s-s.min()))
 
 def correct_occupation_fromphases(
-        occupation_feature: pd.core.series.Series,
         phase_feature: pd.core.series.Series,
         sublattice_feature: pd.core.series.Series,
+        AtomsObjects: pd.core.series.Series
         ):
     fixed_tags = sublattice_feature.copy()
 #    samplephase = phase_feature[sublattice_feature]
-    samplenoocup = occupation_feature[occupation_feature == '']
-    fixed_tags[samplenoocup.index] = sublattice_feature[samplenoocup.index].map(np.unique)
+    hasempty = fixed_tags.map(lambda v : '' in v or len(v) == 0)
+    fixed_tags[hasempty] = AtomsObjects.loc[hasempty].map(lambda a: ['A']*len(a))
+
     return fixed_tags
 
 
