@@ -37,7 +37,7 @@ import pdb
 # In[2]:
 
 
-dataset = 'Cr-Co-W'
+dataset = 'Fe-Mo' #'Cr-Co-W'
 components = dataset.replace('-','')
 models = ['canonical','projections', 'projections_os']
 cutoff = 'table'
@@ -71,7 +71,7 @@ def inspect(compound):
 results = {}
 
 for model in models:
-    modelsfile = os.path.join('models', f'{dataset}.bx')
+    modelsfile = os.path.join('models', f'{components}_{model}.bx')
     print('atoms: ', atoms, 'model: ', model, '  cutoff: ', cutoff, ' moments:', moments)
     resultspickle = os.path.join(dataset, 'Descriptors', f'paralell_{components}_{atoms}_{model}_{cutoff}_WUBIND_{moments}.pkl')
     BOPC = BopfoxFeatures(
