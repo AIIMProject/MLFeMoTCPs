@@ -71,8 +71,6 @@ def correct_occupation_fromphases(
 
     return fixed_tags
 
-
-
 def get_sitecn(
         phase_feature: pd.core.series.Series,
         atoms_objects: pd.core.series.Series, 
@@ -130,6 +128,19 @@ def cn_composition(_chemicalsymbols, _coordination):
     for polyhedra, nneighbours in neighbours.items():
         compo[f'_{polyhedra}'] = np.unique(np.array(chemicalsymbols)[ np.array(coordination) == nneighbours ])
     return {index: compo}
+
+def get_shape_factors(
+        BOP: pd.core.frame.DataFrame
+        ) -> pd.core.frame.DataFrame:
+    B1 = BOP.filter(regex='bn_1_.*')
+    B2 = BOP.filter(regex='bn_2_.*')
+    SF = pd.DataFrame([], index=B1.index)
+    for (name, B1CN), (_, B2CN ) in zip(B1.iteritems(), B2.iteritems()):
+        sfname = name.split('_')[-1]
+        VALIDB2 = B2CN != 0
+        SF['sf_'+sfname] = B1CN
+        SF['sf_'+sfname][VALIDB2] = B1CN[VALIDB2] / B2CN[VALIDB2]
+    return SF
 
 def featurize_series(_Feature, _Coordinations, featurizer=cn_average, **kwargs):
     iterator  = zip(_Feature.iteritems(), _Coordinations.iteritems())
