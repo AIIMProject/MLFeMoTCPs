@@ -152,7 +152,7 @@ def featurize_dataframe(_Features, _coordination, featurizer=cn_average, **kwarg
     result = []
     for colid, feature in _Features.iteritems():
         try:
-            result.append(featurize_series(feature, _coordination, featurizer, **kwargs))
+            result.append(featurize_series(feature, _coordination[feature.index], featurizer, **kwargs))
         except Exception as E:
             pdb.set_trace()
             featurize_series(feature, _coordination, featurizer, **kwargs)
