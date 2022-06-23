@@ -1,8 +1,14 @@
-import pdb
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
 import os
+import sys
+import re
+import numpy as np
+import pandas as pd
+import pickle
+import matplotlib.pyplot as plt
+plt.style.use('default')
+plt.rc('figure', figsize=(15,10))
+plt.rc('font', size=22)
+import pdb
 
 def need_to_update(afile):
     result = True
@@ -10,6 +16,8 @@ def need_to_update(afile):
         if os.path.getmtime(afile) > os.path.getmtime(__file__):
             result = False
     return result
+
+
 
 class CaseNamer:
 
