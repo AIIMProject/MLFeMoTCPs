@@ -21,7 +21,14 @@ import glob
 from itertools import permutations
 
 
-def load_atoms_objects(dataset: str):
+# fully curated briefsumary
+def load_fully_curated_briefsummary(dataset: str) -> pd.core.frame.DataFrame:
+    BSFile = os.path.join(f'{dataset}','FullyCuratedParsedBriefSummary.pkl')
+    return pd.read_pickle(BSFile)
+
+
+def load_atoms_objects(dataset: str)-> pd.core.frame.DataFrame:
     system = dataset.replace('-', '')
     atoms_object_location = os.path.join(dataset, 'Atomsobjects', f'{system}-POSCAR-initial-rescaled-AtomsObjects.pkl')
     return pd.read_pickle(atoms_object_location)
+
