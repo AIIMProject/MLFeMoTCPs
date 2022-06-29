@@ -24,6 +24,7 @@ def load_features(dataset: str) -> dict[pd.core.frame.DataFrame]:
     'Canonical BOP': f'curated_{system}_initial_canonical_table_WUBIND_16.pkl',
     'Projections BOP': f'curated_{system}_initial_projections_table_WUBIND_16.pkl',
     'Projections OS BOP': f'curated_{system}_initial_projections_os_table_WUBIND_16.pkl',
+    'Projections sOS BOP': f'curated_{system}_initial_projections_sos_table_WUBIND_16.pkl',
 #'Canonical BOP':'preselected_cnav_canonical_BOPds.pkl',
 #'Projections BOP':'preselected_cnav_projections_BOPds.pkl' ,
 #'Projections OS BOP':'preselected_cnav_projections_os_BOPds.pkl'
