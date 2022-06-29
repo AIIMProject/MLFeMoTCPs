@@ -39,7 +39,7 @@ import pdb
 
 dataset = 'Fe-Mo' #'Cr-Co-W'
 components = dataset.replace('-','')
-models = ['canonical','projections', 'projections_os']
+models = ['canonical','projections', 'projections_os', 'projections_sos']
 cutoff = 'table'
 atoms = 'initial'
 moments = 16
