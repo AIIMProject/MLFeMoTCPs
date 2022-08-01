@@ -9,10 +9,6 @@ import pandas as pd
 import pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
-plt.style.use('default')
-plt.rc('figure', figsize=(15,10))
-plt.rc('font', size=22)
-plt.rc('text', usetex=True)
 import pdb
 from itertools import product
 import copy
