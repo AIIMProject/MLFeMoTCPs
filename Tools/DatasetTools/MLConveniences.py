@@ -16,7 +16,7 @@ from sklearn.neural_network import MLPRegressor
 
 # other conveniences
 
-def load_features(dataset: str) -> dict[pd.core.frame.DataFrame]:
+def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     system = dataset.replace('-', '')
     DescriptorList = {'atomic' : 'matminer_atomic_features.pkl',
     'dataset' : 'DatasetFeatures.pkl',
@@ -48,3 +48,9 @@ def load_recursivity_results_location(dataset: str, restart: bool = False) -> st
     recursivitresultslocation = os.path.join(resultslocation, 'recursivity.pkl')
     return recursivitresultslocation
 
+def add_dataset(name, features:pd.core.frame.DataFrame):
+    if 'BOP' in name and len(features.columns.intersection(Features['dataset'].columns)) < 1:
+        X = Features['dataset'].drop(columns=['Mag'])
+        return pd.concat([X, features], axis=1).dropna()
+    else:
+        return features
