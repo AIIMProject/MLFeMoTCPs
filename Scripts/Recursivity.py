@@ -38,4 +38,6 @@ samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 model = MLPRegressor()
 
-X = Features['Canonical BOP']['an_0']
+X = Features['Canonical BOP']['an_1_0']
+
+model.fit(X, BS['EF'])
