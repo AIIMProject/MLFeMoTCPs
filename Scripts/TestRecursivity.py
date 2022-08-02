@@ -15,10 +15,12 @@ class TestRecursivity(unittest.TestCase):
         pass
 
     def test_an_selection(self):
-        print(mod.X)
+        print(mod.recursion_coefficients_a)
+        print(mod.recursion_coefficients_b)
 
     def test_train_on_an0(self):
-        self.assertGreater(mod.test_score, 0)
+        self.assertGreater(len( mod.test_scores ), 0)
+        print(mod.test_scores)
 
 
 if __name__ == '__main__':

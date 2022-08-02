@@ -26,7 +26,7 @@ allindex = pd.concat(list(Features.values())+[BS], axis=1).dropna().index
 
 Features = {group: feature.loc[allindex] for group, feature in Features.items()}
 
-split_random_state = 42
+split_random_state = 201507
 
 indextrain, indextest = train_test_split(allindex, shuffle=True)
 
@@ -36,8 +36,16 @@ samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 # test fitting only one feature
 
-model = MLPRegressor()
+#model = Pipeline([(  'scaler', StandardScaler()), ('regressor', MLPRegressor() ) ] )
+test_scores = [] 
 
-X = Features['Canonical BOP']['an_1_0']
+recursion_coefficients_a = Features['Projections BOP'].filter( regex='an_[0-9]+_0' )
+recursion_coefficients_b = Features['Projections BOP'].filter( regex='bn_[1-9]+_0' )
 
-model.fit(X, BS['EF'])
+for i in range(recursion_coefficients_a.shape[1]):
+    model = Pipeline([('regressor', DecisionTreeRegressor()) ] )
+    Xa = recursion_coefficients_a.iloc[:, :i+1]
+    Xb = recursion_coefficients_b.iloc[:, :i+1]
+    X = pd.concat([Xa, Xb], axis = 1)
+    model.fit(X.loc[indextrain], BS['EF'][indextrain])
+    test_scores.append(score_fitted_model(model, X.loc[indextrain], X.loc[indextest], BS['EF'].loc[indextrain], BS['EF'][indextest]))
