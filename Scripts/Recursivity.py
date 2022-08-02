@@ -36,16 +36,18 @@ samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 # test fitting only one feature
 
-#model = Pipeline([(  'scaler', StandardScaler()), ('regressor', MLPRegressor() ) ] )
-test_scores = [] 
+test_scores = {}
 
 recursion_coefficients_a = Features['Projections BOP'].filter( regex='an_[0-9]+_0' )
 recursion_coefficients_b = Features['Projections BOP'].filter( regex='bn_[1-9]+_0' )
 
 for i in range(recursion_coefficients_a.shape[1]):
-    model = Pipeline([('regressor', DecisionTreeRegressor()) ] )
+    model = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] )
+   # model = Pipeline([('regressor', RandomForestRegressor(max_depth=30)) ] )
     Xa = recursion_coefficients_a.iloc[:, :i+1]
     Xb = recursion_coefficients_b.iloc[:, :i+1]
     X = pd.concat([Xa, Xb], axis = 1)
     model.fit(X.loc[indextrain], BS['EF'][indextrain])
-    test_scores.append(score_fitted_model(model, X.loc[indextrain], X.loc[indextest], BS['EF'].loc[indextrain], BS['EF'][indextest]))
+    test_scores[i] = score_fitted_model(model, X.loc[indextrain], X.loc[indextest], BS['EF'].loc[indextrain], BS['EF'][indextest])
+
+test_scores = pd.DataFrame.from_dict(test_scores, orient='index')

@@ -19,8 +19,8 @@ class TestRecursivity(unittest.TestCase):
         print(mod.recursion_coefficients_b)
 
     def test_train_on_an0(self):
-        self.assertGreater(len( mod.test_scores ), 0)
-        print(mod.test_scores)
+        self.assertGreater(mod.test_scores.shape[0], 0)
+        print(  mod.test_scores )
 
 
 if __name__ == '__main__':
