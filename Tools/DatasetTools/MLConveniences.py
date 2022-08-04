@@ -16,7 +16,17 @@ from sklearn.neural_network import MLPRegressor
 
 # other conveniences
 
+
+def add_dataset_feature(features: pd.core.frame.DataFrame, datasetfeatures: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
+    """concatenates given dataset features to given features"""
+
+    X = datasetfeatures.drop(columns=['Mag'])
+    return pd.concat([X, features], axis=1).dropna() 
+
+
 def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
+    """loads features from prestablished pickles"""
+
     system = dataset.replace('-', '')
     DescriptorList = {'atomic' : 'matminer_atomic_features.pkl',
     'dataset' : 'DatasetFeatures.pkl',
@@ -25,12 +35,12 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'Projections BOP': f'curated_{system}_initial_projections_table_WUBIND_16.pkl',
     'Projections OS BOP': f'curated_{system}_initial_projections_os_table_WUBIND_16.pkl',
     'Projections sOS BOP': f'curated_{system}_initial_projections_sos_table_WUBIND_16.pkl',
-#'Canonical BOP':'preselected_cnav_canonical_BOPds.pkl',
-#'Projections BOP':'preselected_cnav_projections_BOPds.pkl' ,
-#'Projections OS BOP':'preselected_cnav_projections_os_BOPds.pkl'
     }
+
     DescriptorFileList = {name: os.path.join( f'{dataset}','Descriptors',f'{basename}') for name, basename in DescriptorList.items()}
-    return  {name: pd.read_pickle(filename) for name, filename in DescriptorFileList.items()}
+    Features = {name: pd.read_pickle(filename) for name, filename in DescriptorFileList.items()}
+    Features.update({'dataset + '+name: add_dataset_feature(features, Features['dataset']) for name, features in Features.items() if 'BOP' in name})
+    return  Features
 
 def score_fitted_model(fittedmodel, xtrain,  xtest, ytrain,ytest):
     predict_train = fittedmodel.predict(xtrain)
@@ -48,9 +58,3 @@ def load_recursivity_results_location(dataset: str, restart: bool = False) -> st
     recursivitresultslocation = os.path.join(resultslocation, 'recursivity.pkl')
     return recursivitresultslocation
 
-def add_dataset(name, features:pd.core.frame.DataFrame):
-    if 'BOP' in name and len(features.columns.intersection(Features['dataset'].columns)) < 1:
-        X = Features['dataset'].drop(columns=['Mag'])
-        return pd.concat([X, features], axis=1).dropna()
-    else:
-        return features
