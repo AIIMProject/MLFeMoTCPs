@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from Tools.DatasetTools.MLConveniences import *
 from itertools import product
 
-dataset = 'Cr-Co-W' 
+dataset = 'Fe-Mo' 
 system = dataset.replace('-','')
 components = dataset.split('-')
 
@@ -11,20 +11,12 @@ BS = load_fully_curated_briefsummary(dataset)
 
 resultslocation = load_results_location(dataset)
 
-Features : dict[str, pd.core.frame.DataFrame] = load_features(dataset)
-
-def add_dataset(name, features:pd.core.frame.DataFrame):
-    if 'BOP' in name and len(features.columns.intersection(Features['dataset'].columns)) < 1:
-        X = Features['dataset'].drop(columns=['Mag'])
-        return pd.concat([X, features], axis=1).dropna()
-    else:
-        return features
-
-Features.update({'dataset + '+name: add_dataset(name,features) for name, features in Features.items() if 'BOP' in name})
+Features = load_features(dataset)
 
 allindex = pd.concat(list(Features.values())+[BS], axis=1).dropna().index
 
 Features = {group: feature.loc[allindex] for group, feature in Features.items()}
+target = BS['EF']
 
 split_random_state = 42
 
@@ -34,18 +26,28 @@ samplesplit = {'test': indextest, 'train': indextrain}
 samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 # test fitting only one feature
-test_scores = {}
+test_scores : dict[str,  pd.core.frame.DataFrame ] = {}
 
-recursion_coefficients_a = Features['Projections BOP os'].filter( regex='an_[0-9]+_0' )
-recursion_coefficients_b = Features['Projections BOP os'].filter( regex='bn_[1-9]+_0' )
+progress = tqdm(Features.items())
 
-for i in range(recursion_coefficients_a.shape[1]):
-    model = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] )
-   # model = Pipeline([('regressor', RandomForestRegressor(max_depth=30)) ] )
-    Xa = recursion_coefficients_a.iloc[:, :i+1]
-    Xb = recursion_coefficients_b.iloc[:, :i+1]
-    X = pd.concat([Xa, Xb], axis = 1)
-    model.fit(X.loc[indextrain], BS['EF'][indextrain])
-    test_scores[i] = score_fitted_model(model, X.loc[indextrain], X.loc[indextest], BS['EF'].loc[indextrain], BS['EF'][indextest])
 
-test_scores = pd.DataFrame.from_dict(test_scores, orient='index')
+for group, features in progress:
+
+    if 'BOP' not in group:
+        continue
+
+    recursion_coefficients_a = features.filter( regex='an_[0-9]+_0' )
+    recursion_coefficients_b = features.filter( regex='bn_[1-9]+_0' )
+
+    this_scores : dict[int, list[dict[str, float]]] = {} 
+
+    for i in range(recursion_coefficients_a.shape[1]):
+        model = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] )
+       # model = Pipeline([('regressor', RandomForestRegressor(max_depth=30)) ] )
+        Xa = recursion_coefficients_a.iloc[:, :i+1]
+        Xb = recursion_coefficients_b.iloc[:, :i+1]
+        X = pd.concat([Xa, Xb], axis = 1)
+        model.fit(X.loc[indextrain], BS['EF'][indextrain])
+        this_scores[i] = score_fitted_model(model, X.loc[indextrain], X.loc[indextest], target.loc[indextrain], target.loc[indextest])
+
+    test_scores[group] = pd.DataFrame.from_dict(this_scores,  orient='index')
