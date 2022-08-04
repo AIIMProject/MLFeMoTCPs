@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from Tools.DatasetTools.MLConveniences import *
 from itertools import product
 
-dataset = 'Fe-Mo' 
+dataset = 'Cr-Co-W' 
 system = dataset.replace('-','')
 components = dataset.split('-')
 
@@ -26,20 +26,18 @@ allindex = pd.concat(list(Features.values())+[BS], axis=1).dropna().index
 
 Features = {group: feature.loc[allindex] for group, feature in Features.items()}
 
-split_random_state = 201507
+split_random_state = 42
 
-indextrain, indextest = train_test_split(allindex, shuffle=True)
+indextrain, indextest = train_test_split(allindex, shuffle=True, random_state = split_random_state)
 
 samplesplit = {'test': indextest, 'train': indextrain}
 samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
-
 # test fitting only one feature
-
 test_scores = {}
 
-recursion_coefficients_a = Features['Projections BOP'].filter( regex='an_[0-9]+_0' )
-recursion_coefficients_b = Features['Projections BOP'].filter( regex='bn_[1-9]+_0' )
+recursion_coefficients_a = Features['Projections BOP os'].filter( regex='an_[0-9]+_0' )
+recursion_coefficients_b = Features['Projections BOP os'].filter( regex='bn_[1-9]+_0' )
 
 for i in range(recursion_coefficients_a.shape[1]):
     model = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] )

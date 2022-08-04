@@ -13,11 +13,6 @@ class TestRecursivity(unittest.TestCase):
     @classmethod
     def setUp(cls):
         pass
-
-    def test_an_selection(self):
-        print(mod.recursion_coefficients_a)
-        print(mod.recursion_coefficients_b)
-
     def test_train_on_an0(self):
         self.assertGreater(mod.test_scores.shape[0], 0)
         print(  mod.test_scores )
