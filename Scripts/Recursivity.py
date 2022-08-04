@@ -3,6 +3,9 @@ from sklearn.model_selection import train_test_split
 from Tools.DatasetTools.MLConveniences import *
 from itertools import product
 
+def  RecursivityTest():
+
+    def  init():
 dataset = 'Fe-Mo' 
 system = dataset.replace('-','')
 components = dataset.split('-')
