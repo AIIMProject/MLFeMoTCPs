@@ -2,55 +2,75 @@ from Tools.DatasetTools.Commoms import *
 from sklearn.model_selection import train_test_split
 from Tools.DatasetTools.MLConveniences import *
 from itertools import product
+from tqdm.auto import tqdm
 
-def  RecursivityTest():
+class  Dataset():
 
-    def  init():
-dataset = 'Fe-Mo' 
-system = dataset.replace('-','')
-components = dataset.split('-')
+    def  __init__(self, dataset:str ='Fe-Mo'):
+        """initiate the dataset
+        arguments
+        =========
+        dataset: str 'Fe-Mo'
 
-BS = load_fully_curated_briefsummary(dataset)
+        """
 
-resultslocation = load_results_location(dataset)
+        self.dataset = dataset
+        self.system = dataset.replace('-','')
+        self.components = dataset.split('-')
 
-Features = load_features(dataset)
+        self.BS = load_fully_curated_briefsummary(dataset)
 
-allindex = pd.concat(list(Features.values())+[BS], axis=1).dropna().index
+        self.resultslocation = load_results_location(dataset)
 
-Features = {group: feature.loc[allindex] for group, feature in Features.items()}
-target = BS['EF']
+        self.Features = load_features(dataset)
 
-split_random_state = 42
+        self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
 
-indextrain, indextest = train_test_split(allindex, shuffle=True, random_state = split_random_state)
+        self.Features = {group: feature.loc[self.allindex] for group, feature in self.Features.items()}
+        self.target = self.BS['EF']
 
-samplesplit = {'test': indextest, 'train': indextrain}
-samplelocation = os.path.join(dataset, 'samplesplit.pkl')
+        split_random_state = 42
+
+        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state)
+
+        self.samplesplit = {'test': indextest, 'train': indextrain}
+#        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
+
+    def make_recursivity_anbn(self, 
+            model: RegressorMixin  = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] )
+           ):
+
+        test_scores : dict[str,  pd.core.frame.DataFrame ] = {}
+
+        progress = tqdm(self.Features.items())
+
+        indextrain = self.samplesplit['train']
+        indextest = self.samplesplit['test']
+
+        for group, features in progress:
+
+            if 'BOP' not in group:
+                continue
+
+            recursion_coefficients_a = features.filter( regex='an_[0-9]+_0' )
+            recursion_coefficients_b = features.filter( regex='bn_[1-9]+_0' )
+
+            this_scores : dict[int, list[dict[str, float]]] = {} 
+
+            for i in range(recursion_coefficients_a.shape[1]):
+                Xa = recursion_coefficients_a.iloc[:, :i+1]
+                Xb = recursion_coefficients_b.iloc[:, :i+1]
+                X = pd.concat([Xa, Xb], axis = 1)
+                model.fit(X.loc[indextrain], self.target[indextrain])
+                this_scores[i] = score_fitted_model(model, X.loc[indextrain], X.loc[indextest], self.target.loc[indextrain], self.target.loc[indextest])
+
+            test_scores[group] = pd.DataFrame.from_dict(this_scores,  orient='index')
+
+        self.test_scores = test_scores
 
 # test fitting only one feature
-test_scores : dict[str,  pd.core.frame.DataFrame ] = {}
 
-progress = tqdm(Features.items())
+if __name__ == '__main__':
+    DS = Dataset()
 
-
-for group, features in progress:
-
-    if 'BOP' not in group:
-        continue
-
-    recursion_coefficients_a = features.filter( regex='an_[0-9]+_0' )
-    recursion_coefficients_b = features.filter( regex='bn_[1-9]+_0' )
-
-    this_scores : dict[int, list[dict[str, float]]] = {} 
-
-    for i in range(recursion_coefficients_a.shape[1]):
-        model = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] )
-       # model = Pipeline([('regressor', RandomForestRegressor(max_depth=30)) ] )
-        Xa = recursion_coefficients_a.iloc[:, :i+1]
-        Xb = recursion_coefficients_b.iloc[:, :i+1]
-        X = pd.concat([Xa, Xb], axis = 1)
-        model.fit(X.loc[indextrain], BS['EF'][indextrain])
-        this_scores[i] = score_fitted_model(model, X.loc[indextrain], X.loc[indextest], target.loc[indextrain], target.loc[indextest])
-
-    test_scores[group] = pd.DataFrame.from_dict(this_scores,  orient='index')
+#
