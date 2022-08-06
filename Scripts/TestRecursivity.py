@@ -26,10 +26,19 @@ class TestRecursivity(unittest.TestCase):
 
 
     def test_cvsearch(self):
-        params = {'regressor__hidden_layer_sizes': [ (100,) , (33, 3), (20, 5), (10, 10)]}
+        params = {
+                'regressor__hidden_layer_sizes': [ (10, 20), (20,10), (33, 3), (20, 5)], 
+                'regressor__alpha': [1e-4, 1e-6 , 1e-2],
+                'regressor__learning_rate': [ 'constant', 'adaptive'],
+                'regressor__learning_rate_init': [1e-3, 1e-4, 1e-5, 1e-1],
+                'regressor__max_iter': [10000],
+                }
         estimator = mod.Pipeline([('scaler', mod.StandardScaler()), ('regressor', mod.MLPRegressor())])
-        self.DS.cvsearch(estimator, params)
+        self.DS.cvsearch(estimator, params, vsearch_random_state=23192)
         print(self.DS.cv_test_scores)
+        for name, params in self.DS.best_params.items():
+            print(name, params)
+
 
 if __name__ == '__main__':
     unittest.main()

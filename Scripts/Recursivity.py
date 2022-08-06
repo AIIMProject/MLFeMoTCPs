@@ -6,7 +6,7 @@ from tqdm.auto import tqdm
 
 class  Dataset():
 
-    def  __init__(self, dataset:str ='Fe-Mo'):
+    def  __init__(self, dataset:str ='Fe-Mo', split_random_state=42):
         """initiate the dataset
         arguments
         =========
@@ -17,32 +17,26 @@ class  Dataset():
         self.dataset = dataset
         self.system = dataset.replace('-','')
         self.components = dataset.split('-')
-
         self.BS = load_fully_curated_briefsummary(dataset)
-
         self.resultslocation = load_results_location(dataset)
-
         self.Features = load_features(dataset)
-
         self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
-
         self.Features = {group: feature.loc[self.allindex] for group, feature in self.Features.items()}
         self.target = self.BS['EF']
-
-        split_random_state = 42
-
         indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state)
-
         self.samplesplit = {'test': indextest, 'train': indextrain}
+        self.split_random_state = split_random_state
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 
     def train_test_split(self, name:str)-> tuple[pd.core.frame.DataFrame,pd.core.frame.DataFrame,pd.core.series.Series,pd.core.series.Series]:
         xtrain = self.Features[name].loc[self.samplesplit['train']]
         xtest = self.Features[name].loc[self.samplesplit['test']]
-        ytrain = self.target.loc[self.samplesplit['train']]
-        ytest = self.target.loc[self.samplesplit['test']]
-        return xtrain, xtest, ytrain, ytest
+        if not hasattr(self, 'ytrain'):
+            self.ytrain = self.target.loc[self.samplesplit['train']]
+        if not hasattr(self, 'ytest'):
+            self.ytest = self.target.loc[self.samplesplit['test']]
+        return xtrain, xtest, self.ytrain, self.ytest
 
 
     def make_recursivity_anbn(self, 
@@ -79,17 +73,22 @@ class  Dataset():
 
 
 
-    def cvsearch(self, model: RegressorMixin, params: dict[str, list]):
+    def cvsearch(self, model: RegressorMixin, params: dict[str, list], vsearch_random_state=42):
 
         cvscores = {}
         cv_test_scores = {}
-        cvaler = GridSearchCV(model,params,scoring = 'neg_mean_squared_error', cv = 5,verbose=1, return_train_score=True)
+        cv_best_params = {}
+
+        cvaler = GridSearchCV(model,params,scoring = 'neg_mean_squared_error', cv = 5,verbose=1, return_train_score=True, n_jobs=4)
         for name, features in self.Features.items():
             xtrain, xtest, ytrain, ytest = self.train_test_split(name)
             cvaler.fit(xtrain, ytrain)
             cvscores[name] = pd.DataFrame.from_dict( cvaler.cv_results_, orient = 'index' )
             cv_test_scores[name] =score_fitted_model(cvaler, xtrain, xtest, ytrain, ytest)
+            cv_best_params[name] =cvaler.best_params_
         self.cv_test_scores = pd.DataFrame.from_dict(cv_test_scores, orient='index')
+        self.cv_test_scores.sort_values('test', inplace=True, ascending=False)
+        self.best_params = cv_best_params
 
 
 
