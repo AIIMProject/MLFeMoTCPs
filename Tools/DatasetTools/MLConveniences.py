@@ -13,6 +13,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.linear_model import Lasso
 from sklearn.neural_network import MLPRegressor
+from sklearn.base import RegressorMixin
 
 # other conveniences
 
@@ -48,6 +49,7 @@ def score_fitted_model(fittedmodel, xtrain,  xtest, ytrain,ytest):
     return {'test': mean_squared_error(ytest, predict_test, squared = False), 'train':mean_squared_error(ytrain, predict_train, squared = False)}
 
 def load_results_location(dataset:str) -> str:
+    """simply makes the results location"""
     resultslocation = os.path.join(dataset, 'results')
     if not os.path.exists(resultslocation):
         os.makedirs(resultslocation)
