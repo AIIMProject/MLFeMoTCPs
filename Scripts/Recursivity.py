@@ -68,6 +68,20 @@ class  Dataset():
 
         self.test_scores = test_scores
 
+    def cvsearch(self, model: RegressorMixin, params: dict[str, list]):
+
+        cvscores = {}
+        cv_test_scores = {}
+        cvaler = GridSearchCV(model,params,scoring = 'neg_root_mean_square', cv = 5,verbose=1, return_train_score=True)
+        for name, features in self.Features.items():
+            cvaler.fit(features.loc[samplesplit['train']], self.target[samplesplit[test]])
+            cvscores[name] = pd.DataFrame( cvaler.cv_results_, orient = 'index' )
+
+
+
+
+
+
 # test fitting only one feature
 
 if __name__ == '__main__':

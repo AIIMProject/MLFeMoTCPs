@@ -26,6 +26,11 @@ class TestRecursivity(unittest.TestCase):
 
 
     def test_cvsearch():
+        params = {
+                'mlpregressor': {'hidden_layers_sizes': [ (100,) , (33, 3), (20, 5), (10, 10)]}
+                }
+        estimator = Pipeline([('scaler', mod.StandardScaler()), ('regressor', mod.MLPRegressor())])
+        model = mod.GridSearchCV(estimator, params, scoring = 'neg_mean_squared_error',return_train_score=True)
 
 
 if __name__ == '__main__':
