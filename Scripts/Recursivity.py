@@ -36,6 +36,15 @@ class  Dataset():
         self.samplesplit = {'test': indextest, 'train': indextrain}
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
+
+    def train_test_split(self, name:str)-> tuple[pd.core.frame.DataFrame,pd.core.frame.DataFrame,pd.core.series.Series,pd.core.series.Series]:
+        xtrain = self.Features[name].loc[self.samplesplit['train']]
+        xtest = self.Features[name].loc[self.samplesplit['test']]
+        ytrain = self.target.loc[self.samplesplit['train']]
+        ytest = self.target.loc[self.samplesplit['test']]
+        return xtrain, xtest, ytrain, ytest
+
+
     def make_recursivity_anbn(self, 
             model: RegressorMixin  = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] )
            ):
@@ -68,14 +77,19 @@ class  Dataset():
 
         self.test_scores = test_scores
 
+
+
     def cvsearch(self, model: RegressorMixin, params: dict[str, list]):
 
         cvscores = {}
         cv_test_scores = {}
-        cvaler = GridSearchCV(model,params,scoring = 'neg_root_mean_square', cv = 5,verbose=1, return_train_score=True)
+        cvaler = GridSearchCV(model,params,scoring = 'neg_mean_squared_error', cv = 5,verbose=1, return_train_score=True)
         for name, features in self.Features.items():
-            cvaler.fit(features.loc[samplesplit['train']], self.target[samplesplit[test]])
-            cvscores[name] = pd.DataFrame( cvaler.cv_results_, orient = 'index' )
+            xtrain, xtest, ytrain, ytest = self.train_test_split(name)
+            cvaler.fit(xtrain, ytrain)
+            cvscores[name] = pd.DataFrame.from_dict( cvaler.cv_results_, orient = 'index' )
+            cv_test_scores[name] =score_fitted_model(cvaler, xtrain, xtest, ytrain, ytest)
+        self.cv_test_scores = pd.DataFrame.from_dict(cv_test_scores, orient='index')
 
 
 
