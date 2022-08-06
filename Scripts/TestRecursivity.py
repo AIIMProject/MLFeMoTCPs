@@ -5,7 +5,7 @@ currentlocation = os.path.dirname(__file__)
 projectroot = os.path.dirname(currentlocation)
 sys.path.insert(0, currentlocation)
 sys.path.insert(1, projectroot)
-import Recursivity as mod
+from Tools.DatasetTools import DatasetOperator as mod
 
 
 class TestRecursivity(unittest.TestCase):
