@@ -12,7 +12,7 @@ class TestRecursivity(unittest.TestCase):
 
     @classmethod
     def setUp(cls):
-        cls.DS = mod.Dataset(dataset='Cr-Co-W')
+        cls.DS = mod.Dataset(dataset='Fe-Mo')
 
     def  test_thekeys(self):
         print(self.DS.Features.keys())

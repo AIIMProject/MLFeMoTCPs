@@ -23,12 +23,26 @@ class  Dataset():
         self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
         self.Features = {group: feature.loc[self.allindex] for group, feature in self.Features.items()}
         self.target = self.BS['EF']
-        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state)
-        self.samplesplit = {'test': indextest, 'train': indextrain}
+        self.samplesplit = self.load_indexsplit(split_random_state)
         self.split_random_state = split_random_state
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 
+    def  read_samplesplit(location):
+        with open(location, 'rb') as pkl:
+            saved_split_random_state = pickle.load(pkl)
+            savedsamplesplit = pickle.load(pkl)
+        return saved_split_random_state, savedsamplesplit
+
+    def  load_indexsplit(self, split_random_state):
+        indexsplitloc = os.path.join(self.dataset, 'samplsplit.pkl')
+        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state)
+        samplesplit = {'test': indextest, 'train': indextrain}
+        with open(indexsplitloc, 'wb') as pkl:
+            pickle.dump(split_random_state, pkl)
+            pickle.dump(samplesplit, pkl)
+        return samplesplit
+        
     def train_test_split(self, name:str)-> tuple[pd.core.frame.DataFrame,pd.core.frame.DataFrame,pd.core.series.Series,pd.core.series.Series]:
         xtrain = self.Features[name].loc[self.samplesplit['train']]
         xtest = self.Features[name].loc[self.samplesplit['test']]
