@@ -6,7 +6,10 @@ from tqdm.auto import tqdm
 
 class  Dataset():
 
-    def  __init__(self, dataset:str ='Fe-Mo', split_random_state=42):
+    def  __init__(
+            self,
+            dataset:str ='Fe-Mo', 
+            target_name : str = 'EF'):
         """initiate the dataset
         arguments
         =========
@@ -22,11 +25,22 @@ class  Dataset():
         self.Features = load_features(dataset)
         self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
         self.Features = {group: feature.loc[self.allindex] for group, feature in self.Features.items()}
-        self.target = self.BS['EF']
-        self.samplesplit = self.load_indexsplit(split_random_state)
-        self.split_random_state = split_random_state
+        self.Features.update({
+            name: add_dataset_feature(features, self.Features['dataset'][['Mag', 'Structure']]) for name, features in self.Features.items()
+            })
+        self.target_name = target_name
+        self.target = self.BS[target_name]
+        self.resultslocation = load_results_location(self.dataset)
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
+
+    def __str__(self):
+        if not hasattr(self, 'description'):
+            self.description  =  f'dataset: {self.dataset}\n'
+            self.description  += f'Features: \n{[name for name in self.Features.keys()]}\n'
+            self.description += f'number of samples: {len(self.allindex)}\n'
+            self.description += f'results location: {self.resultslocation}\n'
+        return self.description 
 
     def  read_samplesplit(location):
         with open(location, 'rb') as pkl:
@@ -44,6 +58,8 @@ class  Dataset():
         return samplesplit
         
     def train_test_split(self, name:str)-> tuple[pd.core.frame.DataFrame,pd.core.frame.DataFrame,pd.core.series.Series,pd.core.series.Series]:
+        if not hasattr(self, 'samplesplit'):
+            samplesplit = self.get_samplesplit()
         xtrain = self.Features[name].loc[self.samplesplit['train']]
         xtest = self.Features[name].loc[self.samplesplit['test']]
         if not hasattr(self, 'ytrain'):
@@ -53,8 +69,16 @@ class  Dataset():
         return xtrain, xtest, self.ytrain, self.ytest
 
 
+    def get_samplesplit(self, split_random_state: int=42,) -> dict[str, pd.core.indexes.base.Index]:
+        self.samplesplit = self.load_indexsplit(split_random_state)
+        self.split_random_state = split_random_state
+        return self.samplesplit
+
+
     def make_recursivity_anbn(self, 
-            model: RegressorMixin  = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] )
+            model: RegressorMixin  = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] ),
+            includemag : bool = False, 
+            includestruc : bool = False
            ):
 
         test_scores : dict[str,  pd.core.frame.DataFrame ] = {}
@@ -64,13 +88,23 @@ class  Dataset():
         indextrain = self.samplesplit['train']
         indextest = self.samplesplit['test']
 
+        theregexa = 'an_[0-9]+_0' 
+        theregexb = 'bn_[1-9]+_0' 
+        if includemag:
+            theregexa+='|Mag'
+            theregexb+='|Mag'
+        if includestruc:
+            theregexa+='|Struc'
+            theregexb+='|Struc'
+
+
         for group, features in progress:
 
             if 'BOP' not in group:
                 continue
 
-            recursion_coefficients_a = features.filter( regex='an_[0-9]+_0' )
-            recursion_coefficients_b = features.filter( regex='bn_[1-9]+_0' )
+            recursion_coefficients_a = features.filter( regex=theregexa)
+            recursion_coefficients_b = features.filter( regex=theregexb)
 
             this_scores : dict[int, list[dict[str, float]]] = {} 
 
@@ -103,6 +137,30 @@ class  Dataset():
         self.cv_test_scores = pd.DataFrame.from_dict(cv_test_scores, orient='index')
         self.cv_test_scores.sort_values('test', inplace=True, ascending=False)
         self.best_params = cv_best_params
+
+
+
+class DatasetTester(object):
+
+    @staticmethod
+    def learn_vs_split_rs(
+            DataSet: Dataset,
+            model: RegressorMixin  = Pipeline([('regressor', RandomForestRegressor())] ),
+            RandomStates: list[int] = [42, 201203, 72015, 121180]
+            ):
+
+        scores  = {}
+        for rs in RandomStates:
+            samplesplit = DataSet.get_samplesplit(split_random_state=RandomStates[0])
+            for name, feature in DataSet.Features.items():
+                xtrain, xtest, ytrain, ytest = DataSet.train_test_split(name)
+                model.fit(xtrain, ytrain)
+                scores[(rs,  name )]=score_fitted_model(model, xtrain, xtest, ytrain, ytest)
+
+        return pd.DataFrame.from_dict(scores, orient='index').sort_values(by='test', ascending=False)\
+                .sort_index(level=0)
+
+
 
 
 

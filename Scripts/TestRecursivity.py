@@ -34,6 +34,7 @@ class TestRecursivity(unittest.TestCase):
                 'regressor__max_iter': [10000],
                 }
         estimator = mod.Pipeline([('scaler', mod.StandardScaler()), ('regressor', mod.MLPRegressor())])
+        samplesplit = self.DS.get_samplesplit()
         self.DS.cvsearch(estimator, params, vsearch_random_state=23192)
         print(self.DS.cv_test_scores)
         for name, params in self.DS.best_params.items():
