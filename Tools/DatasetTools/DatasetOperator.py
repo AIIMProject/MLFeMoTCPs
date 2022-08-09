@@ -31,6 +31,11 @@ class  Dataset():
         self.target_name = target_name
         self.target = self.BS[target_name]
         self.resultslocation = load_results_location(self.dataset)
+        Sym, Struc, Mag = np.transpose([ s.split('.') for s in self.allindex ]).tolist()
+        self.Sym = pd.Series(Sym, index=self.allindex) 
+        self.Struc = pd.Series(Struc, index=self.allindex) 
+        self.StrucNames = self.Struc.map(lambda s: s.split('-')[0])
+        
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 
@@ -50,7 +55,7 @@ class  Dataset():
 
     def  load_indexsplit(self, split_random_state):
         indexsplitloc = os.path.join(self.dataset, 'samplsplit.pkl')
-        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state)
+        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state, stratify=self.StrucNames)
         samplesplit = {'test': indextest, 'train': indextrain}
         with open(indexsplitloc, 'wb') as pkl:
             pickle.dump(split_random_state, pkl)
@@ -142,6 +147,9 @@ class  Dataset():
 
 class DatasetTester(object):
 
+    def __init__(self):
+        self.RandomStates: list[int] = [42, 201203, 72015, 121180]
+
     @staticmethod
     def learn_vs_split_rs(
             DataSet: Dataset,
@@ -150,7 +158,8 @@ class DatasetTester(object):
             ):
 
         scores  = {}
-        for rs in RandomStates:
+        progress = tqdm(RandomStates)
+        for rs in progress:
             samplesplit = DataSet.get_samplesplit(split_random_state=RandomStates[0])
             for name, feature in DataSet.Features.items():
                 xtrain, xtest, ytrain, ytest = DataSet.train_test_split(name)
