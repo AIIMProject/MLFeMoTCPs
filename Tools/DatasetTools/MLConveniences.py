@@ -21,9 +21,19 @@ from sklearn.base import RegressorMixin
 def add_dataset_feature(features: pd.core.frame.DataFrame, datasetfeatures: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
     """concatenates given dataset features to given features"""
 
-    X = datasetfeatures.drop(columns=['Mag'])
-    return pd.concat([X, features], axis=1).dropna() 
+    X = features.copy()
+    for cname, cdata in datasetfeatures.iteritems():
+        if cname not in features.columns:
+            X = pd.concat([ cdata, X], axis = 1)
+    return X
+#    X = datasetfeatures.drop(columns=['Mag'])
+#    return pd.concat([X, features], axis=1).dropna() 
 
+def  add_mag(features: pd.core.frame.DataFrame, magfeature: pd.core.series.Series):
+    if not 'Mag' in features.columns:
+        return pd.concat([magfeature, features], axis=1).dropna()
+    else:
+        return features
 
 def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     """loads features from prestablished pickles"""
