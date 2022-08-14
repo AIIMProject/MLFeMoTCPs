@@ -9,7 +9,8 @@ class  Dataset():
     def  __init__(
             self,
             dataset:str ='Fe-Mo', 
-            target_name : str = 'EF'):
+            target_name : str = 'EF',
+            selectphase = None):
         """initiate the dataset
         arguments
         =========
@@ -21,6 +22,8 @@ class  Dataset():
         self.system = dataset.replace('-','')
         self.components = dataset.split('-')
         self.BS = load_fully_curated_briefsummary(dataset)
+        if selectphase is not None:
+            self.BS = self.BS[self.BS['Phase'] == selectphase]
         self.resultslocation = load_results_location(dataset)
         self.Features = load_features(dataset)
         self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
@@ -29,12 +32,9 @@ class  Dataset():
             name: add_dataset_feature(features, self.Features['dataset'][['Mag', 'Structure']]) for name, features in self.Features.items()
             })
         self.target_name = target_name
-        self.target = self.BS[target_name]
+        self.target = self.BS[target_name].loc[self.allindex]
         self.resultslocation = load_results_location(self.dataset)
-        Sym, Struc, Mag = np.transpose([ s.split('.') for s in self.allindex ]).tolist()
-        self.Sym = pd.Series(Sym, index=self.allindex) 
-        self.Struc = pd.Series(Struc, index=self.allindex) 
-        self.StrucNames = self.Struc.map(lambda s: s.split('-')[0])
+        self.StructureNames = self.BS['Phase'].loc[self.allindex]
         
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
@@ -55,7 +55,7 @@ class  Dataset():
 
     def  load_indexsplit(self, split_random_state):
         indexsplitloc = os.path.join(self.dataset, 'samplsplit.pkl')
-        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state, stratify=self.StrucNames)
+        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state, stratify=self.StructureNames)
         samplesplit = {'test': indextest, 'train': indextrain}
         with open(indexsplitloc, 'wb') as pkl:
             pickle.dump(split_random_state, pkl)
@@ -79,6 +79,12 @@ class  Dataset():
         self.split_random_state = split_random_state
         return self.samplesplit
 
+    def get_folds(self, split_random_state: int=42, nfolds = 5):
+        from sklearn.model_selection import StratifiedKFold
+        self.nfolds = nfolds
+        folder = StratifiedKFold(n_splits=self.nfolds)
+        folds = folder.split(self.allindex, self.StructureNames)
+        return folds
 
     def make_recursivity_anbn(self, 
             model: RegressorMixin  = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] ),
