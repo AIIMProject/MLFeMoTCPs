@@ -6,6 +6,7 @@ projectroot = os.path.dirname(currentlocation)
 sys.path.insert(0, currentlocation)
 sys.path.insert(1, projectroot)
 from Tools.DatasetTools import DatasetOperator as mod
+from sklearn.kernel_ridge import KernelRidge
 
 
 class TestRecursivity(unittest.TestCase):
@@ -26,14 +27,16 @@ class TestRecursivity(unittest.TestCase):
 
 
     def test_cvsearch(self):
-        params = {
-                'regressor__hidden_layer_sizes': [ (10, 20), (20,10), (33, 3), (20, 5)], 
-                'regressor__alpha': [1e-4, 1e-6 , 1e-2],
-                'regressor__learning_rate': [ 'constant', 'adaptive'],
-                'regressor__learning_rate_init': [1e-3, 1e-4, 1e-5, 1e-1],
-                'regressor__max_iter': [10000],
-                }
-        estimator = mod.Pipeline([('scaler', mod.StandardScaler()), ('regressor', mod.MLPRegressor())])
+        #        params = {
+        #                'regressor__hidden_layer_sizes': [ (10, 20), (20,10), (33, 3), (20, 5)], 
+        #                'regressor__alpha': [1e-4, 1e-6 , 1e-2],
+        #                'regressor__learning_rate': [ 'constant', 'adaptive'],
+        #                'regressor__learning_rate_init': [1e-3, 1e-4, 1e-5, 1e-1],
+        #                'regressor__max_iter': [10000],
+        #                }
+        params = {'regressor__alpha': [1, 0.1, 0.01], 'regressor__kernel': ['polynomial' ], 'regressor__degree':[2,3,4,5]}
+        estimator = mod.Pipeline([( 'scaler', mod.StandardScaler() ), ('regressor', KernelRidge())])
+#        estimator = mod.Pipeline([('scaler', mod.StandardScaler()), ('regressor', mod.MLPRegressor())])
         samplesplit = self.DS.get_samplesplit()
         self.DS.cvsearch(estimator, params, vsearch_random_state=23192)
         print(self.DS.cv_test_scores)
