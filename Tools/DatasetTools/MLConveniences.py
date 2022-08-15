@@ -3,6 +3,8 @@ import sys
 import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.svm import SVR
 from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict, GridSearchCV
 from math import sqrt
 from sklearn.metrics import r2_score, mean_squared_error
