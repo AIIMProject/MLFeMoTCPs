@@ -94,7 +94,9 @@ class  Dataset():
 
         test_scores : dict[str,  pd.core.frame.DataFrame ] = {}
 
-        progress = tqdm(self.Features.items())
+        NOS = [0, 1 ,2 ,3 , 4]
+
+        progress = tqdm(product(self.Features.items(), NOS), total=len(NOS)*len(self.Features))
 
         indextrain = self.samplesplit['train']
         indextest = self.samplesplit['test']
@@ -108,8 +110,9 @@ class  Dataset():
             theregexa+='|Struc'
             theregexb+='|Struc'
 
+        test_scores : dict[int, list[dict[str, float]]] = {} 
 
-        for group, features in progress:
+        for (group, features), N0 in progress:
 
             if 'BOP' not in group:
                 continue
@@ -117,37 +120,37 @@ class  Dataset():
             recursion_coefficients_a = features.filter( regex=theregexa)
             recursion_coefficients_b = features.filter( regex=theregexb)
 
-            this_scores : dict[int, list[dict[str, float]]] = {} 
-
-            for i in range(recursion_coefficients_a.shape[1]):
-                Xa = recursion_coefficients_a.iloc[:, :i+1]
-                Xb = recursion_coefficients_b.iloc[:, :i+1]
+            for i in range(N0, recursion_coefficients_a.shape[1]):
+                order = 2*i+1
+                Xa = recursion_coefficients_a.iloc[:,  N0:i+1]
+                Xb = recursion_coefficients_b.iloc[:,N0:i+1]
                 X = pd.concat([Xa, Xb], axis = 1)
                 model.fit(X.loc[indextrain], self.target[indextrain])
-                this_scores[i] = score_fitted_model(model, X.loc[indextrain], X.loc[indextest], self.target.loc[indextrain], self.target.loc[indextest])
+                test_scores[(group, N0, order)] = score_fitted_model(
+                        model, X.loc[indextrain], X.loc[indextest], self.target.loc[indextrain], self.target.loc[indextest]
+                        )
 
-            test_scores[group] = pd.DataFrame.from_dict(this_scores,  orient='index')
+        test_scores = pd.DataFrame.from_dict(test_scores,  orient='index')
 
         self.test_scores = test_scores
 
 
 
-    def cvsearch(self, model: RegressorMixin, params: dict[str, list], vsearch_random_state=42):
 
-        cvscores = {}
-        cv_test_scores = {}
-        cv_best_params = {}
-
-        cvaler = GridSearchCV(model,params,scoring = 'neg_mean_squared_error', cv = 5,verbose=1, return_train_score=True, n_jobs=4)
-        for name, features in self.Features.items():
-            xtrain, xtest, ytrain, ytest = self.train_test_split(name)
-            cvaler.fit(xtrain, ytrain)
-            cvscores[name] = pd.DataFrame.from_dict( cvaler.cv_results_, orient = 'index' )
-            cv_test_scores[name] =score_fitted_model(cvaler, xtrain, xtest, ytrain, ytest)
-            cv_best_params[name] =cvaler.best_params_
-        self.cv_test_scores = pd.DataFrame.from_dict(cv_test_scores, orient='index')
-        self.cv_test_scores.sort_values('test', inplace=True, ascending=False)
-        self.best_params = cv_best_params
+#        cvscores = {}
+#        cv_test_scores = {}
+#        cv_best_params = {}
+#
+#        cvaler = GridSearchCV(model,params,scoring = 'neg_mean_squared_error', cv = 5,verbose=1, return_train_score=True, n_jobs=4)
+#        for name, features in self.Features.items():
+#            xtrain, xtest, ytrain, ytest = self.train_test_split(name)
+#            cvaler.fit(xtrain, ytrain)
+#            cvscores[name] = pd.DataFrame.from_dict( cvaler.cv_results_, orient = 'index' )
+#            cv_test_scores[name] =score_fitted_model(cvaler, xtrain, xtest, ytrain, ytest)
+#            cv_best_params[name] =cvaler.best_params_
+#        self.cv_test_scores = pd.DataFrame.from_dict(cv_test_scores, orient='index')
+#        self.cv_test_scores.sort_values('test', inplace=True, ascending=False)
+#        self.best_params = cv_best_params
 
 
 
