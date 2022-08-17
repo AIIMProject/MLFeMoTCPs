@@ -18,15 +18,15 @@ class TestRecursivity(unittest.TestCase):
     def  test_thekeys(self):
         print(self.DS.Features.keys())
 
-#    def test_train_on_an0(self):
-#        model = mod.Pipeline([('regressor', mod.RandomForestRegressor())])
-#        self.DS.make_recursivity_anbn()
-#        for group, scores in self.DS.test_scores.items():
-#            print(group)
-#            print(scores)
+    def test_train_on_an0(self):
+        model = mod.Pipeline([('regressor', mod.RandomForestRegressor())])
+        self.DS.make_recursivity_anbn()
+        for group, scores in self.DS.test_scores.items():
+            print(group)
+            print(scores)
 
 
-    def test_cvsearch(self):
+    def no_test_cvsearch(self):
         #        params = {
         #                'regressor__hidden_layer_sizes': [ (10, 20), (20,10), (33, 3), (20, 5)], 
         #                'regressor__alpha': [1e-4, 1e-6 , 1e-2],
