@@ -121,10 +121,10 @@ class  Dataset():
             recursion_coefficients_b = features.filter( regex=theregexb)
 
             for i in range(N0, recursion_coefficients_a.shape[1]):
-                order = 2*i+1
+                order = 2*(i+1)
                 Xa = recursion_coefficients_a.iloc[:,  N0:i+1]
-                Xb = recursion_coefficients_b.iloc[:,N0:i+1]
-                X = pd.concat([Xa, Xb], axis = 1)
+                Xb = recursion_coefficients_b.iloc[:, N0:i+1]
+                X = pd.concat([features['Mag'], Xa, Xb], axis = 1)
                 model.fit(X.loc[indextrain], self.target[indextrain])
                 test_scores[(group, N0, order)] = score_fitted_model(
                         model, X.loc[indextrain], X.loc[indextest], self.target.loc[indextrain], self.target.loc[indextest]
