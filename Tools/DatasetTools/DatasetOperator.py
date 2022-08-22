@@ -86,20 +86,78 @@ class  Dataset():
         folds = folder.split(self.allindex, self.StructureNames)
         return folds
 
-    def make_recursivity_anbn(self, 
+
+
+
+
+#        cvscores = {}
+#        cv_test_scores = {}
+#        cv_best_params = {}
+#
+#        cvaler = GridSearchCV(model,params,scoring = 'neg_mean_squared_error', cv = 5,verbose=1, return_train_score=True, n_jobs=4)
+#        for name, features in self.Features.items():
+#            xtrain, xtest, ytrain, ytest = self.train_test_split(name)
+#            cvaler.fit(xtrain, ytrain)
+#            cvscores[name] = pd.DataFrame.from_dict( cvaler.cv_results_, orient = 'index' )
+#            cv_test_scores[name] =score_fitted_model(cvaler, xtrain, xtest, ytrain, ytest)
+#            cv_best_params[name] =cvaler.best_params_
+#        self.cv_test_scores = pd.DataFrame.from_dict(cv_test_scores, orient='index')
+#        self.cv_test_scores.sort_values('test', inplace=True, ascending=False)
+#        self.best_params = cv_best_params
+
+
+from sklearn.model_selection import _search 
+
+class DatasetTester(object):
+
+    def __init__(self):
+        self.RandomStates: list[int] = [42, 201203, 72015, 121180]
+
+    @staticmethod
+    def learn_vs_split_rs(
+            DataSet: Dataset,
+            model: RegressorMixin  = Pipeline([('regressor', RandomForestRegressor())] ),
+            RandomStates: list[int] = [42, 201203, 72015, 121180]
+            ):
+        """learn on the input dataset , different train test splits  by changin the random states.
+        Parameters:
+            DataSet: Dataset , Dataset object including Features and targets
+            model : a regressor model , possibly a pipeline (with fit and  predict methods)
+        """
+
+        scores  = {}
+        progress = tqdm(RandomStates)
+        for rs in progress:
+            samplesplit = DataSet.get_samplesplit(split_random_state=RandomStates[0])
+            for name, feature in DataSet.Features.items():
+                xtrain, xtest, ytrain, ytest = DataSet.train_test_split(name)
+                model.fit(xtrain, ytrain)
+                scores[(rs,  name )]=score_fitted_model(model, xtrain, xtest, ytrain, ytest)
+
+        return pd.DataFrame.from_dict(scores, orient='index').sort_values(by='test', ascending=False)\
+                .sort_index(level=0)
+
+
+    def make_recursivity_anbn_onefeature(self, 
+            DS: Dataset, 
+            featurename, 
             model: RegressorMixin  = Pipeline([(  'scaler', MinMaxScaler()), ('regressor', MLPRegressor() ) ] ),
             includemag : bool = False, 
             includestruc : bool = False
            ):
-
+        """
+        Make recursivity test
+        """
         test_scores : dict[str,  pd.core.frame.DataFrame ] = {}
 
         NOS = [0, 1 ,2 ,3 , 4]
 
-        progress = tqdm(product(self.Features.items(), NOS), total=len(NOS)*len(self.Features))
+        Features = DS.Features[featurename]
+#        progress = tqdm(product(DS.Features.items(), NOS), total=len(NOS)*len(DS.Features))
+        progress = tqdm(product([( featurename, Features )], NOS), total=len(NOS))
 
-        indextrain = self.samplesplit['train']
-        indextest = self.samplesplit['test']
+        indextrain = DS.samplesplit['train']
+        indextest = DS.samplesplit['test']
 
         theregexa = 'an_[0-9]+_0' 
         theregexb = 'bn_[1-9]+_0' 
@@ -125,64 +183,50 @@ class  Dataset():
                 Xa = recursion_coefficients_a.iloc[:,  N0:i+1]
                 Xb = recursion_coefficients_b.iloc[:, N0:i+1]
                 X = pd.concat([features['Mag'], Xa, Xb], axis = 1)
-                model.fit(X.loc[indextrain], self.target[indextrain])
-                test_scores[(group, N0, order)] = score_fitted_model(
-                        model, X.loc[indextrain], X.loc[indextest], self.target.loc[indextrain], self.target.loc[indextest]
+                model.fit(X.loc[indextrain], DS.target[indextrain])
+                test_scores[(N0, order)] = score_fitted_model(
+                        model, X.loc[indextrain], X.loc[indextest], DS.target.loc[indextrain], DS.target.loc[indextest]
                         )
 
-        test_scores = pd.DataFrame.from_dict(test_scores,  orient='index')
+#        test_scores = pd.DataFrame.from_dict(test_scores,  orient='index')
 
-        self.test_scores = test_scores
+        return  test_scores
 
-
-
-
-#        cvscores = {}
-#        cv_test_scores = {}
-#        cv_best_params = {}
-#
-#        cvaler = GridSearchCV(model,params,scoring = 'neg_mean_squared_error', cv = 5,verbose=1, return_train_score=True, n_jobs=4)
-#        for name, features in self.Features.items():
-#            xtrain, xtest, ytrain, ytest = self.train_test_split(name)
-#            cvaler.fit(xtrain, ytrain)
-#            cvscores[name] = pd.DataFrame.from_dict( cvaler.cv_results_, orient = 'index' )
-#            cv_test_scores[name] =score_fitted_model(cvaler, xtrain, xtest, ytrain, ytest)
-#            cv_best_params[name] =cvaler.best_params_
-#        self.cv_test_scores = pd.DataFrame.from_dict(cv_test_scores, orient='index')
-#        self.cv_test_scores.sort_values('test', inplace=True, ascending=False)
-#        self.best_params = cv_best_params
-
-
-
-class DatasetTester(object):
-
-    def __init__(self):
-        self.RandomStates: list[int] = [42, 201203, 72015, 121180]
+    def  make_recursivity_anbn(self,DS: Dataset, FittedModels: dict[tuple, _search.GridSearchCV ], kwargs):
+        test_scores = {}
+        for (model, feature), fittedmodel in FittedModels.items():
+            if 'BOP' not in feature:
+                continue
+            thisscores = self.make_recursivity_anbn_onefeature(DS, feature, FittedModels[(model, feature)].best_estimator_, **kwargs)
+            test_scores.update({(model, feature)+key: val for key, val in thisscores.items() })
+        return pd.DataFrame.from_dict(test_scores, orient='index')
 
     @staticmethod
-    def learn_vs_split_rs(
-            DataSet: Dataset,
-            model: RegressorMixin  = Pipeline([('regressor', RandomForestRegressor())] ),
-            RandomStates: list[int] = [42, 201203, 72015, 121180]
-            ):
-
-        scores  = {}
-        progress = tqdm(RandomStates)
-        for rs in progress:
-            samplesplit = DataSet.get_samplesplit(split_random_state=RandomStates[0])
-            for name, feature in DataSet.Features.items():
-                xtrain, xtest, ytrain, ytest = DataSet.train_test_split(name)
-                model.fit(xtrain, ytrain)
-                scores[(rs,  name )]=score_fitted_model(model, xtrain, xtest, ytrain, ytest)
-
-        return pd.DataFrame.from_dict(scores, orient='index').sort_values(by='test', ascending=False)\
-                .sort_index(level=0)
-
-
-
-
-
-
+    def  plot_recursivity_curve(recursivity_scores: pd.core.frame.DataFrame, modelname:str):
+        from matplotlib.lines import Line2D
+        lines = {'Canonical BOP':'red', 'Projections BOP':'blue', 'Projections OS BOP':'green'}
+        markers = {0: 'o', 1: 's', 2:'d', 3:'^', 4:'+'}#, 5:'P', 6:'*'}
+        symbols = { 'recursion coeficients':r'$\langle a_n \rangle$ , $ \langle b_n \rangle$'}
+        fig, axes = plt.subplots()
+        modelname = 'Kernel Ridge'
+        for group in lines.keys():
+            for n0 in recursivity_scores.index.get_level_values(2).unique():
+                if n0>3:
+                    continue
+                axes.plot(
+                        recursivity_scores.loc[(modelname, group, n0)]['test'],'o-',
+                        markersize=10 , marker = markers[n0], color=lines[group],markeredgecolor='k'
+                        )
+        line_labels = {key: Line2D([], [], ls='-', color=value) for key, value in lines.items()}
+        handles_labels = {
+                key: Line2D([], [], color='k', marker=markers[key]) for key in recursivity_scores.index.get_level_values(2).unique()
+                }
+        axes.legend(handles = list(line_labels.values())+list(handles_labels.values()), labels=list(line_labels.keys())+list(handles_labels.keys()),
+                      loc='right', bbox_to_anchor=[1.35,0.5], title=symbols['recursion coeficients']+'+Mag, KRR')
+        axes.set_xlabel('number of features')
+        axes.set_ylabel(r'test RMSE @ $\Delta E_f$')
+        return fig, axes
+        
 
 
 # test fitting only one feature
