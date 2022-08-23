@@ -14,14 +14,16 @@ class TestRecursivity(unittest.TestCase):
     @classmethod
     def setUp(cls):
         cls.DS = mod.Dataset(dataset='Fe-Mo')
+        samplesplit = cls.DS.get_samplesplit()
 
     def  test_thekeys(self):
         print(self.DS.Features.keys())
 
     def test_train_on_an0(self):
         model = mod.Pipeline([('regressor', mod.RandomForestRegressor())])
-        self.DS.make_recursivity_anbn()
-        for group, scores in self.DS.test_scores.items():
+        Tester = mod.DatasetTester()
+        test_scores = Tester.make_recursivity_anbn( self.DS, model, includemag = True, )
+        for group, scores in test_scores.items():
             print(group)
             print(scores)
 

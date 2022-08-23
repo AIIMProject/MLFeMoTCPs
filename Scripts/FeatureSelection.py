@@ -6,6 +6,8 @@ from Tools.DatasetTools.DatasetOperator  import Dataset
 from Tools.DatasetTools.Commoms import *
 from Tools.DatasetTools.MLConveniences import *
 from colorama import Fore, Style
+from importlib.machinery import SourceFileLoader
+FC = SourceFileLoader('FC', '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/BopFoxFeaturizer/FeatureConcatenate.py').load_module().FeatureConcatenate
 
 DS = Dataset('Fe-Mo')
 
@@ -38,11 +40,13 @@ def wrapselection(DS: Dataset, estimator: RegressorMixin, params: dict[str, obje
     for featurename, thisfeature in Features.items():
         print(Fore.RED + featurename+'=========================='+Style.RESET_ALL)
         folds = list(DS.get_folds())
-        selector = RFECV(estimator, cv=folds, scoring = 'neg_root_mean_squared_error', verbose = 1, n_jobs=3, importance_getter='named_steps.regressor.feature_importances_' )
+        selector = RFECV(estimator, cv=folds, scoring = 'neg_root_mean_squared_error', n_jobs=3, importance_getter='named_steps.regressor.feature_importances_' )
         selector.fit(thisfeature, DS.target)
         FittedModels[featurename] = selector
-        break
     return FittedModels
+
+
+def myfeatureselection():
 
 if __name__=='__main__':
     FittedModels = wrapselection(DS, estimator, params)
