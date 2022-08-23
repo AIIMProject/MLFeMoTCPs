@@ -35,6 +35,10 @@ class  Dataset():
         self.target = self.BS[target_name].loc[self.allindex]
         self.resultslocation = load_results_location(self.dataset)
         self.StructureNames = self.BS['Phase'].loc[self.allindex]
+        rs = np.random.RandomState(np.random.MT19937(np.random.SeedSequence(42)))
+        randomfeatures = np.random.rand(self.target.shape[0])
+        for feature in self.Features.values():
+            feature['random'] = randomfeatures
         
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
