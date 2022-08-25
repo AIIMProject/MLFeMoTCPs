@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
+from scipy.spatial import ConvexHull
+
 plt.style.use('default')
 plt.rc('figure', figsize=(15,10))
 plt.rc('font', size=22)
@@ -130,6 +132,48 @@ class Plotting:
                 t.set_bbox(dict(facecolor='white', alpha=0.5))
 #        plt.savefig(FileNames.get_plot_filename('LearningCurve', modelname))
         return ax
+
+
+    @staticmethod
+    def  get_x_ef_points(PhaseBS: dict[str, pd.core.frame.DataFrame], components:list[str]):
+
+        points = {
+                phase: bs.filter(regex='EF|'+components[0]).values
+                for phase, bs in PhaseBS.items() 
+                }
+        return points
+
+    @classmethod
+    def get_convex_hulls(cls,
+            PhaseBS: dict[str, pd.core.frame.DataFrame], 
+            components: list[str],
+            viewpoint : list[float] = [0.5, -1] ,
+            return_points = False
+            ):
+        """
+        finds 2d convex hulls for the compositions saved in a dictionary as 
+        {phase: BriefSummary}
+
+        Arguments:
+        ==========
+        PhasesBS: {phase: BriefSummary for phase in BriefSummary['Phases'].unique()}
+        components: list of components of the system (atoms symbols)
+        viewpoint: defines point from which the visible facets are visible. 
+        """
+        chulls = {}
+        points = cls.get_x_ef_points(PhaseBS, components)
+
+        for (phase, bs ), x_ef in zip(PhaseBS.items(), points.values()):
+            thispoints = x_ef[bs['nelem']<3 ]
+            withviewp = np.vstack([thispoints, viewpoint])
+            chulls[phase] = ConvexHull(withviewp, qhull_options=f'QG{len(withviewp)-1}')
+
+        if return_points:
+            return chulls, points
+        else:
+            return chulls
+
+
 
      
 
