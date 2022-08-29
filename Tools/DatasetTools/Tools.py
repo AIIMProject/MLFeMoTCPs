@@ -19,6 +19,25 @@ def need_to_update(afile):
             result = False
     return result
 
+def get_str_formatted(featurename: str):
+    featurename = featurename.replace('normed_moments', r'\hat{\mu}')
+    featurename = featurename.replace('U_bond_atom_list_1', r'U_bond')
+    featurename = featurename.replace('moments', r'\mu')
+    featurename = featurename.replace('sigma', r'\sigma')
+    featurename = featurename.replace('MagpieData mode','')
+    featurename = featurename.replace('Fe_pv','X_Fe')
+    featurename = featurename.replace('pyscal_','')
+    featurename = featurename.replace('sf_', 'sf__')
+    parts = featurename.split('_')
+    if len(parts) == 2:
+        formatted_name = rf'${parts[0]}_{{{parts[1]}}}$'
+    elif len(parts) >= 3:
+        formatted_name = rf'$\langle {parts[0]}_{{{parts[1]}}} \rangle _{{{parts[2]}}} $'
+    else:
+        formatted_name = featurename
+    pass
+    return formatted_name
+    
 
 
 class CaseNamer:
