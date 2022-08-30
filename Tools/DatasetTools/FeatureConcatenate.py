@@ -340,7 +340,7 @@ class FeatureConcatenate(object):
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from DatasetOperator import Dataset 
-from MLConveniences import score_fitted_model
+from MLConveniences import score_fitted_model, cross_val_score
 import copy
 
 class NewFeatureConcatenate():
