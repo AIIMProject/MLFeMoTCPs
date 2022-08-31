@@ -212,7 +212,6 @@ class DatasetTester(object):
         markers = {0: 'o', 1: 's', 2:'d', 3:'^', 4:'+'}#, 5:'P', 6:'*'}
         symbols = { 'recursion coeficients':r'$\langle a_n \rangle$ , $ \langle b_n \rangle$'}
         fig, axes = plt.subplots()
-        modelname = 'Kernel Ridge'
         for group in lines.keys():
             for n0 in recursivity_scores.index.get_level_values(2).unique():
                 if n0>3:

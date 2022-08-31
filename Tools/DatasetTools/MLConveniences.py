@@ -1,6 +1,7 @@
 import os
 import sys
 import pandas as pd
+import numpy as np
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.kernel_ridge import KernelRidge
@@ -16,6 +17,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.linear_model import Lasso
 from sklearn.neural_network import MLPRegressor
 from sklearn.base import RegressorMixin
+from matplotlib.ticker import FormatStrFormatter
 
 # other conveniences
 
@@ -72,3 +74,39 @@ def load_recursivity_results_location(dataset: str, restart: bool = False) -> st
     recursivitresultslocation = os.path.join(resultslocation, 'recursivity.pkl')
     return recursivitresultslocation
 
+def collect_best_scores(FittedModels: dict[tuple, RegressorMixin]):
+    best_scores = {}
+    for key, fittedmodel in FittedModels.items():
+        results = pd.DataFrame.from_dict(fittedmodel.cv_results_).sort_values(by='mean_test_score', ascending=False)[['mean_test_score', 'mean_train_score']]
+        best_scores[key] = {'test': np.abs(results['mean_test_score']).min(), 'train':np.abs(results['mean_train_score']).min() }
+    best_scores = pd.DataFrame.from_dict(best_scores, orient='index')
+    best_scores.index = pd.MultiIndex.from_tuples(best_scores.index)
+    best_scores.sort_values(by='test', ascending=True, inplace=True)
+    best_scores.sort_index(level=0, sort_remaining=False, ascending=True, inplace=True)
+    return best_scores
+
+def get_importances(estimator, features, target):
+    allimportances = permutation_importance(estimator,features, target, scoring = 'neg_root_mean_squared_error', )
+    importances = pd.DataFrame(data = allimportances['importances_mean'],columns=['importances_mean'], index = features.columns) #, 'importances_std']]
+    importances.sort_values(by='importances_mean', inplace=True)
+    return importances
+
+def mywrap(text:str): 
+    newtext = text.replace('+', '+\n')
+    return newtext
+
+def plot_best_scores(best_scores: pd.core.frame.DataFrame, ModelName='Kernel Ridge'):
+    unstack = best_scores.unstack(level=0).sort_values(by=('test',ModelName), ascending = False)
+    ax = ( unstack*1000 ).plot.bar()
+    xlabels = ax.get_xticklabels()
+    newlabels = [l.get_text().replace('Pyscal','Steinhardt') for l in xlabels]
+    newlabels = [l.replace('+','+\n') for l in newlabels]
+    newlabels = [l.replace('atomic','Matminer') for l in newlabels]
+    newlabels = [l.replace('dataset','polyhedra') for l in newlabels]
+    ax.set_xticklabels(newlabels)
+    ax.tick_params(axis='y', which = 'minor')
+    ax.yaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
+    ax.yaxis.set_major_formatter(FormatStrFormatter("%.0f"))
+    ax.set_yscale('log')
+    ax.set_ylabel(r'test RMSE@$\Delta E_f$ (meV/at)')
+    return ax
