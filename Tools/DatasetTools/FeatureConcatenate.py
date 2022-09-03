@@ -18,11 +18,13 @@ from copy import deepcopy
 # debug:
 import pdb
 # tqdm for progress bars:
-from tqdm import tqdm
+from tqdm.auto import tqdm
+from tqdm.contrib.concurrent import process_map
 # from tqdm import tqdm
 import os.path
 import re
 import warnings
+import time
 warnings.filterwarnings('ignore')
 """
 This module contains some functions to process datasets and generate regressions.
@@ -351,28 +353,38 @@ class NewFeatureConcatenate():
         self.samplesplit = dataset.get_samplesplit()
         self.model_params = model_params
 
-    def  get_best_features_list(self, groupname, num_features = 2):
+    def  get_best_features_list(self, groupname, num_features = 2, max_workers=1):
         feature_list = pd.DataFrame()
         while len(feature_list) < num_features:
-            this_best_feature = self.get_best_feature(groupname, feature_list.index.tolist())
+            this_best_feature = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers)
             feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
         return feature_list
 
-    def get_best_feature(self, groupname: str, fixed_features = []) -> list[str]:
-        scores = {}
-        xtrain, xtest, ytrain,  ytest = self.DS.train_test_split(groupname)
-        inspect_features = self.DS.Features[groupname].columns 
-        progress = tqdm(inspect_features.difference(fixed_features))
-        
-        for feature in progress:
-            if feature in fixed_features:
-                continue
-            progress.set_description(f'fitting {feature}')
-            thismodel = copy.deepcopy(self.model)
-            thismodel.set_params(**self.model_params)
-            thismodel.fit(xtrain[fixed_features + [ feature ]], ytrain)
-            scores[feature] = score_fitted_model(thismodel, xtrain[fixed_features + [ feature ]], xtest[fixed_features + [ feature ]], ytrain, ytest)
+    def train_fixed_plus_try(self, feature):
+        if feature in self.fixed_features:
+            return None
+        thismodel = copy.deepcopy(self.model)
+        thismodel.set_params(**self.model_params)
+        thismodel.fit(self.xtrain[self.fixed_features + [ feature ]], self.ytrain)
+        score =  score_fitted_model(
+                thismodel, 
+                self.xtrain[self.fixed_features + [ feature ]], 
+                self.xtest[self.fixed_features + [ feature ]], 
+                self.ytrain, 
+                self.ytest
+                )
+        return {feature: score}
+
+    def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 1) -> list[str]:
+        self.fixed_features = fixed_features
+        self.xtrain, self.xtest, self.ytrain,  self.ytest = self.DS.train_test_split(groupname)
+        inspect_features : pd.core.index.Index = self.DS.Features[groupname].columns 
+        try_feature_list = inspect_features.difference(self.fixed_features)
+        t1 = time.time()
+        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers)
+        t2 = time.time()
+        scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         scores.sort_values(by='test', inplace=True)
-        print(scores.iloc[[0],:])
+        print(scores.iloc[[0],:], np.round(t2-t1, 2))
         return scores.loc[scores.index[[0]]]
