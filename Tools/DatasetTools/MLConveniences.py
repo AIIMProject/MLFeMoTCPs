@@ -43,8 +43,12 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     """loads features from prestablished pickles"""
 
     system = dataset.replace('-', '')
-    DescriptorList = {'atomic' : 'matminer_atomic_features.pkl',
+    DescriptorList = {
+    'atomic' : 'matminer_atomic_features.pkl',
     'dataset' : 'DatasetFeatures.pkl',
+    'SOAP_canonicalFe': 'soap_features__canonicalFe__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
+    'SOAP_canonicalW': 'soap_features__canonicalW__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
+    'SOAP_specific': 'soap_features__specific__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
     'Pyscal' : 'CNAVPyscal.pkl',
     'Canonical BOP': f'curated_{system}_initial_canonical_table_WUBIND_16.pkl',
     'Projections BOP': f'curated_{system}_initial_projections_table_WUBIND_16.pkl',
