@@ -8,22 +8,30 @@ class  Dataset():
 
     def  __init__(
             self,
-            dataset:str ='Fe-Mo', 
-            target_name : str = 'EF',
-            selectphase = None):
+            dataset:str         ='Fe-Mo', 
+            target_name : str   = 'EF',
+            selectPhase         = None, 
+            selectMag   : str   = None
+            ):
         """initiate the dataset
         arguments
         =========
         dataset: str 'Fe-Mo'
-
+        target_name: str , one of the columns of BS, pref a DFT value (EF, E, B0, V0)
+        selectPhase: weather to chunk BS to phase (select a phase)
+        selectMag: wether to chunk a BS to a magnetic case (select magnetic)
         """
 
         self.dataset = dataset
         self.system = dataset.replace('-','')
         self.components = dataset.split('-')
         self.BS = load_fully_curated_briefsummary(dataset)
-        if selectphase is not None:
+        if selectPhase is not None:
             self.BS = self.BS[self.BS['Phase'] == selectphase]
+        if selectMag is not None:
+            if ( 'FM' != selectMag ) & ( 'NM' != selectMag ):
+                raise ValueError(" selectMag option can only be 'FM' or 'NM' ")
+            self.BS = self.BS[self.BS.index.str.contains(selectMag+'$', regex=True)]
         self.resultslocation = load_results_location(dataset)
         self.Features = load_features(dataset)
         self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
