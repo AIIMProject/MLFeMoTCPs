@@ -17,7 +17,7 @@ class  TestNewConcatenation(unittest.TestCase):
 
     @classmethod
     def  setUp(cls):
-        cls.ModelName = 'Random Forest'
+        cls.ModelName = 'MLP'
         cls.dataset = 'Fe-Mo'
         cls.DS = Dataset(cls.dataset)
         cls.fittedmodelslocation = os.path.join(cls.DS.resultslocation, f'{cls.ModelName}_FittedCVSearch.pkl')

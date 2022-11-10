@@ -18,7 +18,10 @@ from .Tools import need_to_update
 
 def get_file_paths(dataset, searchs, csvfile ='LIST_OF_files.csv') -> list:
     csvfile = os.path.join(dataset, csvfile)
-    globsearch = f'{dataset}/data/**/{searchs}'
+    if os.path.exists(os.path.join(dataset, 'data')):
+        globsearch = f'{dataset}/data/**/{searchs}'
+    else:
+        globsearch = f'{dataset}/**/{searchs}'
     if not need_to_update(csvfile):
         with open(csvfile, 'r') as f:
             files = f.readlines()
@@ -102,7 +105,7 @@ def init_sublatsfile():
     return SUBLATICETAGS
 
 def get_all_sorters_and_tags(dataset, files):
-    sublatsfile = os.path.join(dataset, 'SUBLATICETAGS.pkl')
+    sublatsfile = os.path.join(dataset, 'Atomsobjects','SUBLATICETAGS.pkl')
     SORTERS = init_sortersfile()
     SUBLATICETAGS = init_sublatsfile()
     for thisfile in tqdm(files):

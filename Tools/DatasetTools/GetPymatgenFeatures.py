@@ -119,11 +119,19 @@ def make_magnetic_feature(MagInfo):
         return 1
     else:
         return 2
+def get_str_n(numn: pd.core.series.Series):
+    if numn == 0:
+        stringn = ''
+    else:
+        stringn = f'{numn}'
+    return stringn
 
-def get_chemical_formula(_BS):
-    CHEMFOR =  _BS['atom_A'].str.replace('.*','')
-    for atom in ['atom_A', 'atom_B', 'atom_C']:
-        CHEMFOR += _BS[atom].str.replace('_.*','') + _BS['num_'+atom].map(lambda n: '{}'.format(n))
+def get_chemical_formula(_BS: pd.core.frame.DataFrame):
+    CHEMFOR =  _BS['atom_A'].str.replace('.*','', regex=True)
+    atoms = _BS.columns[_BS.columns.str.contains('^atom_')]
+    for atom in atoms: # ['atom_A', 'atom_B', 'atom_C']:
+        stringn = _BS['num_'+atom].map(get_str_n)
+        CHEMFOR += _BS[atom].str.replace('_.*','', regex=True) + stringn 
     return CHEMFOR
 
 case = 'initial'
@@ -147,4 +155,4 @@ if  __name__ == '__main__':
     DensitiFeatures= load_features(mmfdensity, BS, which='density')
     CompositionFeatures = load_features(mmfcomposition, BS, which='composition')
     #StructureFeatures = load_features(mmfstructure, BS, which='structure')
-    #SOAPFeatures = load_features(mmsoapfeatures,BS.dropna(),  which ='soap')
+    SOAPFeatures = load_features(mmsoapfeatures,BS.dropna(),  which ='soap')
