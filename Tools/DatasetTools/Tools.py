@@ -154,10 +154,10 @@ class Plotting:
 
 
     @staticmethod
-    def  get_x_ef_points(PhaseBS: dict[str, pd.core.frame.DataFrame], components:list[str]):
+    def  get_x_ef_points(PhaseBS: dict[str, pd.core.frame.DataFrame], components:list[str], property='^EF$'):
 
         points = {
-                phase: bs.filter(regex='EF|'+components[0]).values
+                phase: bs.filter(regex=property+'|'+components[0]).values
                 for phase, bs in PhaseBS.items() 
                 }
         return points
