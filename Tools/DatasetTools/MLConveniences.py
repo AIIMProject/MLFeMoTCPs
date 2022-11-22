@@ -26,7 +26,7 @@ def add_dataset_feature(features: pd.core.frame.DataFrame, datasetfeatures: pd.c
     """concatenates given dataset features to given features"""
 
     X = features.copy()
-    for cname, cdata in datasetfeatures.iteritems():
+    for cname, cdata in datasetfeatures.items():
         if cname not in features.columns:
             X = pd.concat([ cdata, X], axis = 1)
     return X
