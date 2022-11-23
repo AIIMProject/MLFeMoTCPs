@@ -6,7 +6,7 @@ import re
 
 neighbours  = {'CN12': 12, 'CN13': 13, 'CN14': 14, 'CN15': 15, 'CN16': 16}
 
-cn_dict = {
+cn_dict : dict = {
         'A15': [ 'Z14a', 'Z14a', 'Z14a', 'Z14b', 'Z14b', 'Z14b', 'Z12a', 'Z12b' ], 
         'C14': ['Z16', 'Z16', 'Z16', 'Z16', 'Z12a', 'Z12a', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12b', 'Z12b' ],
         'C15':['Z16', 'Z16', 'Z12', 'Z12', 'Z12', 'Z12'],
@@ -25,19 +25,19 @@ cn_dict = {
 
 specialphases = ['hcp', 'bcc', 'fcc']
 
-def tags_to_cns(cptaglist):
+def tags_to_cns(cptaglist : list[str] ):
     return np.array( [re.sub('[A-Za-z]','', tag) for tag in cptaglist] ).astype(int)
 
-cn_persite = {structure:  tags_to_cns(sites) for structure, sites in cn_dict.items()}
+cn_persite : dict = {structure:  tags_to_cns(sites) for structure, sites in cn_dict.items()}
 
-def get_relevant_sorters(AtomsObjects, Sorters: pd.core.series.Series):
+def get_relevant_sorters(AtomsObjects : pd.core.frame.DataFrame , Sorters: pd.core.series.Series) -> pd.core.series.Series:
     return Sorters[AtomsObjects.file.map(lambda f: f[0])]
 
 def sorting_feature(
         AtomsObjects: pd.core.frame.DataFrame,
         Sorters: pd.core.series.Series,
         SublatticeTags: pd.core.series.Series
-        ):
+        ) -> pd.core.frame.DataFrame:
     relevantsorters = get_relevant_sorters(AtomsObjects, Sorters)
     relevanttags = SublatticeTags[relevantsorters.index]
     df = {}
@@ -49,7 +49,7 @@ def correct_sortings_fromphases(
     AtomsObjects: pd.core.frame.DataFrame,
     phase_feature: pd.core.series.Series,
     sorting_features: pd.core.series.Series
-    ):
+    ) -> pd.core.series.SeriesInfo:
 
     fixed_sorters = sorting_features.copy()
     samplephase = phase_feature[AtomsObjects.index]
@@ -63,7 +63,7 @@ def correct_occupation_fromphases(
         phase_feature: pd.core.series.Series,
         sublattice_feature: pd.core.series.Series,
         AtomsObjects: pd.core.series.Series
-        ):
+        ) -> pd.core.series.Series:
     fixed_tags = sublattice_feature.copy()
 #    samplephase = phase_feature[sublattice_feature]
     hasempty = fixed_tags.map(lambda v : '' in v or len(v) == 0)
@@ -75,7 +75,7 @@ def get_sitecn(
         phase_feature: pd.core.series.Series,
         atoms_objects: pd.core.series.Series, 
         sorters_feature: pd.core.series.Series, 
-        ):
+        ) -> pd.core.series.Series:
     sitecn = {}
     progress = tqdm(phase_feature.iteritems(), total=phase_feature.shape[0])
     for index, phase in progress:
@@ -89,7 +89,7 @@ def get_sitecn(
     return pd.Series(sitecn)
 
 
-def get_normalization(_normoption, _coincidences):
+def get_normalization(_normoption : str, _coincidences : pd.core.series.Series) -> float:
     norma_ = len(_coincidences)
     # this is overkill but this works like this. 
     # if I want to normalize averages over all atoms, len coincidence works.
@@ -100,11 +100,13 @@ def get_normalization(_normoption, _coincidences):
     # but if there are no coincidences for this CP, I just return one so the average is not NaN
     return np.max([1,norma_])
 
-def get_array_average(_array,  _coincidence, _norma):
+def get_array_average(_array : np.array,  _coincidence: pd.core.series.Series, _norma: float) -> float:
     cases = _array[_coincidence]
     return np.sum(cases)/_norma
 
-def cn_average(vectorfeature, coordination, normalization = 'natoms', return0 = True): # *args): #iterable, coordinations, axis=1):
+def cn_average(
+        vectorfeature: np.array , coordination : tuple, normalization : str = 'natoms', return0 = True
+        ) -> dict[str,float]: 
     """
     vectorfeature should be one value per site, the array for one site only should be given
     normaliztion = ['natoms', 'NCP'] where NCP stands for number of vertices in coordination polyhedra.
@@ -121,7 +123,7 @@ def cn_average(vectorfeature, coordination, normalization = 'natoms', return0 = 
         average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
     return {index: average}
 
-def cn_composition(_chemicalsymbols, _coordination):
+def cn_composition(_chemicalsymbols : list[str], _coordination : tuple ):
     compo = {}
     index, chemicalsymbols = _chemicalsymbols
     _, coordination = _coordination
@@ -142,29 +144,34 @@ def get_shape_factors(
         SF['sf_'+sfname][VALIDB2] = B1CN[VALIDB2] / B2CN[VALIDB2]
     return SF
 
-def featurize_series(_Feature, _Coordinations, featurizer=cn_average, **kwargs):
-    iterator  = zip(_Feature.iteritems(), _Coordinations.iteritems())
+def featurize_series(
+        _Feature: pd.core.series.Series, 
+        _Coordinations: pd.core.series.Series , 
+        featurizer=cn_average, **kwargs
+        ) -> pd.core.frame.DataFrame:
+    iterator  = zip(_Feature.items(), _Coordinations.items())
     thisresult = [featurizer(atomfeature, atomcoordinations, **kwargs) for atomfeature, atomcoordinations in iterator]
     thisresult =  dict(map(dict.popitem, thisresult))
     return pd.DataFrame.from_dict(thisresult,orient='index' )
 
-def featurize_dataframe(_Features, _coordination, featurizer=cn_average, **kwargs):
+def featurize_dataframe(
+        _Features : pd.core.frame.DataFrame, 
+        _coordination : pd.core.series.Series, 
+        featurizer=cn_average, 
+        **kwargs) -> pd.core.frame.DataFrame:
     result = []
     for colid, feature in _Features.iteritems():
-        try:
-            result.append(featurize_series(feature, _coordination[feature.index], featurizer, **kwargs))
-        except Exception as E:
-            pdb.set_trace()
-            featurize_series(feature, _coordination, featurizer, **kwargs)
-            pass
-
+        result.append(featurize_series(feature, _coordination[feature.index], featurizer, **kwargs))
         columns = result[-1].columns
         newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
         result[-1].columns = newcolumns
     return pd.concat(result, axis=1)
         
-
-def featurize_many(_Features, _Coordinations, featurizers=[cn_average], **kwargs):
+def featurize_many(
+        _Features : pd.core.frame.DataFrame, 
+        _Coordinations : pd.core.series.Series,
+        featurizers : list[object] = [cn_average],
+        **kwargs) -> pd.core.frame.DataFrame:
     progress = tqdm(featurizers) #,  bar_format='{percentage:3.0f}%|{bar:100}{r_bar}{desc}')
     result = []
     for featurizer  in progress:
@@ -175,9 +182,7 @@ def featurize_many(_Features, _Coordinations, featurizers=[cn_average], **kwargs
         #result[-1].columns = newcolumns
     return pd.concat(result, axis=1)
 
-
-
-def get_dimensions(thefeature):
+def get_dimensions(thefeature : pd.core.frame.DataFrame) -> tuple[int] :
     theshape = thefeature.shape
     if len(theshape) == 2:
         dimensions = theshape
@@ -185,12 +190,15 @@ def get_dimensions(thefeature):
         dimensions = (theshape, 1)
     return dimensions
 
-def cnav_column_name_fix (dict_of_features):
+def cnav_column_name_fix (dict_of_features : dict[str, pd.core.frame.DataFrame]):
     for key, features in dict_of_features.items():
         col_replacements = {col: f'{key}{col}' for col in features.columns}
         features.rename(columns=col_replacements, inplace=True)
         
-def array_expansions(Features, columnstoexpand):
+def array_expansions(
+        Features :dict[str, pd.core.frame.DataFrame], 
+        columnstoexpand : list[str]
+        ) -> pd.core.frame.DataFrame:
     df = {}
     for feature in columnstoexpand:
         df[feature] = {}

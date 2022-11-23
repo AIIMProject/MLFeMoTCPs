@@ -6,6 +6,8 @@ import pandas as pd
 import sys
 import os
 sys.path.insert(0, os.path.dirname( os.path.dirname(os.path.dirname(__file__)) ))
+sys.path.insert(1, '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer')
+from BopFoxFeaturizer.Featurizer import Featurizer
 import pyace
 from Tools.DatasetTools.DatasetOperator import Dataset
 from Tools.DatasetTools.Commoms import load_atoms_objects
@@ -18,12 +20,12 @@ from ase.build import bulk
 
 class MyPyACECalculator(object):
     
-    def __init__(self):
+    def __init__(self, components:list[str] = ['Fe', 'Mo']):
 
         self.bbasis_configuration = pyace.create_multispecies_basis_config(
             {
             'deltaSplineBins': 0.001,
-            'elements': ['Fe', 'Mo'],
+            'elements': ['Mo', 'Fe'],
 
             'embeddings': {'ALL': {
                                    'fs_parameters': [1, 1],
@@ -42,7 +44,7 @@ class MyPyACECalculator(object):
                       },
 
             'functions': {        
-                # different number of unary functions for Al and H
+
                 'ALL': {
                     'nradmax_by_orders': [15, 3, 2, 1,1],
                     'lmax_by_orders':    [0,  3, 2, 1, 0]
@@ -93,17 +95,19 @@ class TestMyPyAce(unittest.TestCase):
 
     def test_featurize_many(self):
         sample = AtomsObjects['atoms'].sample (n=10)
-        sample_features = self.ACE.featurize_many(sample)
-        print(sample_features)
+        sample_features = sample.map(self.ACE.get_ace_projections)
+        natoms = sample.map(lambda a: a.get_global_number_of_atoms())
+        nfeatures = sample_features.map(lambda a: a.shape[0])
+        samesizes = nfeatures == natoms
+        self.assertTrue(np.all(samesizes))
 
-    def test_works_with_general_featurizer(self):
-        featurizer = self.ACE.get_ace_projections
-        feature_name = featurizer.__name__ 
-        ace_features = gf.featurize_series(AtomsObjects['atoms'], featurizer, )
-        pass
-
-
-
+    def test_featurize_Mo_bulk(self):
+        F = Featurizer(DS.BS)
+        selection = ( F.StrucNames == 'bcc' ) 
+        selection &= ( DS.BS.num_atoms == 1 ) 
+        selection &= DS.BS.loc[selection].atom_A.str.contains('Mo')
+        selection_features = AtomsObjects['atoms'][selection].map(self.ACE.get_ace_projections)
+        print(selection_features)
 
 
 #FeMo_structure.get_potential_energy()
