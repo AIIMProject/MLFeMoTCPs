@@ -17,18 +17,15 @@ import warnings
 warnings.filterwarnings('error')
 import ase
 from ase.build import bulk
-
-class MyPyACECalculator(object):
-    
-    def __init__(self, components:list[str] = ['Fe', 'Mo']):
-
-        self.bbasis_configuration = pyace.create_multispecies_basis_config(
+import copy 
+import matplotlib.pyplot as plt
+default_options_dict = \
             {
             'deltaSplineBins': 0.001,
             'elements': ['Mo', 'Fe'],
 
             'embeddings': {'ALL': {
-                                   'fs_parameters': [1, 1],
+                                   'fs_parameters': [10, 1],
                                    'ndensity': 1,
                                    'npot': 'FinnisSinclair',
                                    },                   
@@ -36,7 +33,8 @@ class MyPyACECalculator(object):
                            },
 
             'bonds': {'ALL': {'NameOfCutoffFunction': 'cos',
-                              'core-repulsion': [10000.0, 5.0],
+                              #                              'core-repulsion': [10000.0, 5.0],
+                              'core-repulsion': [10000.0, 10],
                               'dcut': 0.01,
                               'radbase': 'SBessel',
                               'radparameters': [2.0],
@@ -46,11 +44,23 @@ class MyPyACECalculator(object):
             'functions': {        
 
                 'ALL': {
+                    #                    'nradmax_by_orders': [15, 3, 2, 1,1],
+                    #                    'lmax_by_orders':    [0,  3, 2, 1, 0]
                     'nradmax_by_orders': [15, 3, 2, 1,1],
                     'lmax_by_orders':    [0,  3, 2, 1, 0]
                 }
             }
         }
+
+class MyPyACECalculator(object):
+    
+    def __init__(self, 
+                 components:list[str] = ['Fe', 'Mo'],
+                 multispace_basis_config : dict  = default_options_dict, 
+                 ):
+
+        self.bbasis_configuration = pyace.create_multispecies_basis_config(
+                multispace_basis_config
             )
         self.configured_calculator = pyace.PyACECalculator(self.bbasis_configuration)
 
@@ -66,16 +76,22 @@ class MyPyACECalculator(object):
             thefeatures[name] = self.get_ace_projections(atom)
         return pd.Series(thefeatures)
 
-dataset = 'Fe-Mo'
-DS : Dataset = Dataset(dataset)
-AtomsObjects = load_atoms_objects(dataset)
-
+import pdb
 
 class TestMyPyAce(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.ACE = MyPyACECalculator()
+        cls.dataset = 'Fe-Mo'
+        cls.DS : self.dataset = Dataset(cls.dataset)
+        cls.AtomsObjects = load_atoms_objects(cls.dataset)
+        cls.F = Featurizer(cls.DS.BS)
+        cls.selection = ( cls.F.StrucNames == 'bcc' ) | ( cls.F.StrucNames == 'hcp' )| ( cls.F.StrucNames == 'fcc' )
+#        cls.selection &= ( cls.DS.BS.num_atoms == 1 ) 
+        cls.selection_Mo = cls.selection & cls.DS.BS.loc[cls.selection].atom_A.str.contains('Mo')
+
+        cls.selection_Fe = cls.selection & cls.DS.BS.loc[cls.selection].atom_A.str.contains('Fe')
         pass
 
     def test_bcc_projections(self):
@@ -85,16 +101,16 @@ class TestMyPyAce(unittest.TestCase):
         self.assertEqual(bccfemo.get_global_number_of_atoms(), projections.shape[0])
 
     def test_hast_atoms_objects(self):
-        types = AtomsObjects['atoms'].map(type)
+        types = self.AtomsObjects['atoms'].map(type)
         self.assertTrue(np.all(types == ase.atoms.Atoms ))
 
     def test_can_calculate_one(self):
-        thisatom : ase.atoms.Atoms= AtomsObjects['atoms'].sample(n=1)[0]  
+        thisatom : ase.atoms.Atoms= self.AtomsObjects['atoms'].sample(n=1)[0]  
         thisprojections = self.ACE.get_ace_projections(thisatom)
         self.assertEqual(thisatom.get_global_number_of_atoms(), thisprojections.shape[0])
 
     def test_featurize_many(self):
-        sample = AtomsObjects['atoms'].sample (n=10)
+        sample = self.AtomsObjects['atoms'].sample (n=10)
         sample_features = sample.map(self.ACE.get_ace_projections)
         natoms = sample.map(lambda a: a.get_global_number_of_atoms())
         nfeatures = sample_features.map(lambda a: a.shape[0])
@@ -102,22 +118,53 @@ class TestMyPyAce(unittest.TestCase):
         self.assertTrue(np.all(samesizes))
 
     def test_featurize_Mo_bulk(self):
-        F = Featurizer(DS.BS)
-        selection = ( F.StrucNames == 'bcc' ) 
-        selection &= ( DS.BS.num_atoms == 1 ) 
-        selection &= DS.BS.loc[selection].atom_A.str.contains('Mo')
-        selection_features = AtomsObjects['atoms'][selection].map(self.ACE.get_ace_projections)
+        selection_features = self.AtomsObjects['atoms'][self.selection].map(self.ACE.get_ace_projections)
         print(selection_features)
 
+    def test_inverted_functions(self):
+        new_multispace_config = copy.deepcopy(default_options_dict)
+        new_multispace_config['bonds'] = { 
+              'Fe': {'NameOfCutoffFunction': 'cos',
+                       'core-repulsion': [10000.0, 10],
+                       'dcut': 0.01,
+                       'radbase': 'SBessel',
+                       'radparameters': [2.0],
+                       'rcut': 7},
+              'FeMo': {'NameOfCutoffFunction': 'cos',
+                       'core-repulsion': [10, 10000.0],
+                       'dcut': 0.01,
+                       'radbase': 'SBessel',
+                       'radparameters': [2.0],
+                       'rcut': 7},
+              'MoFe': {'NameOfCutoffFunction': 'cos',
+                       'core-repulsion': [10000.0, 10],
+                       'dcut': 0.01,
+                       'radbase': 'SBessel',
+                       'radparameters': [2.0],
+                       'rcut': 7},
+              'Mo': {'NameOfCutoffFunction': 'cos',
+                       'core-repulsion': [10000.0, 10],
+                       'dcut': 0.01,
+                       'radbase': 'SBessel',
+                       'radparameters': [2.0],
+                       'rcut': 7},
+              }
+        NewACE = MyPyACECalculator(multispace_basis_config = new_multispace_config)
+        features_Mo = self.AtomsObjects['atoms'][self.selection_Mo].map(self.ACE.get_ace_projections)
+        features_Fe = self.AtomsObjects['atoms'][self.selection_Fe].map(self.ACE.get_ace_projections)
+        print(" features of selections with custom config " )
+        print (features_Fe[0][features_Fe[0] != 0])
+        print (features_Mo[0][features_Mo[0] != 0])
+        fig, ax = plt.subplots()
+        ax.plot(features_Fe[0][0], label =features_Fe.index[0])
+        ax.plot(features_Mo[0][0], label =features_Mo.index[0])
+        ax.set_yscale('log')
+        ax.set_ylabel('ACE coef for 1st atom')
+        ax.set_xlabel('ACE coef order')
+        ax.legend()
+        plt.show(block = True)
 
-#FeMo_structure.get_potential_energy()
 
-#projections=np.array(calc.ace.projections)
-#
-#print(' ACE projections shape :', projections.shape)
-#
-#print('first projection: ', projections[0])
-#print('second  projection: ', projections[1])
 
 if __name__ == '__main__' :
     unittest.main()
