@@ -167,7 +167,8 @@ class Plotting:
             PhaseBS: dict[str, pd.core.frame.DataFrame], 
             components: list[str],
             viewpoint : list[float] = [0.5, -1] ,
-            return_points = False
+            return_points = False, 
+            getproperty = '^EF$'
             ):
         """
         finds 2d convex hulls for the compositions saved in a dictionary as 
@@ -180,7 +181,7 @@ class Plotting:
         viewpoint: defines point from which the visible facets are visible. 
         """
         chulls = {}
-        points = cls.get_x_ef_points(PhaseBS, components)
+        points = cls.get_x_ef_points(PhaseBS, components, property = getproperty)
 
         for (phase, bs ), x_ef in zip(PhaseBS.items(), points.values()):
             thispoints = x_ef[bs['nelem']<3 ]
