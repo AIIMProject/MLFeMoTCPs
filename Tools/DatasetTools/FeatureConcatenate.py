@@ -353,9 +353,14 @@ class NewFeatureConcatenate():
         self.samplesplit = dataset.get_samplesplit()
         self.model_params = model_params
 
-    def  get_best_features_list(self, groupname, num_features = 2, max_workers=1):
+    def  get_best_features_list(
+            self,
+            groupname: str,
+            num_features = 2,
+            max_workers=1,
+            max_features: int = 400):
         feature_list = pd.DataFrame()
-        while len(feature_list) < num_features:
+        while len(feature_list) < min(num_features, max_features):
             this_best_feature = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers)
             feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
         return feature_list
