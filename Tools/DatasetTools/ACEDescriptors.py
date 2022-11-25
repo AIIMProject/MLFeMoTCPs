@@ -23,31 +23,31 @@ default_options_dict = \
             {
             'deltaSplineBins': 0.001,
             'elements': ['Mo', 'Fe'],
+            # to make bond specific, one can use same embeddings but different functions, but for Fe and Mo wont be much 
+            # difference
 
-            'embeddings': {'ALL': {
-                                   'fs_parameters': [10, 1],
-                                   'ndensity': 1,
-                                   'npot': 'FinnisSinclair',
+            'embeddings': {'ALL': {   # somewhat canonical ?
+                                   'fs_parameters': [10, 1],  # change to [1, 1, 1, 0.5] for the two densities [prefactor, exp]
+                                   'ndensity': 1,  # change to 2 for two densities  
+                                   'npot': 'FinnisSinclair', # FS shifted? 
                                    },                   
-
                            },
 
             'bonds': {'ALL': {'NameOfCutoffFunction': 'cos',
-                              #                              'core-repulsion': [10000.0, 5.0],
-                              'core-repulsion': [10000.0, 10],
+                              'core-repulsion': [10000.0, 10],  # tyrn off [0 0 ]
                               'dcut': 0.01,
-                              'radbase': 'SBessel',
+                              'radbase': 'SBessel',  # also change to chev polys
                               'radparameters': [2.0],
-                              'rcut': 7},
+                              'rcut': 7}, # change to lower probably 5 or 6
                       },
 
-            'functions': {        
-
+            'functions': {  # somewhat canonical ?
                 'ALL': {
-                    #                    'nradmax_by_orders': [15, 3, 2, 1,1],
-                    #                    'lmax_by_orders':    [0,  3, 2, 1, 0]
-                    'nradmax_by_orders': [15, 3, 2, 1,1],
+                    'nradmax_by_orders': [15, 3, 2, 1,1], # [ pairs, three body, four  body]
+                    # take i.e [ 5 , 1,0,0,0] 
                     'lmax_by_orders':    [0,  3, 2, 1, 0]
+                    #   [ 0, 1, 0, 0, 0 ] 
+                    # try to choose to reproduce prev resul soap?
                 }
             }
         }
@@ -155,14 +155,17 @@ class TestMyPyAce(unittest.TestCase):
         print(" features of selections with custom config " )
         print (features_Fe[0][features_Fe[0] != 0])
         print (features_Mo[0][features_Mo[0] != 0])
-        fig, ax = plt.subplots()
-        ax.plot(features_Fe[0][0], label =features_Fe.index[0])
-        ax.plot(features_Mo[0][0], label =features_Mo.index[0])
-        ax.set_yscale('log')
-        ax.set_ylabel('ACE coef for 1st atom')
-        ax.set_xlabel('ACE coef order')
-        ax.legend()
-        plt.show(block = True)
+#        fig, ax = plt.subplots()
+#        ax.plot(features_Fe[0][0], label =features_Fe.index[0])
+#        ax.plot(features_Mo[0][0], label =features_Mo.index[0])
+#        ax.set_yscale('log')
+#        ax.set_ylabel('ACE coef for 1st atom')
+#        ax.set_xlabel('ACE coef order')
+#        ax.legend()
+#        plt.show(block = True)
+
+    def test_compute_B_projections(self):
+        from pyace import compute_B
 
 
 
