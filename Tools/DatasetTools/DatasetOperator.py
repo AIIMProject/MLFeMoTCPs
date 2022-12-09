@@ -9,7 +9,7 @@ class  Dataset():
     def  __init__(
             self,
             dataset:str         ='Fe-Mo', 
-            target_name : str   = 'EF',
+            target_name : str   = 'EF_fmbcc',
             selectPhase         = None, 
             selectMag   : str   = None
             ):

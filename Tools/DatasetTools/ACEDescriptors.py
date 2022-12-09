@@ -59,10 +59,10 @@ class MyPyACECalculator(object):
                  multispace_basis_config : dict  = default_options_dict, 
                  ):
 
-        self.bbasis_configuration = pyace.create_multispecies_basis_config(
+        self.bbasis_configuration : object = pyace.create_multispecies_basis_config(
                 multispace_basis_config
             )
-        self.configured_calculator = pyace.PyACECalculator(self.bbasis_configuration)
+        self.configured_calculator : object = pyace.PyACECalculator(self.bbasis_configuration)
 
     def get_ace_projections(self, thisatoms: ase.atoms.Atoms):
         thisatoms.calc = self.configured_calculator
@@ -88,11 +88,27 @@ class TestMyPyAce(unittest.TestCase):
         cls.AtomsObjects = load_atoms_objects(cls.dataset)
         cls.F = Featurizer(cls.DS.BS)
         cls.selection = ( cls.F.StrucNames == 'bcc' ) | ( cls.F.StrucNames == 'hcp' )| ( cls.F.StrucNames == 'fcc' )
+#        cls.selection = cls.F.StrucNames == 'chi'
 #        cls.selection &= ( cls.DS.BS.num_atoms == 1 ) 
         cls.selection_Mo = cls.selection & cls.DS.BS.loc[cls.selection].atom_A.str.contains('Mo')
-
         cls.selection_Fe = cls.selection & cls.DS.BS.loc[cls.selection].atom_A.str.contains('Fe')
+        cls.selection_binary = cls.selection & cls.DS.BS.loc[cls.selection].atom_B.str.contains('Mo|Fe')
         pass
+
+    def compare_distros(self, Q1, Q2, L1, L2):
+        fig, ax = plt.subplots()
+        ax.hist(Q1, label = L1)
+        ax.hist(Q2, hatch= '//' , label = L2, fill=False )
+        ax.set_xlabel('ACE coef for 1st atom')
+        ax.set_yscale('log')
+        ax.legend()
+        return fig,ax
+
+    def compare_ace_projections(self, ACE1, ace2_multispace_config):
+        ACE2 = MyPyACECalculator(multispace_basis_config = ace2_multispace_config)
+        features1 =  self.AtomsObjects['atoms'][self.selection_binary].map(ACE1.get_ace_projections)
+        features2 = self.AtomsObjects['atoms'][self.selection_binary].map(ACE2.get_ace_projections)          
+        return features1, features2
 
     def test_bcc_projections(self):
         bccfemo : ase.atoms.Atoms = bulk('Fe', crystalstructure='bcc', a=2.842, cubic=True)
@@ -119,54 +135,92 @@ class TestMyPyAce(unittest.TestCase):
 
     def test_featurize_Mo_bulk(self):
         selection_features = self.AtomsObjects['atoms'][self.selection].map(self.ACE.get_ace_projections)
-        print(selection_features)
+        self.assertNotEqual(0,   selection_features.map(np.ravel).map(lambda v: np.any(v !=0)).sum() )
 
-    def test_inverted_functions(self):
+    def test_change_fs_parameters(self):
         new_multispace_config = copy.deepcopy(default_options_dict)
-        new_multispace_config['bonds'] = { 
-              'Fe': {'NameOfCutoffFunction': 'cos',
-                       'core-repulsion': [10000.0, 10],
-                       'dcut': 0.01,
-                       'radbase': 'SBessel',
-                       'radparameters': [2.0],
-                       'rcut': 7},
-              'FeMo': {'NameOfCutoffFunction': 'cos',
-                       'core-repulsion': [10, 10000.0],
-                       'dcut': 0.01,
-                       'radbase': 'SBessel',
-                       'radparameters': [2.0],
-                       'rcut': 7},
-              'MoFe': {'NameOfCutoffFunction': 'cos',
-                       'core-repulsion': [10000.0, 10],
-                       'dcut': 0.01,
-                       'radbase': 'SBessel',
-                       'radparameters': [2.0],
-                       'rcut': 7},
-              'Mo': {'NameOfCutoffFunction': 'cos',
-                       'core-repulsion': [10000.0, 10],
-                       'dcut': 0.01,
-                       'radbase': 'SBessel',
-                       'radparameters': [2.0],
-                       'rcut': 7},
-              }
-        NewACE = MyPyACECalculator(multispace_basis_config = new_multispace_config)
+        new_multispace_config['embeddings']['ALL'].update({'fs_parameters' : [1, 1, 1, 0.5],'ndensity': 2})
+        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , '2 densities')
+        fig.savefig('Fe-Mo/graphs/test_fs_params_1_hatches.pdf')
+
+    def test_change_core_repulsion(self):
+        new_multispace_config = copy.deepcopy(default_options_dict)
+        new_multispace_config['bonds']['ALL']['core-repulsion'] = [0,0]
+        features_bin_old, features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'no core repulsion')
+        fig.savefig('Fe-Mo/graphs/test_change_core_repulsion.pdf')
+
+
+    def test_rcut(self):
+        new_multispace_config = copy.deepcopy(default_options_dict)
+        new_multispace_config['bonds']['ALL']['rcut'] = 6
+        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'rcut = 5')
+        fig.savefig('Fe-Mo/graphs/test_change_rcut.pdf')
+
+    def test_individual_embeddings(self):
+        new_multispace_config = copy.deepcopy(default_options_dict)
+        new_multispace_config['embeddings'] = {
+                'Fe': {
+                    'npot': 'FinnisSinclairShiftedScaled',
+                    'fs_parameters': [1, 1, 1, 0.5], ## non-linear embedding function: 1*rho_1^1 + 1*rho_2^0.5
+                    'ndensity': 2,
+                    'rho_core_cut': 2000,
+                    'drho_core_cut': 250
+                    }, 
+
+                'Mo': {
+                    'npot': 'FinnisSinclairShiftedScaled', ## linear embedding function: 1*rho_1^1
+                    'fs_parameters': [1, 1],
+                    'ndensity': 1,
+                    'rho_core_cut': 3000,
+                    'drho_core_cut': 150
+                    }
+                }
+        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'individual embeddigns')
+        fig.savefig('Fe-Mo/graphs/test_individual_embeddings.pdf')
+
+    def test_shorter_functions(self):
+        new_multispace_config = copy.deepcopy(default_options_dict)
+        new_multispace_config['functions'] = {
+                'ALL':  {
+                        'nradmax_by_orders': [5, 3, 2, 1, 0],
+                        'lmax_by_orders': [ 0, 3, 2,1,0],
+                        }
+                }
+        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'new all functions')
+        fig.savefig('Fe-Mo/graphs/test_shorter_functions.pdf')
+
+    def test_binary_unary_functions(self):
+        new_multispace_config = copy.deepcopy(default_options_dict)
+        new_multispace_config['functions'] = {
+                'ALL':  {
+                        'nradmax_by_orders': [5, 3, 2, 1, 0],
+                        'lmax_by_orders': [ 0, 3, 2,1,0],
+                        }
+                }
+        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'new all functions')
+        fig.savefig('Fe-Mo/graphs/test_shorter_functions.pdf')
+    
+    def test_plot_alternated_values(self):
+        NewACE = MyPyACECalculator()
+        fig, ax = plt.subplots()
         features_Mo = self.AtomsObjects['atoms'][self.selection_Mo].map(self.ACE.get_ace_projections)
         features_Fe = self.AtomsObjects['atoms'][self.selection_Fe].map(self.ACE.get_ace_projections)
-        print(" features of selections with custom config " )
-        print (features_Fe[0][features_Fe[0] != 0])
-        print (features_Mo[0][features_Mo[0] != 0])
-#        fig, ax = plt.subplots()
-#        ax.plot(features_Fe[0][0], label =features_Fe.index[0])
-#        ax.plot(features_Mo[0][0], label =features_Mo.index[0])
-#        ax.set_yscale('log')
-#        ax.set_ylabel('ACE coef for 1st atom')
-#        ax.set_xlabel('ACE coef order')
-#        ax.legend()
-#        plt.show(block = True)
+        fig, ax = plt.subplots()
+        ax.plot(features_Fe[0][0], label =features_Fe.index[0])
+        ax.plot(features_Mo[0][0], label =features_Mo.index[0])
+        ax.set_yscale('log')
+        ax.set_ylabel('ACE coef for 1st atom')
+        ax.set_xlabel('ACE coef order')
+        ax.legend()
+        fig.savefig('Fe-Mo/graphs/test_alternated_values.pdf')
 
-    def test_compute_B_projections(self):
-        from pyace import compute_B
-
+    #from pyace import compute_B
 
 
 if __name__ == '__main__' :
