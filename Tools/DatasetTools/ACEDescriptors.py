@@ -18,6 +18,7 @@ warnings.filterwarnings('error')
 import ase
 from ase.build import bulk
 import copy 
+import matplotlib
 import matplotlib.pyplot as plt
 default_options_dict = \
             {
@@ -32,6 +33,7 @@ default_options_dict = \
                                    'npot': 'FinnisSinclair', # FS shifted? 
                                    },                   
                            },
+
 
             'bonds': {'ALL': {'NameOfCutoffFunction': 'cos',
                               'core-repulsion': [10000.0, 10],  # tyrn off [0 0 ]
@@ -59,6 +61,7 @@ class MyPyACECalculator(object):
                  multispace_basis_config : dict  = default_options_dict, 
                  ):
 
+        self.multispace_basis_config : dict = multispace_basis_config
         self.bbasis_configuration : object = pyace.create_multispecies_basis_config(
                 multispace_basis_config
             )
@@ -82,20 +85,22 @@ class TestMyPyAce(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ACE = MyPyACECalculator()
-        cls.dataset = 'Fe-Mo'
+        cls.ACE : MyPyACECalculator = MyPyACECalculator()
+        cls.dataset : str = 'Fe-Mo'
         cls.DS : self.dataset = Dataset(cls.dataset)
-        cls.AtomsObjects = load_atoms_objects(cls.dataset)
-        cls.F = Featurizer(cls.DS.BS)
-        cls.selection = ( cls.F.StrucNames == 'bcc' ) | ( cls.F.StrucNames == 'hcp' )| ( cls.F.StrucNames == 'fcc' )
+        cls.AtomsObjects : pd.core.frame.DataFrame = load_atoms_objects(cls.dataset)
+        cls.F : Featurizer = Featurizer(cls.DS.BS)
+        cls.selection : pd.core.series.Series = ( cls.F.StrucNames == 'bcc' ) | ( cls.F.StrucNames == 'hcp' )| ( cls.F.StrucNames == 'fcc' )
 #        cls.selection = cls.F.StrucNames == 'chi'
 #        cls.selection &= ( cls.DS.BS.num_atoms == 1 ) 
-        cls.selection_Mo = cls.selection & cls.DS.BS.loc[cls.selection].atom_A.str.contains('Mo')
-        cls.selection_Fe = cls.selection & cls.DS.BS.loc[cls.selection].atom_A.str.contains('Fe')
-        cls.selection_binary = cls.selection & cls.DS.BS.loc[cls.selection].atom_B.str.contains('Mo|Fe')
+        cls.selection_Mo: pd.core.series.Series  = cls.selection & cls.DS.BS.loc[cls.selection].atom_A.str.contains('Mo')
+        cls.selection_Fe : pd.core.series.Series = cls.selection & cls.DS.BS.loc[cls.selection].atom_A.str.contains('Fe')
+        cls.selection_binary : pd.core.series.Series = cls.selection & cls.DS.BS.loc[cls.selection].atom_B.str.contains('Mo|Fe')
+        cls.default_multispace_config :dict = default_options_dict
         pass
 
-    def compare_distros(self, Q1, Q2, L1, L2):
+    def compare_distros(self, Q1: pd.core.series.Series, Q2: pd.core.series.Series, L1: str, L2: str) \
+            -> tuple[ plt.Figure, plt.Axes ]:
         fig, ax = plt.subplots()
         ax.hist(Q1, label = L1)
         ax.hist(Q2, hatch= '//' , label = L2, fill=False )
@@ -104,9 +109,9 @@ class TestMyPyAce(unittest.TestCase):
         ax.legend()
         return fig,ax
 
-    def compare_ace_projections(self, ACE1, ace2_multispace_config):
+    def compare_ace_projections(self, ace2_multispace_config):
         ACE2 = MyPyACECalculator(multispace_basis_config = ace2_multispace_config)
-        features1 =  self.AtomsObjects['atoms'][self.selection_binary].map(ACE1.get_ace_projections)
+        features1 =  self.AtomsObjects['atoms'][self.selection_binary].map(self.ACE.get_ace_projections)
         features2 = self.AtomsObjects['atoms'][self.selection_binary].map(ACE2.get_ace_projections)          
         return features1, features2
 
@@ -140,14 +145,14 @@ class TestMyPyAce(unittest.TestCase):
     def test_change_fs_parameters(self):
         new_multispace_config = copy.deepcopy(default_options_dict)
         new_multispace_config['embeddings']['ALL'].update({'fs_parameters' : [1, 1, 1, 0.5],'ndensity': 2})
-        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        features_bin_old , features_bin_new = self.compare_ace_projections(  new_multispace_config)
         fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , '2 densities')
         fig.savefig('Fe-Mo/graphs/test_fs_params_1_hatches.pdf')
 
     def test_change_core_repulsion(self):
         new_multispace_config = copy.deepcopy(default_options_dict)
         new_multispace_config['bonds']['ALL']['core-repulsion'] = [0,0]
-        features_bin_old, features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        features_bin_old, features_bin_new = self.compare_ace_projections(new_multispace_config)
         fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'no core repulsion')
         fig.savefig('Fe-Mo/graphs/test_change_core_repulsion.pdf')
 
@@ -155,7 +160,7 @@ class TestMyPyAce(unittest.TestCase):
     def test_rcut(self):
         new_multispace_config = copy.deepcopy(default_options_dict)
         new_multispace_config['bonds']['ALL']['rcut'] = 6
-        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        features_bin_old , features_bin_new = self.compare_ace_projections(new_multispace_config)
         fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'rcut = 5')
         fig.savefig('Fe-Mo/graphs/test_change_rcut.pdf')
 
@@ -178,34 +183,82 @@ class TestMyPyAce(unittest.TestCase):
                     'drho_core_cut': 150
                     }
                 }
-        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        features_bin_old , features_bin_new = self.compare_ace_projections(new_multispace_config)
         fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'individual embeddigns')
         fig.savefig('Fe-Mo/graphs/test_individual_embeddings.pdf')
 
-    def test_shorter_functions(self):
+    def test_equal_functions(self):
         new_multispace_config = copy.deepcopy(default_options_dict)
         new_multispace_config['functions'] = {
                 'ALL':  {
-                        'nradmax_by_orders': [5, 3, 2, 1, 0],
+                        'nradmax_by_orders': [15, 3, 2, 1, 1],
                         'lmax_by_orders': [ 0, 3, 2,1,0],
                         }
                 }
-        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        features_bin_old , features_bin_new = self.compare_ace_projections(new_multispace_config)
         fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'new all functions')
-        fig.savefig('Fe-Mo/graphs/test_shorter_functions.pdf')
+        fig.savefig('Fe-Mo/graphs/test_equal_functions.pdf')
+        return ax, fig
 
-    def test_binary_unary_functions(self):
+    def test_shorter_functions(self, new_multispace_config_functions :dict = None):
         new_multispace_config = copy.deepcopy(default_options_dict)
-        new_multispace_config['functions'] = {
-                'ALL':  {
-                        'nradmax_by_orders': [5, 3, 2, 1, 0],
-                        'lmax_by_orders': [ 0, 3, 2,1,0],
-                        }
-                }
-        features_bin_old , features_bin_new = self.compare_ace_projections(self.ACE,  new_multispace_config)
+        if new_multispace_config_functions is None:
+            new_multispace_config['functions'] = {
+                                    'ALL':  {
+                                            'nradmax_by_orders': [5, 1, 0, 0, 0],
+                                            'lmax_by_orders': [ 0, 3, 2,1,0],
+                                            }
+                   }
+        else:
+            new_multispace_config['functions'] = new_multispace_config_functions
+
+        features_bin_old , features_bin_new = self.compare_ace_projections(new_multispace_config) 
         fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'new all functions')
         fig.savefig('Fe-Mo/graphs/test_shorter_functions.pdf')
-    
+        return fig, ax
+
+    def test_unary_specific_functions(self, _new_multispace_config = None):
+        new_multispace_config = copy.deepcopy(default_options_dict)
+        if _new_multispace_config is None:
+            new_multispace_config['embeddings'] = {
+                    'Fe': {
+                        'npot': 'FinnisSinclairShiftedScaled',
+                        'fs_parameters': [1, 1], ## non-linear embedding function: 1*rho_1^1 + 1*rho_2^0.5
+                        'ndensity': 1,
+                        'rho_core_cut': 2000,
+                        'drho_core_cut': 250
+                        }, 
+
+                    'Mo': {
+                        'npot': 'FinnisSinclairShiftedScaled', ## linear embedding function: 1*rho_1^1
+                        'fs_parameters': [1, 1],
+                        'ndensity': 1,
+                        'rho_core_cut': 3000,
+                        'drho_core_cut': 150
+                        }
+                    }
+            new_multispace_config['functions'] = {
+                                    'Fe':  {
+                                            'nradmax_by_orders': [5, 3, 2, 2, 1],
+                                            'lmax_by_orders': [ 0, 3, 2,1,0],
+                                            },
+                                    'Mo':  {
+                                            'nradmax_by_orders': [5, 4, 3, 1, 1],
+                                            'lmax_by_orders': [ 0, 3, 2,1,0],
+                                            },
+                                    'BINARY':  {
+                                            'nradmax_by_orders': [5, 4, 3, 1, 1],
+                                            'lmax_by_orders': [ 0, 3, 2,1,0],
+                                            }
+                   }
+        else:
+            new_multispace_config.update(_new_multispace_config)
+        features_bin_old , features_bin_new = self.compare_ace_projections(new_multispace_config) 
+        fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'new all functions')
+        fig.savefig('Fe-Mo/graphs/test_specific_unary.pdf')
+        return fig, ax
+
+
     def test_plot_alternated_values(self):
         NewACE = MyPyACECalculator()
         fig, ax = plt.subplots()
