@@ -101,16 +101,22 @@ class TestMyPyAce(unittest.TestCase):
 
     def compare_distros(self, Q1: pd.core.series.Series, Q2: pd.core.series.Series, L1: str, L2: str) \
             -> tuple[ plt.Figure, plt.Axes ]:
+        _Q1 = np.abs(Q1)
+        _Q2 = np.abs(Q2)
         fig, ax = plt.subplots()
-        ax.hist(Q1, label = L1)
-        ax.hist(Q2, hatch= '//' , label = L2, fill=False )
+        Q = np.hstack([_Q1[_Q1>1e-10], _Q2[_Q2>1e-10]])
+        edges, bins = np.histogram(Q, bins = 100)
+        logbins = np.logspace(np.log10(bins[0]), np.log10(bins[-1]), 10)
+        ax.hist(np.abs(_Q1[_Q1>0]), label = L1, bins = logbins )
+        ax.hist(np.abs(_Q2[_Q2>0]), hatch= '//' , label = L2, fill=False, bins = logbins )
         ax.set_xlabel('ACE coef for 1st atom')
         ax.set_yscale('log')
+        ax.set_xscale('log')
         ax.legend()
         return fig,ax
 
     def compare_ace_projections(self, ace2_multispace_config):
-        ACE2 = MyPyACECalculator(multispace_basis_config = ace2_multispace_config)
+        ACE2 = MyPyACECalculator(components = ['Fe','Mo'], multispace_basis_config = ace2_multispace_config)
         features1 =  self.AtomsObjects['atoms'][self.selection_binary].map(self.ACE.get_ace_projections)
         features2 = self.AtomsObjects['atoms'][self.selection_binary].map(ACE2.get_ace_projections)          
         return features1, features2
@@ -217,7 +223,7 @@ class TestMyPyAce(unittest.TestCase):
         fig.savefig('Fe-Mo/graphs/test_shorter_functions.pdf')
         return fig, ax
 
-    def test_unary_specific_functions(self, _new_multispace_config = None):
+    def test_unary_specific_functions(self,  _new_multispace_config = None):
         new_multispace_config = copy.deepcopy(default_options_dict)
         if _new_multispace_config is None:
             new_multispace_config['embeddings'] = {
@@ -239,11 +245,11 @@ class TestMyPyAce(unittest.TestCase):
                     }
             new_multispace_config['functions'] = {
                                     'Fe':  {
-                                            'nradmax_by_orders': [5, 3, 2, 2, 1],
+                                            'nradmax_by_orders': [15, 4, 2, 2, 2],
                                             'lmax_by_orders': [ 0, 3, 2,1,0],
                                             },
                                     'Mo':  {
-                                            'nradmax_by_orders': [5, 4, 3, 1, 1],
+                                            'nradmax_by_orders': [15, 5, 3, 1, 1],
                                             'lmax_by_orders': [ 0, 3, 2,1,0],
                                             },
                                     'BINARY':  {
@@ -257,6 +263,49 @@ class TestMyPyAce(unittest.TestCase):
         fig, ax = self.compare_distros(features_bin_old[0][0], features_bin_new[0][0], 'scratch config' , 'new all functions')
         fig.savefig('Fe-Mo/graphs/test_specific_unary.pdf')
         return fig, ax
+
+    def test_new_funcs_fails(self):
+        new_multispace_config = copy.deepcopy( self.default_multispace_config )
+        new_multispace_config.update(
+                {'embeddings':
+                 {
+                     'Fe': {
+                         'npot': 'FinnisSinclairShiftedScaled',
+                         'fs_parameters': [1, 1], ## non-linear embedding function: 1*rho_1^1 + 1*rho_2^0.5
+                         'ndensity': 1,
+                         'rho_core_cut': 2000,
+                         'drho_core_cut': 250
+                         },
+
+                     'Mo': {
+                         'npot': 'FinnisSinclairShiftedScaled', ## linear embedding function: 1*rho_1^1
+                         'fs_parameters': [1, 1],
+                         'ndensity': 1,
+                         'rho_core_cut': 3000,
+                         'drho_core_cut': 150
+                         }
+                     },
+                 'functions':
+                 {
+                     'Fe':  {
+                         'nradmax_by_orders': [15, 3, 1, 1, 1],
+                         'lmax_by_orders': [ 0, 3, 2,1,0],
+                         },
+                     'Mo':  {
+                         'nradmax_by_orders': [15, 4, 1, 1, 1],
+                         'lmax_by_orders': [ 0, 3, 2,1,0],
+                         },
+                     'BINARY':  {
+                         'nradmax_by_orders': [15, 5, 3, 2, 1],
+                         'lmax_by_orders': [ 0, 3, 2,1,0],
+                         }
+                     }
+                 }
+                )
+        NewFuncsACEer = MyPyACECalculator(multispace_basis_config=new_multispace_config ) # components = components,
+        failed_projections = NewFuncsACEer.get_ace_projections(
+                self.AtomsObjects['atoms'].iloc[2]
+                )
 
 
     def test_plot_alternated_values(self):
