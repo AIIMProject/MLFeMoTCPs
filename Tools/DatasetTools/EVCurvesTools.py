@@ -151,28 +151,98 @@ def invert_goodness(thegoodness):
 
 class Evcurves(object):
 
+    """this class creates compiles all the evcurves below dataset root directory and creates a json file accordingly."""
+
     def __init__(self, dataset, Indexes = None,  atoms = ['Co', 'Ti', 'W'], search_str = '**/volume-energy.dat'):
-        self.Indexes = Indexes
-        self.dataset = dataset
-        self.search_str = search_str
-        self.atoms = atoms
-        self.EVFILES = self.load_files_matching()
-        self.Paths = pd.DataFrame(np.vstack(self.EVFILES.str.split('/')), index = self.EVFILES.index)
-        self.Roots = pd.Series(
+        """params :
+            dataset : str = root directory where data is stored. 
+            Indexes: pd.Index = INdexes indicating structures for which report should be made 
+            atoms : list[str] = atoms in the system
+            search_str : str = search string to use for finding the ev curves data"""
+
+        self._Indexes : pandas.core.indexes.base.Index = Indexes
+        self._dataset : str = dataset
+        self._search_str :str = search_str
+        self._atoms : list[str] = atoms
+        self._EVFILES = self.load_files_matching()
+        self._Paths : pd.core.frame.DataFrame = pd.DataFrame(np.vstack(self.EVFILES.str.split('/')), index = self.EVFILES.index)
+        self._Roots : pd.core.frame.DataFrame = pd.Series(
                 self.Paths.iloc[:,:-2].apply(lambda p: '/'.join(p), axis = 1).unique(),
                 name='-'.join(atoms)
                 )
-#        self.Index = self.Roots.str.replace('/bulk/','_').str.replace('/volume_relaxed','')
+
+    @property
+    def Roots(self):
+      return self._Roots
+
+    @Roots.setter
+    def Roots(self, value):
+      """ Root directory for each structure """
+      self._Roots = value
+ 
+    @property
+    def Paths(self):
+      return self._Paths
+
+    @Paths.setter
+    def Paths(self, value):
+      """ Paths, ie. evfiles splitted by / """
+      self._Paths = value
+
+    @property
+    def EVFILES(self):
+      return self._EVFILES
+
+    @EVFILES.setter
+    def EVFILES(self, value):
+      """ This is the list of files where ev curves are being defined"""
+      self._EVFILES = value
+
+    @property
+    def atoms(self):
+      return self._atoms
+
+    @atoms.setter
+    def atoms(self, value):
+      """ list of atoms in the system. Defaults to ['Cr', 'Co', 'W']"""
+      self._atoms = value
+
+    @property
+    def search_str(self):
+      return self._search_str
+
+    @search_str.setter
+    def search_str(self, value):
+      """ search string as in glob syntax to search for e-v files. Default: '**/volume-energy.dat'"""
+      self._search_str = value
+
+    @property
+    def Indexes(self) -> pd.core.indexes.base.Index:
+        return self._Indexes
+
+    @Indexes.setter
+    def Indexes(self, value):
+        """list of structures indexes for which to generate the EVcurves"""
+        self._Indexes = value
+
+    @property
+    def dataset(self):
+        return self._dataset
+
+    @dataset.setter
+    def dataset(self, value):
+        """sting with relative path to the root of data structure"""
+        self._dataset = value
 
     @staticmethod
-    def read_index(theindex):
+    def read_index(theindex) -> tuple[str]:
         composition, structure, mag =  theindex.split('.')
         remove_count_last_element = re.sub('[0-9]$','', composition)
         elements_without_counts = re.sub('[0-9]+', '-', remove_count_last_element)
         elements_without_trailing_slash = re.sub('-$','', elements_without_counts)
         return elements_without_trailing_slash, structure, mag
 
-    def make_selection(self, theindex, thisdeltaks, thisencut):
+    def make_selection(self, theindex, thisdeltaks, thisencut) -> pd.core.series.Series:
         elements, structure, mag = self.read_index(theindex)
         select_elements = self.EVFILES.str.contains(elements) & (~ self.EVFILES.str.contains(elements+'-'))
         select_structure = self.EVFILES.str.contains(structure)
@@ -185,7 +255,7 @@ class Evcurves(object):
         select_params = self.EVFILES.str.contains(thisdeltaks) & self.EVFILES.str.contains(thisencut) 
         return select_elements & select_structure & select_mag & select_params
 
-    def get_ev_fit_results(self, params, curve_files):
+    def get_ev_fit_results(self, params, curve_files) -> dict:
         results_dict = {} 
         for curvefile in curve_files:
             directory = os.path.dirname(curvefile)
@@ -195,7 +265,7 @@ class Evcurves(object):
             results_dict={res[0]: float(res[1]) for _, res in results.iterrows() if '_murn' in res[0]}
         return results_dict
 
-    def get_curves_for_params(self, param, curve_files):
+    def get_curves_for_params(self, param, curve_files) -> dict:
         curves = {}
         if len(curve_files) > 0:
         #    try:
@@ -209,7 +279,7 @@ class Evcurves(object):
             curves = {'V': curves[0].values, 'E': curves[1].values} 
         return curves
 
-    def get_evcurves(self, Indexes = None, deltaks=None, encuts=None):
+    def get_evcurves(self, Indexes = None, deltaks=None, encuts=None) -> pd.core.series.Series:
         EVCURVES = {}
         progress = tqdm(self.Indexes, total=len(self.Indexes))# 
         for thisindex in progress:
@@ -228,14 +298,14 @@ class Evcurves(object):
                         }
         return pd.Series(EVCURVES)
 
-    def load_evcurves(self, deltaks=None, encuts=None):
+    def load_evcurves(self, deltaks=None, encuts=None) -> pd.core.series.Series:
         self.evcurves = self.get_evcurves(self, deltaks, encuts)
 
-    def load_files_matching(self):
+    def load_files_matching(self) -> pd.core.series.Series:
         saved_list = os.path.join(self.dataset, 'list_of_outcars.csv')
         fullsearchstring = f'{self.dataset}/rawdata/**/volume_relaxed/{self.search_str}'
         if not need_to_update(saved_list):
-            list_of_files = pd.read_csv(saved_list, squeeze=True, header=None)
+            list_of_files = pd.read_csv(saved_list,  header=None).squeeze('columns')
         else:
             list_of_files = pd.Series(glob.glob(fullsearchstring,  recursive=True))
             list_of_files.name = 'full_path'
