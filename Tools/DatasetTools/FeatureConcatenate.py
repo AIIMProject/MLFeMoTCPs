@@ -360,8 +360,15 @@ class NewFeatureConcatenate():
             max_workers=1,
             max_features: int = 400):
         feature_list = pd.DataFrame()
-        while len(feature_list) < min(num_features, max_features):
-            this_best_feature = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers)
+        max_num_features = min(num_features, max_features)
+#        while len(feature_list) < max_num_features:
+        progress = tqdm(range(max_num_features))
+        for step in progress:
+            this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers)
+            last_train = this_best_feature['train'][0]
+            last_test = this_best_feature['test'][0]
+            description = f'      train: {last_train:.3f}, test: {last_test:.3f} ' 
+            progress.set_postfix({this_best_feature.index[0]: description})
             feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
         return feature_list
 
@@ -380,16 +387,14 @@ class NewFeatureConcatenate():
                 )
         return {feature: score}
 
-    def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 1) -> list[str]:
+    def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 3) -> list[str]:
         self.fixed_features = fixed_features
         self.xtrain, self.xtest, self.ytrain,  self.ytest = self.DS.train_test_split(groupname)
         inspect_features : pd.core.index.Index = self.DS.Features[groupname].columns 
         try_feature_list = inspect_features.difference(self.fixed_features)
-        t1 = time.time()
-        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers)
-        t2 = time.time()
+        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers, leave=False)
+#        self.progress.set_postfix(scores.iloc[[0],:])
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         scores.sort_values(by='test', inplace=True)
-        print(scores.iloc[[0],:], np.round(t2-t1, 2))
         return scores.loc[scores.index[[0]]]
