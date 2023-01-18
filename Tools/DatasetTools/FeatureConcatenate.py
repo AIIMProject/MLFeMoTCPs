@@ -366,23 +366,32 @@ class NewFeatureConcatenate():
             groupname: str,
             num_features = 2,
             max_workers=1,
-            max_features: int = 400):
+            max_features: int = 400, 
+            search_only : pd.core.indexes.base.Index = None):
+        if search_only is not None:
+            max_features = len(search_only)
         feature_list = pd.DataFrame()
         max_num_features = min(num_features, max_features)
-#        while len(feature_list) < max_num_features:
         progress = tqdm(range(max_num_features))
         for step in progress:
-            this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers)
+            this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers, search_within = search_only)
             last_train = this_best_feature['train'][0]
             last_test = this_best_feature['test'][0]
             description = f'      train: {last_train:.3f}, test: {last_test:.3f} ' 
             progress.set_postfix({this_best_feature.index[0]: description})
             feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
+            corrs = self.DS.Features[groupname].corr().abs()[this_best_feature.index[0]]
+            search_only = corrs.index[corrs < 0.9].intersection(search_only)
+            progress.total = len(search_only)
         return feature_list
 
     def train_fixed_plus_try(self, feature):
         if feature in self.fixed_features:
             return None
+        if isinstance(self.model, GridSearchCV):
+            pass
+        else:
+            raise('not a grid search')
         thismodel = copy.deepcopy(self.model)
         thismodel.fit(self.xtrain[self.fixed_features + [ feature ]], self.ytrain)
         score =  score_fitted_model(
@@ -394,13 +403,15 @@ class NewFeatureConcatenate():
                 )
         return {feature: score}
 
-    def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 3) -> list[str]:
+    def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 3, search_within : pd.core.indexes.base.Index = None) -> list[str]:
         self.fixed_features = fixed_features
         self.xtrain, self.xtest, self.ytrain,  self.ytest = self.DS.train_test_split(groupname)
-        inspect_features : pd.core.index.Index = self.DS.Features[groupname].columns 
+        if search_within is None:
+            inspect_features : pd.core.index.Index = self.DS.Features[groupname].columns 
+        else:
+            inspect_features = search_within
         try_feature_list = inspect_features.difference(self.fixed_features)
         scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers, leave=False)
-#        self.progress.set_postfix(scores.iloc[[0],:])
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         scores.sort_values(by='test', inplace=True)
