@@ -14,6 +14,8 @@ from sklearn.metrics import r2_score, mean_squared_error
 from sklearn import preprocessing
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.base import RegressorMixin
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
 from copy import deepcopy
 # debug:
 import pdb
@@ -143,6 +145,7 @@ class FeatureConcatenate(object):
         self.report_path = report_path
         self.criterion = criterion
         self.sort_criteria = sort_criteria
+        
 
     def getbestfeature(self,
         featurelist,  paramgrid,
@@ -347,11 +350,16 @@ import copy
 
 class NewFeatureConcatenate():
 
-    def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}):
+    def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}, model_params_grid={}):
         self.model = model
         self.DS : Dataset = dataset
         self.samplesplit = dataset.get_samplesplit()
-        self.model_params = model_params
+        if isinstance(self.model, GridSearchCV):
+            self.model.set_params(param_grid = model_params_grid)
+        elif isinstance(self.model, Pipeline):
+            self.model.set_params(**model_params)
+        else:
+            raise ValueError('undetermined model')
 
     def  get_best_features_list(
             self,
@@ -376,7 +384,6 @@ class NewFeatureConcatenate():
         if feature in self.fixed_features:
             return None
         thismodel = copy.deepcopy(self.model)
-        thismodel.set_params(**self.model_params)
         thismodel.fit(self.xtrain[self.fixed_features + [ feature ]], self.ytrain)
         score =  score_fitted_model(
                 thismodel, 
