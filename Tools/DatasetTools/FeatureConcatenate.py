@@ -382,7 +382,10 @@ class NewFeatureConcatenate():
             feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
             corrs = self.DS.Features[groupname].corr().abs()[this_best_feature.index[0]]
             search_only = corrs.index[corrs < 0.9].intersection(search_only)
-            progress.total = len(search_only)
+            if len(search_only) < 1:
+                break
+            progress.total = min(len(search_only), max_num_features)
+            progress.refresh()
         return feature_list
 
     def train_fixed_plus_try(self, feature):
