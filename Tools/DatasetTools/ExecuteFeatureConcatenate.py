@@ -116,8 +116,11 @@ for featurename in iwanttoplot:
     print(featurename)
     if 'random' not in Features[featurename].columns:
         Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
-    corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case] 
-    reasonable_features = corrs[corrs>corrs['random']].index.difference([target_case])
+    corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
+#    reasonable_features = corrs[corrs>corrs['random']].index.difference([target_case]) corr()['Mag'] < corr()['random'] !
+    reasonable_features = corrs[corrs>0.1].index.difference([target_case])
+    if 'Mag' not in reasonable_features:
+        raise(  ValueError('Mag eliminated too soon ') )
     combi  = (ModelName, featurename)
     FittedGS[combi] = copy.deepcopy(TestCV)
     if combi in FCresults.keys():
