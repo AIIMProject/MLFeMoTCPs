@@ -91,20 +91,7 @@ else:
     FCresults = {}
 
 #iwanttoplot = ['atomic', 'dataset', 'Canonical BOP', 'dataset + Canonical BOP', 'Projections BOP', 'dataset + Projections BOP', 'Projections sOS BOP', 'dataset + Projections sOS BOP' ]
-iwanttoplot = ['Projections OS BOP', 'ACE','SOAP_specific',  'Canonical BOP', 'dataset', 'atomic']
-
-
-# In[61]:
-
-
-from sklearn.model_selection import StratifiedKFold
-test_folder = StratifiedKFold(n_splits = 5, shuffle=True)
-test_folds = test_folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
-test_folds_list = list(test_folds)
-train_structures = DS.StructureNames[DS.samplesplit['train']]
-plt.hist(train_structures)
-plt.hist(train_structures.iloc[test_folds_list[0][0]])
-
+iwanttoplot = ['Projections OS BOP', 'ACE','SOAP_specific',  'Canonical BOP', 'dataset', 'atomic', 'ACE_CNAV']
 
 TestCV = GridSearchCV(Models[ModelName], MO.modeloptions, cv = 5, return_train_score=True)
 
@@ -117,15 +104,14 @@ for featurename in iwanttoplot:
     if 'random' not in Features[featurename].columns:
         Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
     corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
-#    reasonable_features = corrs[corrs>corrs['random']].index.difference([target_case]) corr()['Mag'] < corr()['random'] !
     reasonable_features = corrs[corrs>0.1].index.difference([target_case])
     if 'Mag' not in reasonable_features:
         raise(  ValueError('Mag eliminated too soon ') )
     combi  = (ModelName, featurename)
     FittedGS[combi] = copy.deepcopy(TestCV)
     if combi in FCresults.keys():
-        if FCresults[combi].shape[0] >= len(reasonable_features):
-            continue
+        #    if FCresults[combi].shape[0] >= len(reasonable_features):
+        continue
     FC = FeatureConcatenate(DS, FittedGS[combi], model_params_grid = MO.modeloptions[ModelName] ) #fmodel.best_params_,)
     FCresults[combi] = FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=3, search_only = reasonable_features)
     with open(feature_concat_resul_loc, 'wb') as pkl:
@@ -168,7 +154,7 @@ axes.set_xlim([0.5, 1e4])
 fig.suptitle(ModelName)
 fig.tight_layout()
 nameforfile = ModelName.replace(' ','')
-fig.savefig(f'{DS.dataset}/graphs/{DS.dataset}_{nameforfile}_LearningCurves_{target_case}.pdf')
+fig.savefig(f'{DS.dataset}/graphs/{DS.dataset}_{nameforfile}_LearningCurves_{target_case}_CV.pdf')
 
 
 # In[67]:
@@ -185,7 +171,7 @@ xmag = x[y_pos.index=='Mag']
 axes.annotate('Mag', (xmag-0.1, ymag-1), xytext=(xmag/5, ymag-40), arrowprops={'facecolor':'black'})
 fig.tight_layout()
 nameforfile = ModelName.replace(' ','')
-fig.savefig(f'{DS.dataset}/graphs/{DS.dataset}_{nameforfile}_LearningCurves_annotated_{target_case}.pdf')
+fig.savefig(f'{DS.dataset}/graphs/{DS.dataset}_{nameforfile}_LearningCurves_annotated_{target_case}_CV.pdf')
 
 
 # ## selections
