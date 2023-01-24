@@ -313,4 +313,5 @@ class Evcurves(object):
         if len( list_of_files ) > 0:
             return list_of_files
         else:
-            return pd.Series(['']*len(self.Indexes), index=self.Indexes)
+            result =  pd.Series(['']*len(self.Indexes), index=self.Indexes)
+            return result[result.map(len)] # something strange happens in some files for FeMo

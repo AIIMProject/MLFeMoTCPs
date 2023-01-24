@@ -14,6 +14,8 @@ from sklearn.metrics import r2_score, mean_squared_error
 from sklearn import preprocessing
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.base import RegressorMixin
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
 from copy import deepcopy
 # debug:
 import pdb
@@ -143,6 +145,7 @@ class FeatureConcatenate(object):
         self.report_path = report_path
         self.criterion = criterion
         self.sort_criteria = sort_criteria
+        
 
     def getbestfeature(self,
         featurelist,  paramgrid,
@@ -347,29 +350,52 @@ import copy
 
 class NewFeatureConcatenate():
 
-    def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}):
+    def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}, model_params_grid={}):
         self.model = model
         self.DS : Dataset = dataset
         self.samplesplit = dataset.get_samplesplit()
-        self.model_params = model_params
+        if isinstance(self.model, GridSearchCV):
+            self.model.set_params(param_grid = model_params_grid)
+        elif isinstance(self.model, Pipeline):
+            self.model.set_params(**model_params)
+        else:
+            raise ValueError('undetermined model')
 
     def  get_best_features_list(
             self,
             groupname: str,
             num_features = 2,
             max_workers=1,
-            max_features: int = 400):
+            max_features: int = 400, 
+            search_only : pd.core.indexes.base.Index = None):
+        if search_only is not None:
+            max_features = len(search_only)
         feature_list = pd.DataFrame()
-        while len(feature_list) < min(num_features, max_features):
-            this_best_feature = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers)
+        max_num_features = min(num_features, max_features)
+        progress = tqdm(range(max_num_features))
+        for step in progress:
+            this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers, search_within = search_only)
+            last_train = this_best_feature['train'][0]
+            last_test = this_best_feature['test'][0]
+            description = f'      train: {last_train:.3f}, test: {last_test:.3f} ' 
+            progress.set_postfix({this_best_feature.index[0]: description})
             feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
+            corrs = self.DS.Features[groupname].corr().abs()[this_best_feature.index[0]]
+            search_only = corrs.index[corrs < 0.9].intersection(search_only)
+            if len(search_only) < 1:
+                break
+            progress.total = min(len(search_only), max_num_features)
+            progress.refresh()
         return feature_list
 
     def train_fixed_plus_try(self, feature):
         if feature in self.fixed_features:
             return None
+        if isinstance(self.model, GridSearchCV):
+            pass
+        else:
+            raise('not a grid search')
         thismodel = copy.deepcopy(self.model)
-        thismodel.set_params(**self.model_params)
         thismodel.fit(self.xtrain[self.fixed_features + [ feature ]], self.ytrain)
         score =  score_fitted_model(
                 thismodel, 
@@ -380,16 +406,16 @@ class NewFeatureConcatenate():
                 )
         return {feature: score}
 
-    def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 1) -> list[str]:
+    def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 3, search_within : pd.core.indexes.base.Index = None) -> list[str]:
         self.fixed_features = fixed_features
         self.xtrain, self.xtest, self.ytrain,  self.ytest = self.DS.train_test_split(groupname)
-        inspect_features : pd.core.index.Index = self.DS.Features[groupname].columns 
+        if search_within is None:
+            inspect_features : pd.core.index.Index = self.DS.Features[groupname].columns 
+        else:
+            inspect_features = search_within
         try_feature_list = inspect_features.difference(self.fixed_features)
-        t1 = time.time()
-        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers)
-        t2 = time.time()
+        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers, leave=False)
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         scores.sort_values(by='test', inplace=True)
-        print(scores.iloc[[0],:], np.round(t2-t1, 2))
         return scores.loc[scores.index[[0]]]
