@@ -82,7 +82,7 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 # In[59]:
 
 
-feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_CV.pkl')  
+feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_CV_rmse.pkl')  
 
 if os.path.exists(feature_concat_resul_loc):
     with open(feature_concat_resul_loc, 'rb') as pkl:
@@ -93,7 +93,7 @@ else:
 #iwanttoplot = ['atomic', 'dataset', 'Canonical BOP', 'dataset + Canonical BOP', 'Projections BOP', 'dataset + Projections BOP', 'Projections sOS BOP', 'dataset + Projections sOS BOP' ]
 iwanttoplot = ['Projections OS BOP', 'ACE','SOAP_specific',  'Canonical BOP', 'dataset', 'atomic', 'ACE_CNAV']
 
-TestCV = GridSearchCV(Models[ModelName], MO.modeloptions, cv = 5, return_train_score=True)
+TestCV = GridSearchCV(Models[ModelName], MO.modeloptions, cv = 5, return_train_score=True, scoring='neg_root_mean_squared_error')
 
 FittedGS = {}
 
@@ -154,7 +154,7 @@ axes.set_xlim([0.5, 1e4])
 fig.suptitle(ModelName)
 fig.tight_layout()
 nameforfile = ModelName.replace(' ','')
-fig.savefig(f'{DS.dataset}/graphs/{DS.dataset}_{nameforfile}_LearningCurves_{target_case}_CV.pdf')
+fig.savefig(f'{DS.dataset}/graphs/{DS.dataset}_{nameforfile}_LearningCurves_{target_case}_CV_rmse.pdf')
 
 
 # In[67]:

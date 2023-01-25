@@ -1,1 +1,1 @@
-{"Kernel Ridge": {"regressor__alpha": [10, 1.0, 0.1, 0.01, 0.001], "regressor__kernel": ["rbf", "polynomial"], "regressor__degree": [4, 5, 6, 7], "regressor__coef0": [0, 1,5]}}
+{"Kernel Ridge": {"regressor__alpha": [1.0, 0.1, 0.01], "regressor__kernel": ["polynomial"], "regressor__degree": [2, 3, 4, 5], "regressor__coef0": [0, 1,2,3,4, 5]}}
