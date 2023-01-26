@@ -366,7 +366,7 @@ class NewFeatureConcatenate():
             groupname: str,
             num_features = 2,
             max_workers=1,
-            max_features: int = 400, 
+            max_features: int = 200, 
             search_only : pd.core.indexes.base.Index = None):
         if search_only is not None:
             max_features = len(search_only)
@@ -375,15 +375,21 @@ class NewFeatureConcatenate():
         progress = tqdm(range(max_num_features))
         for step in progress:
             this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers, search_within = search_only)
+            feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
             last_train = this_best_feature['train'][0]
             last_test = this_best_feature['test'][0]
-            description = f'      train: {last_train:.3f}, test: {last_test:.3f} ' 
-            progress.set_postfix({this_best_feature.index[0]: description})
-            feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
+            best = feature_list.sort_values(by='test').iloc[0]
+            best_test = best['test']
+            description = f'      train: {last_train:.3f}, test: {last_test:.3f} , best = {best.name}, {best_test:.3f}' 
             corrs = self.DS.Features[groupname].corr().abs()[this_best_feature.index[0]]
             search_only = corrs.index[corrs < 0.9].intersection(search_only)
+            if 'Mag' in feature_list.index:
+                description += ' Mag In '
+            elif 'Mag' not in search_only:
+                description += ' warning, Mag removed !' 
             if len(search_only) < 1:
                 break
+            progress.set_postfix({this_best_feature.index[0]: description})
             progress.total = min(len(search_only), max_num_features)
             progress.refresh()
         return feature_list
@@ -395,15 +401,17 @@ class NewFeatureConcatenate():
             pass
         else:
             raise('not a grid search')
-        thismodel = copy.deepcopy(self.model)
+        thismodel : sklearn.model_selection._search.GridSearchCV = copy.deepcopy(self.model)
         thismodel.fit(self.xtrain[self.fixed_features + [ feature ]], self.ytrain)
-        score =  score_fitted_model(
+        score2 =  score_fitted_model(
                 thismodel, 
                 self.xtrain[self.fixed_features + [ feature ]], 
                 self.xtest[self.fixed_features + [ feature ]], 
                 self.ytrain, 
                 self.ytest
                 )
+        score = { 'train1': abs(thismodel.cv_results_['mean_train_score'].max()), 'test1': abs(thismodel.cv_results_['mean_test_score'].max()), 'params' : thismodel.best_params_}
+        score.update(score2)
         return {feature: score}
 
     def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 3, search_within : pd.core.indexes.base.Index = None) -> list[str]:
@@ -414,7 +422,7 @@ class NewFeatureConcatenate():
         else:
             inspect_features = search_within
         try_feature_list = inspect_features.difference(self.fixed_features)
-        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers, leave=False)
+        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers,  leave=False)# max_workers,
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         scores.sort_values(by='test', inplace=True)

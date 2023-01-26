@@ -1,4 +1,4 @@
-
+from pandas import Index
 from Commoms import *
 sys.path.insert(0, os.path.dirname(( os.path.dirname(os.path.dirname(__file__)) )))
 
@@ -10,6 +10,8 @@ warnings.simplefilter('ignore')
 
 
 target_case = 'EF_nmhcp'
+
+suffix = 'CV_params'
 
 DS = Dataset('Fe-Mo', target_name=target_case)
 
@@ -24,6 +26,10 @@ Features = DS.Features  # {name: pd.read_pickle(filename) for name, filename in 
 
 
 Features['ACE'] = Features['ACE_CNAV'].filter(regex='_0$|Mag|Structure')
+Features['Projections OS BOP'] = Features['Projections OS BOP'].filter(regex = '^(?!^moments)')
+Features['Canonical BOP'] = Features['Canonical BOP'].filter(regex = '^(?!^moments)')
+Features['Projections BOP'] = Features['Projections BOP'].filter(regex = '^(?!^moments)')
+Features['Projections sOS BOP'] = Features['Projections sOS BOP'].filter(regex = '^(?!^moments)')
 
 
 def clean_CNAVS(name: str, features: pd.core.frame.DataFrame):
@@ -71,7 +77,7 @@ MO.load_model_options(ModelName)
 
 samplefolds = list(DS.get_folds())
 
-fittedmodelslocation = os.path.join(DS.resultslocation, f'{ModelName}_{target_case}__FittedCVSearch.pkl')
+fittedmodelslocation = os.path.join(DS.resultslocation, f'{ModelName}_{target_case}__FittedCVSearch{suffix}.pkl')
 
 FittedModels = {}
 
@@ -82,7 +88,7 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 # In[59]:
 
 
-feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_CV_rmse.pkl')  
+feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}{suffix}.pkl')  
 
 if os.path.exists(feature_concat_resul_loc):
     with open(feature_concat_resul_loc, 'rb') as pkl:
@@ -91,9 +97,9 @@ else:
     FCresults = {}
 
 #iwanttoplot = ['atomic', 'dataset', 'Canonical BOP', 'dataset + Canonical BOP', 'Projections BOP', 'dataset + Projections BOP', 'Projections sOS BOP', 'dataset + Projections sOS BOP' ]
-iwanttoplot = ['Projections OS BOP', 'ACE','SOAP_specific',  'Canonical BOP', 'dataset', 'atomic', 'ACE_CNAV']
+iwanttoplot = ['Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic', 'ACE_CNAV']
 
-TestCV = GridSearchCV(Models[ModelName], MO.modeloptions, cv = 5, return_train_score=True, scoring='neg_root_mean_squared_error')
+TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = 5, return_train_score=True, scoring='neg_root_mean_squared_error')
 
 FittedGS = {}
 
@@ -104,7 +110,7 @@ for featurename in iwanttoplot:
     if 'random' not in Features[featurename].columns:
         Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
     corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
-    reasonable_features = corrs[corrs>0.1].index.difference([target_case])
+    reasonable_features = corrs[corrs>0.1].index.difference([target_case])#.append(Index(['Mag']))
     if 'Mag' not in reasonable_features:
         raise(  ValueError('Mag eliminated too soon ') )
     combi  = (ModelName, featurename)
@@ -154,7 +160,7 @@ axes.set_xlim([0.5, 1e4])
 fig.suptitle(ModelName)
 fig.tight_layout()
 nameforfile = ModelName.replace(' ','')
-fig.savefig(f'{DS.dataset}/graphs/{DS.dataset}_{nameforfile}_LearningCurves_{target_case}_CV_rmse.pdf')
+fig.savefig(f'{DS.dataset}/graphs/{DS.dataset}_{nameforfile}_LearningCurves_{target_case}{sufix}.pdf')
 
 
 # In[67]:
