@@ -97,7 +97,8 @@ else:
     FCresults = {}
 
 #iwanttoplot = ['atomic', 'dataset', 'Canonical BOP', 'dataset + Canonical BOP', 'Projections BOP', 'dataset + Projections BOP', 'Projections sOS BOP', 'dataset + Projections sOS BOP' ]
-iwanttoplot = ['Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic', 'ACE_CNAV']
+
+wanttoplot = ['Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic', 'ACE_CNAV']
 
 TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = 5, return_train_score=True, scoring='neg_root_mean_squared_error')
 
