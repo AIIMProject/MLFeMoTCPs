@@ -40,7 +40,7 @@ import pdb
 dataset = 'Fe-Mo' 
 components = dataset.replace('-','')
 #models = ['canonical','projections', 'projections_os', 'projections_sos']
-models = ['projections_sos', '0.1projections', '0.5projections',  '0.7projections']
+models = ['0.7projections_os', 'projections_os'] #, '0.5projections',  '0.7projections']
 cutoff = 'table'
 atoms = 'initial'
 moments = 16
@@ -74,12 +74,14 @@ results = {}
 for model in models:
     modelsfile = os.path.join('models', f'{components}_{model}.bx')
     print('atoms: ', atoms, 'model: ', model, '  cutoff: ', cutoff, ' moments:', moments)
+# only when using branch check mag from bopfoxfeaturizer
+#    resultspickle = os.path.join(dataset, 'Descriptors', f'paralell_{components}_{atoms}_{model}_{cutoff}_WUBIND_{moments}_mag.pkl')
     resultspickle = os.path.join(dataset, 'Descriptors', f'paralell_{components}_{atoms}_{model}_{cutoff}_WUBIND_{moments}.pkl')
     BOPC = BopfoxFeatures(
             AtomsObjects['atoms'],modelsfile, modelname=model,
             cutoffby=cutoff, 
-            binary = '/home/storage/fortimtb/CuadernoTrabajo/oldrepobopfox/src/bopfox_mpi',
-            moments = moments
+            binary = '/home/storage/fortimtb/CuadernoTrabajo/bopfox/src/bopfox',  #oldrepobopfox/src/bopfox_mpi',
+            moments = moments,
             )
     BOPC.featurize_dataframe(input_pickle=resultspickle, output_pickle=resultspickle)
     results[model] = BOPC.RESULTS

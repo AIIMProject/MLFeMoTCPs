@@ -1,4 +1,4 @@
-model = projections
+model = 0.1projections
 
 version     = bop
 moments = 20
