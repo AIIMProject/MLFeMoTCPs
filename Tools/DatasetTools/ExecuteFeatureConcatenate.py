@@ -2,21 +2,20 @@ from pandas import Index
 from Commoms import *
 sys.path.insert(0, os.path.dirname(( os.path.dirname(os.path.dirname(__file__)) )))
 
+from sklearn.model_selection import StratifiedShuffleSplit
 import copy
 from DatasetOperator import Dataset, DatasetTester
 
 import warnings
 warnings.simplefilter('ignore')
 
-
 target_case = 'EF_nmhcp'
 
-suffix = 'CV_params'
+suffix = 'CV_stratified_folds'
 
 DS = Dataset('Fe-Mo', target_name=target_case)
 
 ModelName = 'Kernel Ridge'
-
 
 from MLConveniences import *
 
@@ -30,6 +29,7 @@ Features['Projections OS BOP'] = Features['Projections OS BOP'].filter(regex = '
 Features['Canonical BOP'] = Features['Canonical BOP'].filter(regex = '^(?!^moments)')
 Features['Projections BOP'] = Features['Projections BOP'].filter(regex = '^(?!^moments)')
 Features['Projections sOS BOP'] = Features['Projections sOS BOP'].filter(regex = '^(?!^moments)')
+Features['0.7 Projections OS BOP'] = Features['0.7 Projections OS BOP'].filter(regex = '^(?!^moments)')
 
 
 def clean_CNAVS(name: str, features: pd.core.frame.DataFrame):
@@ -100,7 +100,9 @@ else:
 
 iwanttoplot = ['Projections OS BOP', '0.7 Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
-TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = 5, return_train_score=True, scoring='neg_root_mean_squared_error')
+fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
+folds = list(fold_generator)
+TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error')
 
 FittedGS = {}
 
