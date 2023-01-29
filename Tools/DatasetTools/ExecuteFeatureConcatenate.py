@@ -2,7 +2,7 @@ from pandas import Index
 from Commoms import *
 sys.path.insert(0, os.path.dirname(( os.path.dirname(os.path.dirname(__file__)) )))
 
-from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.model_selection import StratifiedKFold
 import copy
 from DatasetOperator import Dataset, DatasetTester
 
@@ -100,6 +100,7 @@ else:
 
 iwanttoplot = ['Projections OS BOP', '0.7 Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
+folder = StratifiedKFold(n_splits=5, shuffle=True, random_state=1024)
 fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
 folds = list(fold_generator)
 TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error')
