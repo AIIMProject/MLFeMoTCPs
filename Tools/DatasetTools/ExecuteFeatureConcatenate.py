@@ -119,12 +119,12 @@ for featurename in iwanttoplot:
     if 'Mag' not in reasonable_features:
         raise(  ValueError('Mag eliminated too soon ') )
     combi  = (ModelName, featurename)
-    FittedGS.append( {combi : copy.deepcopy(TestCV)} )
-    if combi in FCresults.keys():
-        #    if FCresults[combi].shape[0] >= len(reasonable_features):
-        continue
+    FittedGS[combi] = copy.deepcopy(TestCV)
+#    if combi in FCresults.keys():
+#        #    if FCresults[combi].shape[0] >= len(reasonable_features):
+#        continue
     FC = FeatureConcatenate(DS, FittedGS[combi], model_params_grid = MO.modeloptions[ModelName] ) #fmodel.best_params_,)
-    FCresults[combi] = FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=3, search_only = reasonable_features)
+    FCresults[combi].append( FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=3, search_only = reasonable_features) )
     with open(feature_concat_resul_loc, 'wb') as pkl:
         pickle.dump(FCresults, pkl)
 
