@@ -99,12 +99,12 @@ else:
 #iwanttoplot = ['atomic', 'dataset', 'Canonical BOP', 'dataset + Canonical BOP', 'Projections BOP', 'dataset + Projections BOP', 'Projections sOS BOP', 'dataset + Projections sOS BOP' ]
 
 # iwanttoplot = ['Projections OS BOP', '0.7 Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
-iwanttoplot = ['Projections OS BOP']*5 #, '0.7 Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+iwanttoplot = 5*[ '0.7 Projections OS BOP' ] #, 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 folder = StratifiedKFold(n_splits=5, shuffle=True, random_state=1024)
 fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
 folds = list(fold_generator)
-TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error')
+TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error', refit=True)
 
 FittedGS = {}
 
@@ -112,17 +112,14 @@ import  numpy as np
 # DS.Features.keys(): #['Canonical BOP']:
 for featurename in iwanttoplot:
     print(featurename)
+    combi  = (ModelName, featurename)
     if 'random' not in Features[featurename].columns:
         Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
     corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
-    reasonable_features = corrs[corrs>0.1].index.difference([target_case])#.append(Index(['Mag']))
+    reasonable_features = corrs[corrs>0.1].index.difference([target_case])
     if 'Mag' not in reasonable_features:
         raise(  ValueError('Mag eliminated too soon ') )
-    combi  = (ModelName, featurename)
     FittedGS[combi] = copy.deepcopy(TestCV)
-#    if combi in FCresults.keys():
-#        #    if FCresults[combi].shape[0] >= len(reasonable_features):
-#        continue
     FC = FeatureConcatenate(DS, FittedGS[combi], model_params_grid = MO.modeloptions[ModelName] ) #fmodel.best_params_,)
     FCresults[combi].append( FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=3, search_only = reasonable_features) )
     with open(feature_concat_resul_loc, 'wb') as pkl:
