@@ -11,7 +11,7 @@ warnings.simplefilter('ignore')
 
 target_case = 'EF_nmhcp'
 
-suffix = 'CV_stratified_folds'
+suffix = 'CV_non_stratified_folds'
 
 DS = Dataset('Fe-Mo', target_name=target_case)
 
@@ -85,10 +85,10 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 # from BopFoxFeaturizer.FeatureConcatenate import FeatureConcatenate
 
 
-# In[59]:
+iwanttoplot = 3*['0.7 Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
-feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}{suffix}.pkl')  
+feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}.pkl')  
 
 if os.path.exists(feature_concat_resul_loc):
     with open(feature_concat_resul_loc, 'rb') as pkl:
@@ -99,9 +99,8 @@ else:
 #iwanttoplot = ['atomic', 'dataset', 'Canonical BOP', 'dataset + Canonical BOP', 'Projections BOP', 'dataset + Projections BOP', 'Projections sOS BOP', 'dataset + Projections sOS BOP' ]
 
 # iwanttoplot = ['Projections OS BOP', '0.7 Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
-iwanttoplot = 5*[ '0.7 Projections OS BOP' ] #, 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
-folder = StratifiedKFold(n_splits=5, shuffle=True, random_state=1024)
+folder = StratifiedKFold(n_splits=5, shuffle=True) # , random_state=1024)
 fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
 folds = list(fold_generator)
 TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error', refit=True)
