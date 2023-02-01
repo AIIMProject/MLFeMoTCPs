@@ -94,7 +94,7 @@ if os.path.exists(feature_concat_resul_loc):
     with open(feature_concat_resul_loc, 'rb') as pkl:
         FCresults = pickle.load(pkl)
 else:
-    FCresults = {}
+    FCresults = {(ModelName, featurename):[] for featurename in np.unique(iwanttoplot)}
 
 #iwanttoplot = ['atomic', 'dataset', 'Canonical BOP', 'dataset + Canonical BOP', 'Projections BOP', 'dataset + Projections BOP', 'Projections sOS BOP', 'dataset + Projections sOS BOP' ]
 
