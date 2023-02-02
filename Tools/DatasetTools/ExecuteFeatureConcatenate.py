@@ -11,7 +11,8 @@ warnings.simplefilter('ignore')
 
 target_case = 'EF_nmhcp'
 
-suffix = 'CV_non_stratified_folds'
+# suffix = 'CV_non_stratified_folds'
+suffix = 'CV_restart_folds_inloop'
 
 DS = Dataset('Fe-Mo', target_name=target_case)
 
@@ -85,7 +86,7 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 # from BopFoxFeaturizer.FeatureConcatenate import FeatureConcatenate
 
 
-iwanttoplot = 3*['0.7 Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+iwanttoplot = 3*['Projections OS BOP'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
 feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}.pkl')  
@@ -96,15 +97,6 @@ if os.path.exists(feature_concat_resul_loc):
 else:
     FCresults = {(ModelName, featurename):[] for featurename in np.unique(iwanttoplot)}
 
-#iwanttoplot = ['atomic', 'dataset', 'Canonical BOP', 'dataset + Canonical BOP', 'Projections BOP', 'dataset + Projections BOP', 'Projections sOS BOP', 'dataset + Projections sOS BOP' ]
-
-# iwanttoplot = ['Projections OS BOP', '0.7 Projections OS BOP', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP', 'ACE','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
-
-folder = StratifiedKFold(n_splits=5, shuffle=True) # , random_state=1024)
-fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
-folds = list(fold_generator)
-TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error', refit=True)
-
 FittedGS = {}
 
 import  numpy as np
@@ -112,6 +104,10 @@ import  numpy as np
 for featurename in iwanttoplot:
     print(featurename)
     combi  = (ModelName, featurename)
+    folder = StratifiedKFold(n_splits=5, shuffle=True) # , random_state=1024)
+    fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
+    folds = list(fold_generator)
+    TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error', refit=True)
     if 'random' not in Features[featurename].columns:
         Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
     corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
@@ -123,11 +119,3 @@ for featurename in iwanttoplot:
     FCresults[combi].append( FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=3, search_only = reasonable_features) )
     with open(feature_concat_resul_loc, 'wb') as pkl:
         pickle.dump(FCresults, pkl)
-
-
-
-
-
-
-
-
