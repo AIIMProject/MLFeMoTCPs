@@ -86,7 +86,8 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 # from BopFoxFeaturizer.FeatureConcatenate import FeatureConcatenate
 
 
-iwanttoplot = 3*['Projections OS BOP'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+iwanttoplot = 3*['Canonical BOP', 'SOAP_canonicalFe']
+#iwanttoplot = ['0.7 Projections OS BOP', 'SOAP_specific'] +3*['ACE', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
 feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}.pkl')  
@@ -96,6 +97,10 @@ if os.path.exists(feature_concat_resul_loc):
         FCresults = pickle.load(pkl)
 else:
     FCresults = {(ModelName, featurename):[] for featurename in np.unique(iwanttoplot)}
+
+for featurename in iwanttoplot:
+    if (ModelName, featurename) not in FCresults.keys():
+        FCresults[(ModelName, featurename)] = []
 
 FittedGS = {}
 
