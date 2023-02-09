@@ -12,7 +12,7 @@ warnings.simplefilter('ignore')
 target_case = 'EF_nmhcp'
 
 # suffix = 'CV_non_stratified_folds'
-suffix = 'CV_restart_folds_inloop'
+suffix = 'FullScaledBonds'
 
 DS = Dataset('Fe-Mo', target_name=target_case)
 
@@ -30,7 +30,8 @@ Features['Projections OS BOP'] = Features['Projections OS BOP'].filter(regex = '
 Features['Canonical BOP'] = Features['Canonical BOP'].filter(regex = '^(?!^moments)')
 Features['Projections BOP'] = Features['Projections BOP'].filter(regex = '^(?!^moments)')
 Features['Projections sOS BOP'] = Features['Projections sOS BOP'].filter(regex = '^(?!^moments)')
-Features['0.7 Projections OS BOP'] = Features['0.7 Projections OS BOP'].filter(regex = '^(?!^moments)')
+for factor in 0.5, 0.6, 0.7, 0.8:
+    Features[f'{factor:.1f} Projections OS BOP'] = Features[f'{factor:.1f} Projections OS BOP'].filter(regex = '^(?!^moments)')
 
 
 def clean_CNAVS(name: str, features: pd.core.frame.DataFrame):
@@ -86,7 +87,7 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 # from BopFoxFeaturizer.FeatureConcatenate import FeatureConcatenate
 
 
-iwanttoplot = 3*['Projections OS BOP']+6*['ACE_CNAV']
+iwanttoplot = 10*[f'{factor:0.1f} Projections OS BOP' for factor in [0.5, 0.6, 0.7, 0.8] ]
 #3*['Canonical BOP', 'SOAP_canonicalFe', '0.7 Projections OS BOP', 'SOAP_specific'] +3*['ACE', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
