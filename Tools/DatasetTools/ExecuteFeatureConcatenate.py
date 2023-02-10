@@ -12,7 +12,7 @@ warnings.simplefilter('ignore')
 target_case = 'EF_nmhcp'
 
 # suffix = 'CV_non_stratified_folds'
-suffix = 'FullScaledBonds'
+suffix = 'FixedOS'
 
 DS = Dataset('Fe-Mo', target_name=target_case)
 
@@ -30,7 +30,7 @@ Features['Projections OS BOP'] = Features['Projections OS BOP'].filter(regex = '
 Features['Canonical BOP'] = Features['Canonical BOP'].filter(regex = '^(?!^moments)')
 Features['Projections BOP'] = Features['Projections BOP'].filter(regex = '^(?!^moments)')
 Features['Projections sOS BOP'] = Features['Projections sOS BOP'].filter(regex = '^(?!^moments)')
-for factor in 0.5, 0.6, 0.7, 0.8:
+for factor in 0.6, 0.7, 0.8:
     Features[f'{factor:.1f} Projections OS BOP'] = Features[f'{factor:.1f} Projections OS BOP'].filter(regex = '^(?!^moments)')
 
 
