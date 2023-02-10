@@ -40,7 +40,7 @@ import pdb
 dataset = 'Fe-Mo' 
 components = dataset.replace('-','')
 #models = ['canonical','projections', 'projections_os', 'projections_sos']
-models = ['0.7projections','0.5projections', '0.6projections', '0.8projections']
+models =  ['0.5projections_os', '0.6projections_os','0.7projections_os', '0.8projections_os', 'projections_os']
 cutoff = 'table'
 atoms = 'initial'
 moments = 16
@@ -76,7 +76,8 @@ for model in models:
     print('atoms: ', atoms, 'model: ', model, '  cutoff: ', cutoff, ' moments:', moments)
 # only when using branch check mag from bopfoxfeaturizer
 #    resultspickle = os.path.join(dataset, 'Descriptors', f'paralell_{components}_{atoms}_{model}_{cutoff}_WUBIND_{moments}_mag.pkl')
-    resultspickle = os.path.join(dataset, 'Descriptors', f'paralell_{components}_{atoms}_{model}_{cutoff}_WUBIND_{moments}.pkl')
+    resultspickle = os.path.join(dataset, 'Descriptors', f'parallel_{components}_{atoms}_{model}_{cutoff}_WUBIND_{moments}.pkl')
+    print(f'saving in {resultspickle}')
     BOPC = BopfoxFeatures(
             AtomsObjects['atoms'],modelsfile, modelname=model,
             cutoffby=cutoff, 
