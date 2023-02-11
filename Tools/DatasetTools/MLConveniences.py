@@ -55,9 +55,9 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'Projections BOP': f'curated_{system}_initial_projections_table_WUBIND_16.pkl',
         'Projections OS BOP': f'curated_{system}_initial_projections_os_table_WUBIND_16.pkl',
     #    '0.5 Projections OS BOP': f'curated_{system}_initial_0.5projections_os_table_WUBIND_16.pkl',
-    #    '0.6 Projections OS BOP': f'curated_{system}_initial_0.6projections_os_table_WUBIND_16.pkl',
-    #    '0.7 Projections OS BOP': f'curated_{system}_initial_0.7projections_os_table_WUBIND_16.pkl',
-    #    '0.8 Projections OS BOP': f'curated_{system}_initial_0.8projections_os_table_WUBIND_16.pkl',
+        '0.6 Projections OS BOP': f'curated_{system}_initial_0.6projections_os_table_WUBIND_16.pkl',
+        '0.7 Projections OS BOP': f'curated_{system}_initial_0.7projections_os_table_WUBIND_16.pkl',
+        '0.8 Projections OS BOP': f'curated_{system}_initial_0.8projections_os_table_WUBIND_16.pkl',
     #    'Projections sOS BOP': f'curated_{system}_initial_projections_sos_table_WUBIND_16.pkl',
     }
 

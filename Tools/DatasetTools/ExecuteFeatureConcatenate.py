@@ -29,7 +29,7 @@ Features['ACE'] = Features['ACE_CNAV'].filter(regex='_0$|Mag|Structure')
 Features['Projections OS BOP'] = Features['Projections OS BOP'].filter(regex = '^(?!^moments)')
 Features['Canonical BOP'] = Features['Canonical BOP'].filter(regex = '^(?!^moments)')
 Features['Projections BOP'] = Features['Projections BOP'].filter(regex = '^(?!^moments)')
-Features['Projections sOS BOP'] = Features['Projections sOS BOP'].filter(regex = '^(?!^moments)')
+#Features['Projections sOS BOP'] = Features['Projections sOS BOP'].filter(regex = '^(?!^moments)')
 for factor in 0.6, 0.7, 0.8:
     Features[f'{factor:.1f} Projections OS BOP'] = Features[f'{factor:.1f} Projections OS BOP'].filter(regex = '^(?!^moments)')
 
@@ -87,7 +87,7 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 # from BopFoxFeaturizer.FeatureConcatenate import FeatureConcatenate
 
 
-iwanttoplot = 10*[f'{factor:0.1f} Projections OS BOP' for factor in [0.5, 0.6, 0.7, 0.8] ]
+iwanttoplot = 10*( [f'{factor}Projections OS BOP' for factor in ['0.6 ', '0.7 ', '0.8 ', ''] ]) 
 #3*['Canonical BOP', 'SOAP_canonicalFe', '0.7 Projections OS BOP', 'SOAP_specific'] +3*['ACE', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
