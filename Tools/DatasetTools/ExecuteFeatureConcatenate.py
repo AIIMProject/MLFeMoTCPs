@@ -87,7 +87,8 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 # from BopFoxFeaturizer.FeatureConcatenate import FeatureConcatenate
 
 
-iwanttoplot = 10*( [f'{factor}Projections OS BOP' for factor in ['0.6 ', '0.7 ', '0.8 ', ''] ]) 
+iwanttoplot = 10*( [f'{factor}Projections OS BOP' for factor in ['0.6 ', '0.7 ', '0.8 ', ''] ] +
+                  ['Canonical BOP', 'dataset', 'atomic', 'SOAP_specific', 'ACE'] ) + 10*['ACE_CNAV']
 #3*['Canonical BOP', 'SOAP_canonicalFe', '0.7 Projections OS BOP', 'SOAP_specific'] +3*['ACE', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
