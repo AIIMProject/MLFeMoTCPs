@@ -348,6 +348,13 @@ from DatasetOperator import Dataset
 from MLConveniences import score_fitted_model, cross_val_score
 import copy
 
+def check_mag_in_index(feature_list : pd.Index):
+    if 'Mag' in feature_list.index:
+        add_description = ' Mag In '
+    elif 'Mag' not in search_only:
+        add_description = ' warning, Mag removed !' 
+    return add_description
+
 class NewFeatureConcatenate():
 
     def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}, model_params_grid={}):
@@ -360,6 +367,11 @@ class NewFeatureConcatenate():
             self.model.set_params(**model_params)
         else:
             raise ValueError('undetermined model')
+
+    def discard_correlated_features(self, thegroupname, the_best_feature_name, current_list):
+        corrs = self.DS.Features[thegroupname].corr().abs()[the_best_feature_name]
+        return corrs.index[corrs < 0.9].intersection(current_list)
+
 
     def  get_best_features_list(
             self,
@@ -380,13 +392,13 @@ class NewFeatureConcatenate():
             last_test = this_best_feature['test'][0]
             best = feature_list.sort_values(by='test').iloc[0]
             best_test = best['test']
+            if last_train > 1.1*best_test:
+                break
             description = f'      train: {last_train:.3f}, test: {last_test:.3f} , best = {best.name}, {best_test:.3f}' 
-            corrs = self.DS.Features[groupname].corr().abs()[this_best_feature.index[0]]
-            search_only = corrs.index[corrs < 0.9].intersection(search_only)
-            if 'Mag' in feature_list.index:
-                description += ' Mag In '
-            elif 'Mag' not in search_only:
-                description += ' warning, Mag removed !' 
+            search_only = self.discard_correlated_features(
+                    groupname, this_best_feature.index[0], search_only
+                    )
+            description += check_mag_in_index(feature_list.index, search_only)
             if len(search_only) < 1:
                 break
             progress.set_postfix({this_best_feature.index[0]: description})
