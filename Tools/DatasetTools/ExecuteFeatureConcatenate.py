@@ -86,9 +86,11 @@ FittedModels = {}
 FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/FeatureConcatenate.py').load_module().NewFeatureConcatenate
 # from BopFoxFeaturizer.FeatureConcatenate import FeatureConcatenate
 
+n_repeats = 10
 
-iwanttoplot = 10*( [f'{factor}Projections OS BOP' for factor in ['0.6 ', '0.7 ', '0.8 ', ''] ] +
-                  ['Canonical BOP', 'dataset', 'atomic', 'SOAP_specific', 'ACE'] ) + 10*['ACE_CNAV']
+iwanttoplot = n_repeats*( [f'{factor}Projections OS BOP' for factor in ['0.6 ', '0.7 ', '0.8 ', ''] ] +
+                  ['Canonical BOP', 'dataset', 'atomic', 'SOAP_specific', 'ACE'] ) + \
+                          n_repeats*['ACE_CNAV']
 #3*['Canonical BOP', 'SOAP_canonicalFe', '0.7 Projections OS BOP', 'SOAP_specific'] +3*['ACE', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
@@ -111,6 +113,8 @@ import  numpy as np
 for featurename in iwanttoplot:
     print(featurename)
     combi  = (ModelName, featurename)
+    if len(FCresults[combi]) >= n_repeats:
+        continue
     folder = StratifiedKFold(n_splits=5, shuffle=True) # , random_state=1024)
     fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
     folds = list(fold_generator)
