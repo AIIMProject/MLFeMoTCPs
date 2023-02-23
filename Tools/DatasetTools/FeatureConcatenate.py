@@ -348,10 +348,11 @@ from DatasetOperator import Dataset
 from MLConveniences import score_fitted_model, cross_val_score
 import copy
 
-def check_mag_in_index(feature_list : pd.Index):
-    if 'Mag' in feature_list.index:
+def check_mag_in_index(feature_list : pd.Index, compare_with):
+    add_description = ''
+    if 'Mag' in feature_list:
         add_description = ' Mag In '
-    elif 'Mag' not in search_only:
+    elif 'Mag' not in compare_with:
         add_description = ' warning, Mag removed !' 
     return add_description
 
@@ -392,7 +393,7 @@ class NewFeatureConcatenate():
             last_test = this_best_feature['test'][0]
             best = feature_list.sort_values(by='test').iloc[0]
             best_test = best['test']
-            if last_train > 1.1*best_test:
+            if last_test > 1.1*best_test:
                 break
             description = f'      train: {last_train:.3f}, test: {last_test:.3f} , best = {best.name}, {best_test:.3f}' 
             search_only = self.discard_correlated_features(
