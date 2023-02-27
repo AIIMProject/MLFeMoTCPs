@@ -119,3 +119,11 @@ def plot_best_scores(best_scores: pd.core.frame.DataFrame, ModelName='Kernel Rid
     ax.set_yscale('log')
     ax.set_ylabel(r'test RMSE@$\Delta E_f$ (meV/at)')
     return ax
+
+
+def clean_CNAVS(name: str, features: pd.core.frame.DataFrame):
+    if 'BOP' in name:
+        return features.filter(regex='^(?!.*_CN)')
+    else:
+        return features
+

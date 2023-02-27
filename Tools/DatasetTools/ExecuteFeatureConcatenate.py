@@ -34,13 +34,6 @@ for factor in 0.6, 0.7, 0.8:
     Features[f'{factor:.1f} Projections OS BOP'] = Features[f'{factor:.1f} Projections OS BOP'].filter(regex = '^(?!^moments)')
 
 
-def clean_CNAVS(name: str, features: pd.core.frame.DataFrame):
-    if 'BOP' in name:
-        return features.filter(regex='^(?!.*_CN)')
-    else:
-        return features
-
-
 def clean_zeros(name: str, features: pd.core.frame.DataFrame):
     if 'BOP' in name:
         return features.filter(regex='^(?!.*_0$)')
@@ -88,9 +81,8 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 
 n_repeats = 10
 
-iwanttoplot = n_repeats*( [f'{factor}Projections OS BOP' for factor in ['0.6 ', '0.7 ', '0.8 ', ''] ] +
-                  ['Canonical BOP', 'dataset', 'atomic', 'SOAP_specific', 'ACE'] ) + \
-                          n_repeats*['ACE_CNAV']
+iwanttoplot = n_repeats*( [f'{factor} Projections OS BOP no CNAV' for factor in ['0.7'] ] +
+                  ['Canonical BOP no CNAV', 'dataset no CNAV', 'atomic no CNAV', 'SOAP_specific no CNAV'] ) 
 #3*['Canonical BOP', 'SOAP_canonicalFe', '0.7 Projections OS BOP', 'SOAP_specific'] +3*['ACE', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
