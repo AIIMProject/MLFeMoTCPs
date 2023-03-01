@@ -41,7 +41,8 @@ def clean_zeros(name: str, features: pd.core.frame.DataFrame):
         return features
 
 def notyetclean(name: str):
-    return ('BOP' in name) and ('CNAV' not in name) and ('Zeros' not in name)
+    #    return ('BOP' in name) and ('CNAV' not in name) and ('Zeros' not in name)
+    return ('CNAV' not in name) and ('Zeros' not in name)
 
 Features.update({name+' no CNAV': clean_CNAVS(name, features) for name, features in Features.items() if notyetclean(name)})
 
@@ -81,8 +82,8 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 
 n_repeats = 10
 
-iwanttoplot = n_repeats*( [f'{factor} Projections OS BOP no CNAV' for factor in ['0.7'] ] +
-                  ['Canonical BOP no CNAV', 'dataset no CNAV', 'atomic no CNAV', 'SOAP_specific no CNAV'] ) 
+iwanttoplot = n_repeats*( [ 'SOAP_specific no CNAV'] + [ f'{factor} Projections OS BOP no CNAV' for factor in ['0.7'] ] +
+                  ['Canonical BOP no CNAV'] ) 
 #3*['Canonical BOP', 'SOAP_canonicalFe', '0.7 Projections OS BOP', 'SOAP_specific'] +3*['ACE', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 
 
