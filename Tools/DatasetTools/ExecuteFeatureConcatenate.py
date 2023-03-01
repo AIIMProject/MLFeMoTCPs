@@ -16,7 +16,7 @@ suffix = 'FixedOS'
 
 DS = Dataset('Fe-Mo', target_name=target_case)
 
-ModelName = 'Kernel Ridge'
+ModelName = 'Random Forest' #'Kernel Ridge'
 
 from MLConveniences import *
 
@@ -82,9 +82,11 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 
 n_repeats = 10
 
-iwanttoplot = n_repeats*( [ 'SOAP_specific no CNAV'] + [ f'{factor} Projections OS BOP no CNAV' for factor in ['0.7'] ] +
-                  ['Canonical BOP no CNAV'] ) 
-#3*['Canonical BOP', 'SOAP_canonicalFe', '0.7 Projections OS BOP', 'SOAP_specific'] +3*['ACE', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+iwanttoplot = [ 'SOAP_specific no CNAV',  '0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'ACE'] 
+iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',  '0.6 Projections OS BOP', '0.7 Projections OS BOP', '0.8 Projections OS BOP', 'Projections OS BOP'] 
+iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+iwanttoplot *= 10
+iwanttoplot += 5*['ACE_CNAV']
 
 
 feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}.pkl')  
