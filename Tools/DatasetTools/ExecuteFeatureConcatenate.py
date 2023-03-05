@@ -82,7 +82,7 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 
 n_repeats = 10
 
-iwanttoplot = [ 'SOAP_specific no CNAV',  '0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'ACE'] 
+iwanttoplot = ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'ACE'] 
 iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',  '0.6 Projections OS BOP', '0.7 Projections OS BOP', '0.8 Projections OS BOP', 'Projections OS BOP'] 
 iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 iwanttoplot *= 10
