@@ -37,7 +37,7 @@ class  Dataset():
                 raise ValueError(" selectMag option can only be 'FM' or 'NM' ")
             self.BS = self.BS[self.BS.index.str.contains(selectMag+'$', regex=True)]
         self.resultslocation = load_results_location(dataset)
-        self.Features = load_features(dataset)
+        self.Features = self.load_features(dataset)
         self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
         self.Features = {group: feature.loc[self.allindex] for group, feature in self.Features.items()}
         self.Features.update({
@@ -54,6 +54,11 @@ class  Dataset():
         
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
+
+    def load_features(self, dataset):
+        features_dict = load_features(dataset)
+        features_dict.update({name+' no CNAV': clean_CNAVS(name, features) for name, features in features_dict.items() if notyetclean(name)})
+        return features_dict
 
     def __str__(self):
         if not hasattr(self, 'description'):

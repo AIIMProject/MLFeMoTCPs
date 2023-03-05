@@ -50,7 +50,7 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'SOAP_canonicalW': 'soap_features__canonicalW__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
     'SOAP_specific': 'soap_features__specific__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
     'Pyscal' : 'CNAVPyscal.pkl',
-    'ACE_CNAV' :  'Fe-Mo-ACE-CNAV.pkl', 
+    'ACE' :  'Fe-Mo-ACE-CNAV.pkl', 
     'Canonical BOP': f'curated_{system}_initial_canonical_table_WUBIND_16.pkl',
     'Projections BOP': f'curated_{system}_initial_projections_table_WUBIND_16.pkl',
         'Projections OS BOP': f'curated_{system}_initial_projections_os_table_WUBIND_16.pkl',
@@ -122,8 +122,13 @@ def plot_best_scores(best_scores: pd.core.frame.DataFrame, ModelName='Kernel Rid
 
 
 def clean_CNAVS(name: str, features: pd.core.frame.DataFrame):
+    return features.filter(regex='^(?!.*_CN..$)')
+
+def notyetclean(name: str):
+    return ('no CNAV' not in name) and ('Zeros' not in name)
+
+def clean_zeros(name: str, features: pd.core.frame.DataFrame):
     if 'BOP' in name:
-        return features.filter(regex='^(?!.*_CN)')
+        return features.filter(regex='^(?!.*_0$)')
     else:
         return features
-

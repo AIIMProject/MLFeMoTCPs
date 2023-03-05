@@ -16,7 +16,7 @@ suffix = 'FixedOS'
 
 DS = Dataset('Fe-Mo', target_name=target_case)
 
-ModelName = 'Random Forest' #'Kernel Ridge'
+ModelName = 'Kernel Ridge' #'Random Forest' 
 
 from MLConveniences import *
 
@@ -34,11 +34,11 @@ for factor in 0.6, 0.7, 0.8:
     Features[f'{factor:.1f} Projections OS BOP'] = Features[f'{factor:.1f} Projections OS BOP'].filter(regex = '^(?!^moments)')
 
 
-def clean_zeros(name: str, features: pd.core.frame.DataFrame):
-    if 'BOP' in name:
-        return features.filter(regex='^(?!.*_0$)')
-    else:
-        return features
+#def clean_zeros(name: str, features: pd.core.frame.DataFrame):
+#    if 'BOP' in name:
+#        return features.filter(regex='^(?!.*_0$)')
+#    else:
+#        return features
 
 def notyetclean(name: str):
     #    return ('BOP' in name) and ('CNAV' not in name) and ('Zeros' not in name)
@@ -82,11 +82,13 @@ FeatureConcatenate = SourceFileLoader('FeatureConcatenate', 'Tools/DatasetTools/
 
 n_repeats = 10
 
-iwanttoplot = ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'ACE'] 
-iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',  '0.6 Projections OS BOP', '0.7 Projections OS BOP', '0.8 Projections OS BOP', 'Projections OS BOP'] 
-iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
-iwanttoplot *= 10
-iwanttoplot += 5*['ACE_CNAV']
+iwanttoplot = n_repeats*['SOAP_specific no CNAV']
+#iwanttoplot = ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV'] 
+#iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',  '0.6 Projections OS BOP', '0.7 Projections OS BOP', '0.8 Projections OS BOP', 'Projections OS BOP'] 
+#iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+#iwanttoplot += ['ACE no CNAV']
+#iwanttoplot *= 10
+#iwanttoplot += 5*['ACE']
 
 
 feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}.pkl')  
