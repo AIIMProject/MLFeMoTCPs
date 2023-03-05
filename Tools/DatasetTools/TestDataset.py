@@ -10,7 +10,7 @@ warnings.simplefilter('ignore')
 
 target_case = 'EF_nmhcp'
 
-DS = Dataset('Fe-Mo', target_name=target_case)
+DS : Dataset = Dataset('Fe-Mo', target_name=target_case)
 
 ModelName = 'Kernel Ridge'
 
@@ -20,18 +20,6 @@ resultslocation = DS.resultslocation
 
 Features = DS.Features  # {name: pd.read_pickle(filename) for name, filename in DescriptorFileList.items()}
 
-Features['ACE'] = Features['ACE_CNAV'].filter(regex='_0$|Mag|Structure')
-
-def clean_zeros(name: str, features: pd.core.frame.DataFrame):
-    if 'BOP' in name:
-        return features.filter(regex='^(?!.*_0$)')
-    else:
-        return features
-
-def notyetclean(name: str):
-    return ('BOP' in name) and ('CNAV' not in name) and ('Zeros' not in name)
-
-Features.update({name+' no CNAV': clean_CNAVS(name, features) for name, features in Features.items() if notyetclean(name)})
 
 samplesplit = DS.get_samplesplit()
 
@@ -44,9 +32,6 @@ Models = {
     'Random Forest': Pipeline([('regressor', RandomForestRegressor())]),
     'Gaussian Process': Pipeline([('regressor', GaussianProcessRegressor())])
 }
-
-
-# In[21]:
 
 
 from importlib.machinery import SourceFileLoader
@@ -63,10 +48,16 @@ FittedModels = {}
 Tester = DatasetTester()
 
 
-
 somecombi = (ModelName, 'Projections BOP')
 
-# # Feature Concatenation 
+import unittest
 
-# In[58]:
+class TestDataset(unittest.TestCase):
 
+    def test_nocnav_features(self):
+        no_cnav_features = DS.Features['SOAP_specific no CNAV'].filter(regex='.*_CN..').columns
+        self.assertTrue(len(no_cnav_features) < 1)
+
+
+if __name__ == '__main__' :
+    unittest.main()
