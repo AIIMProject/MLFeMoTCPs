@@ -1,3 +1,5 @@
+from ase.io.vasp import read_vasp
+
 def permutate(structurename,Nelements,NWyckoff):
     # names of elements
     n=['A','B','C','D','E','F','G','H','I','J']
@@ -153,14 +155,69 @@ def generatePOSCAR(filename):
     writePOSCAR('POSCAR.'+filename,poscar)
     return
 
+import re
+import  mendeleev
+import numpy as np
+from ase.atoms import Atoms
 
+def get_scaled_atomic_volume(new_atoms: Atoms):
+    symbol_counts = pd.Series(new_atoms.get_chemical_symbols()).value_counts()
+    unique_symbols = symbol_counts.index.tolist()
+    # re.findall('[A-Za-z]{1,2}', new_atoms.get_chemical_formula())
+    unique_nspecs = symbol_counts.values
+     # [int(n) for n in re.findall('[0-9]+', new_atoms.get_chemical_formula())]
+    atom_num : dict = { symb: num for symb, num in zip(unique_symbols, unique_nspecs)}
+    vols_dict = {} 
+    for s in unique_symbols:
+        try:
+            vols_dict[s] = (4/3)*np.pi*(mendeleev.element(s).atomic_radius/100)**3  
+        except Exception as E:
+            pdb.set_trace()
+            pass
+    try:
+        total_atom_vol = np.sum([ vols_dict[s] * atom_num[s] for s in unique_symbols] )
+    except Exception as E:
+        pdb.set_trace()
+        pass
+    
+    return total_atom_vol
+
+import pdb
+
+def decoratePOSCAR(filename, species_dict : dict[str, str], return_replacings = False):
+    strucname, occstring = filename.split('-')
+    replacings = {i+1: species_dict[tag] for i, tag in enumerate(occstring)}
+    proto = read_vasp('R-structures/POSCAR_R_proto.vasp')
+    new_symbols = [replacings[i] for i in proto.numbers]
+    new_atoms = proto.copy()
+    new_atoms.set_chemical_symbols(new_symbols)
+    scaled_atomic_volume = get_scaled_atomic_volume(new_atoms)
+    new_cell = new_atoms.cell * ( (scaled_atomic_volume / new_atoms.get_volume())**(1./3.) )
+    new_atoms.set_cell(new_cell, scale_atoms = True)
+    return_values = new_atoms
+    if return_replacings :
+        return_values = new_atoms, replacings
+    return return_values
+
+import pandas as pd 
+from tqdm.auto import tqdm
+
+def make_all_atoms_objects(list_of_binary_tags, species_dict={'A': 'Fe', 'B': 'Mo'}):
+    binary_atoms = {}
+    for tag in tqdm(list_of_binary_tags):
+        this_atoms = decoratePOSCAR(tag, species_dict)
+        formula = this_atoms.get_chemical_formula()
+        formula = formula.replace('Fe','Fe_pv').replace('Mo','Mo_sv')
+        index = formula+'.'+tag
+        binary_atoms[index] = this_atoms
+    return pd.DataFrame.from_dict(binary_atoms, orient = 'index')
+    
 
 if __name__ == '__main__' : 
+    binaryr = permutate('R', 2, 11)
+    atoms_objects = make_all_atoms_objects(binaryr)
+    atoms_objects.to_pickle('Fe-Mo/Atomsobjects/R_structures.pkl')
 
-    binaryR = permutate('R',2,11)
-    print('structures: ',len(binaryR), '     target: ',2**11)
-    print(binaryR)
 
-    for R in binaryR: 
-        generatePOSCAR(R)
+
 
