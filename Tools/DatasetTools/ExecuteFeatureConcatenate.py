@@ -22,7 +22,10 @@ suffix = 'FixedOS'
 DS = Dataset('Fe-Mo', target_name=target_case)
 
 #ModelName = 'Kernel Ridge' 
-ModelName = 'Random Forest' 
+#ModelName = 'Random Forest' 
+#ModelName='Gaussian Process'
+ModelName = 'MLP'
+
 
 
 resultslocation = DS.resultslocation
@@ -56,7 +59,7 @@ fittedmodelslocation = os.path.join(DS.resultslocation, f'{ModelName}_{target_ca
 
 FittedModels = {}
 
-n_repeats = 8
+n_repeats = 3
 
 #iwanttoplot = n_repeats*['SOAP_specific no CNAV']
 iwanttoplot = ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
