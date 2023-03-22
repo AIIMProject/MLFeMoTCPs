@@ -31,6 +31,7 @@ def tags_to_cns(cptaglist : list[str] ):
 cn_persite : dict = {structure:  tags_to_cns(sites) for structure, sites in cn_dict.items()}
 
 def get_relevant_sorters(AtomsObjects : pd.core.frame.DataFrame , Sorters: pd.core.series.Series) -> pd.core.series.Series:
+    pdb.set_trace()
     return Sorters[AtomsObjects.file.map(lambda f: f[0])]
 
 def sorting_feature(

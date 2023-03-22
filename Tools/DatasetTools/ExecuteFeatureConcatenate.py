@@ -24,7 +24,7 @@ DS = Dataset('Fe-Mo', target_name=target_case)
 #ModelName = 'Kernel Ridge' 
 #ModelName = 'Random Forest' 
 #ModelName='Gaussian Process'
-ModelName = 'MLP'
+ModelName = 'Random Forest'
 
 
 
@@ -61,11 +61,11 @@ FittedModels = {}
 
 n_repeats = 3
 
+iwanttoplot = ['ACE no CNAV']
 #iwanttoplot = n_repeats*['SOAP_specific no CNAV']
-iwanttoplot = ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
+iwanttoplot += ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
 iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',  '0.6 Projections OS BOP', '0.7 Projections OS BOP', '0.8 Projections OS BOP', 'Projections OS BOP'] 
 iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
-iwanttoplot += ['ACE no CNAV']
 iwanttoplot *= n_repeats
 iwanttoplot += 5*['ACE']
 
