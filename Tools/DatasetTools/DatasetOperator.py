@@ -1,7 +1,6 @@
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__) )))
-print (sys.path)
 from Tools.DatasetTools.Commoms import * 
 from sklearn.model_selection import train_test_split
 from Tools.DatasetTools.MLConveniences import *
