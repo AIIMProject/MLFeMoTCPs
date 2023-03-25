@@ -210,7 +210,7 @@ def make_all_atoms_objects(list_of_binary_tags, species_dict={'A': 'Fe', 'B': 'M
         formula = formula.replace('Fe','Fe_pv').replace('Mo','Mo_sv')
         index = formula+'.'+tag
         binary_atoms[index] = this_atoms
-    return pd.DataFrame.from_dict(binary_atoms, orient = 'index')
+    return pd.Series(binary_atoms)
     
 
 if __name__ == '__main__' : 
