@@ -132,3 +132,13 @@ def clean_zeros(name: str, features: pd.core.frame.DataFrame):
         return features.filter(regex='^(?!.*_0$)')
     else:
         return features
+
+def get_optimal_features(FeatureScoreData:pd.core.frame.DataFrame):
+    thisatmin = FeatureScoreData['test'].argmin()
+    return FeatureScoreData.index[:thisatmin]
+
+def filter_features (Features_DF: pd.core.frame.DataFrame, learning_curve = pd.core.frame.DataFrame):
+    if 'params' not in learning_curve.columns:
+        raise ValueError('the learning curve provided is not an evaluation of best features')
+    columns = get_optimal_features(learning_curve)
+    return Features_DF[columns]
