@@ -7,6 +7,7 @@ import pickle
 import matplotlib.pyplot as plt
 from scipy.spatial import ConvexHull
 
+import seaborn as sns
 plt.style.use('default')
 plt.rc('figure', figsize=(15,10))
 plt.rc('font', size=22)
@@ -193,7 +194,20 @@ class Plotting:
         else:
             return chulls
 
+class PlottingChulls:
 
 
-     
+    def clean_bad_populated(thephasesBS, return_removed = False):
+        remove = []
+        for mag, phasesbs in thephasesBS.items():
+            for phase, bs in phasesbs.items():
+                if len(bs) < 3:
+                    remove.append((mag, phase))
+        removed = [thephasesBS[remove_mag].pop(remove_phase) for (remove_mag, remove_phase) in remove]
+        if return_removed:
+            return removed
 
+    def make_palette_forlist(NamesOfValues: list, palette_name = 'tab20'):
+        palette = sns.color_palette(palette_name, n_colors = len(NamesOfValues)+1)
+        colors = {name: color for name, color in zip(NamesOfValues, palette)}
+        return colors
