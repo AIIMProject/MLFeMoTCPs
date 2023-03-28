@@ -167,7 +167,7 @@ class Plotting:
     def get_convex_hulls(cls,
             PhaseBS: dict[str, pd.core.frame.DataFrame], 
             components: list[str],
-            viewpoint : list[float] = [0.5, -1] ,
+            viewpoint : list[float] = [0.6, -10] ,
             return_points = False, 
             getproperty = '^EF$'
             ):
