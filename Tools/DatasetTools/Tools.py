@@ -186,7 +186,12 @@ class Plotting:
 
         for (phase, bs ), x_ef in zip(PhaseBS.items(), points.values()):
             thispoints = x_ef[bs['nelem']<3 ]
-            withviewp = np.vstack([thispoints, viewpoint])
+            try:
+                withviewp = np.vstack([thispoints, viewpoint])
+            except Exception as E:
+                pdb.set_trace()
+                withviewp = np.vstack([thispoints, viewpoint])
+                pass
             chulls[phase] = ConvexHull(withviewp, qhull_options=f'QG{len(withviewp)-1}')
 
         if return_points:
