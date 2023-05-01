@@ -1,12 +1,15 @@
-from pandas import Index
+import sys
+import os
+sys.path.insert(0, os.path.dirname(( os.path.dirname(os.path.dirname(__file__)) )))
 from Commoms import *
+from pandas import Index
 import copy
 import  numpy as np
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel, RationalQuadratic, ConstantKernel, ExpSineSquared, DotProduct, Product
 
-sys.path.insert(0, os.path.dirname(( os.path.dirname(os.path.dirname(__file__)) )))
+
 from DatasetOperator import Dataset, DatasetTester
 from ModelSelection import ModelOptions
 from MLConveniences import *
@@ -67,8 +70,9 @@ iwanttoplot = ['ACE no CNAV']
 iwanttoplot += ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
 iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',  '0.6 Projections OS BOP', '0.7 Projections OS BOP', '0.8 Projections OS BOP', 'Projections OS BOP'] 
 iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
-iwanttoplot += ['ACE']
+iwanttoplot += ['dataset no CNAV', 'atomic no CNAV'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 iwanttoplot *= n_repeats
+#iwanttoplot += ['ACE']
 
 feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}.pkl')  
 
@@ -96,8 +100,9 @@ def run_feature_selection(list_of_features = iwanttoplot):
         TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error', refit=True)
         if 'random' not in Features[featurename].columns:
             Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
+        Features[featurename]=Features[featurename].convert_dtypes(convert_floating=True)
         corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
-        reasonable_features = corrs[corrs>0.1].index.difference([target_case])
+        reasonable_features = corrs[corrs>0.01].index.difference([target_case])
         if 'Mag' not in reasonable_features:
             raise(  ValueError('Mag eliminated too soon ') )
         FittedGS[combi] = copy.deepcopy(TestCV)

@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 from scipy.spatial import ConvexHull
 
 import seaborn as sns
-plt.style.use('default')
-plt.rc('figure', figsize=(15,10))
-plt.rc('font', size=22)
+#Plt.style.use('default')
+#Plt.rc('figure', figsize=(15,10))
+#Plt.rc('font', size=22)
 import pdb
 
 def need_to_update(afile):

@@ -371,7 +371,7 @@ class NewFeatureConcatenate():
 
     def discard_correlated_features(self, thegroupname, the_best_feature_name, current_list):
         corrs = self.DS.Features[thegroupname].corr().abs()[the_best_feature_name]
-        return corrs.index[corrs < 0.9].intersection(current_list)
+        return corrs.index[corrs < 0.99].intersection(current_list)
 
 
     def  get_best_features_list(
@@ -393,7 +393,7 @@ class NewFeatureConcatenate():
             last_test = this_best_feature['test'][0]
             best = feature_list.sort_values(by='test').iloc[0]
             best_test = best['test']
-            if last_test > 1.1*best_test:
+            if last_test > 1.5*best_test:
                 break
             description = f'      train: {last_train:.3f}, test: {last_test:.3f} , best = {best.name}, {best_test:.3f}' 
             search_only = self.discard_correlated_features(
