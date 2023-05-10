@@ -16,6 +16,13 @@ from tqdm.auto import tqdm
 import glob
 from itertools import permutations
 
+plt.rc('text', usetex=True)
+plt.rc('figure', figsize=(7, 5))
+plt.rc('font', size=20)
+plt.rc('xtick', labelsize=18)
+plt.rc('ytick', labelsize=18)
+plt.rc('axes', labelsize=18)
+from matplotlib.lines import Line2D
 
 # fully curated briefsumary
 def load_fully_curated_briefsummary(dataset: str) -> pd.core.frame.DataFrame:

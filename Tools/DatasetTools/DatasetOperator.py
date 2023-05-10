@@ -14,7 +14,8 @@ class  Dataset():
             dataset:str         ='Fe-Mo', 
             target_name : str   = 'EF_fmbcc',
             selectPhase         = None, 
-            selectMag   : str   = None
+            selectMag   : str   = None,
+            remove_phases : str = None
             ):
         """initiate the dataset
         arguments
