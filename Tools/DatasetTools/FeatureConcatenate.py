@@ -27,6 +27,9 @@ import os.path
 import re
 import warnings
 import time
+from sklearnex import patch_sklearn
+from threadpoolctl import ThreadpoolController
+controller = ThreadpoolController()
 warnings.filterwarnings('ignore')
 """
 This module contains some functions to process datasets and generate regressions.
@@ -407,6 +410,7 @@ class NewFeatureConcatenate():
             progress.refresh()
         return feature_list
 
+    @controller.wrap(limits=1)
     def train_fixed_plus_try(self, feature):
         if feature in self.fixed_features:
             return None
@@ -428,6 +432,7 @@ class NewFeatureConcatenate():
         return {feature: score}
 
     def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 3, search_within : pd.core.indexes.base.Index = None) -> list[str]:
+        from multiprocessing import Pool
         self.fixed_features = fixed_features
         self.xtrain, self.xtest, self.ytrain,  self.ytest = self.DS.train_test_split(groupname)
         if search_within is None:
@@ -435,7 +440,7 @@ class NewFeatureConcatenate():
         else:
             inspect_features = search_within
         try_feature_list = inspect_features.difference(self.fixed_features)
-        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers,  leave=False)# max_workers,
+        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers, leave=False)# max_workers,max_workers=max_workers,
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         scores.sort_values(by='test', inplace=True)
