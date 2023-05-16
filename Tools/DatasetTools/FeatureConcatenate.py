@@ -28,6 +28,8 @@ import os.path
 import re
 import warnings
 import time
+from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing import Pool
 from threadpoolctl import ThreadpoolController
 controller = ThreadpoolController()
 warnings.filterwarnings('ignore')
@@ -374,6 +376,9 @@ class NewFeatureConcatenate():
         else:
             raise ValueError('undetermined model')
         self.logger = logger
+        #self.redirect = {}
+        #if self.logger is not None:
+        #    self.redirect = {'file': open(os.devnull, 'w') }
 
     def discard_correlated_features(self, thegroupname, the_best_feature_name, current_list):
         corrs = self.DS.Features[thegroupname].corr().abs()[the_best_feature_name]
@@ -392,15 +397,12 @@ class NewFeatureConcatenate():
             max_features = len(search_only)
         feature_list = pd.DataFrame()
         max_num_features = min(num_features, max_features)
-        redirect = {}
-        if self.logger is not None:
-            redirect = {'file': open(os.devnull, 'w') }
-        progress = tqdm(range(max_num_features), **redirect)
+        progress = tqdm(range(max_num_features)) #, **self.redirect)
         self.logger.info(f'max_workers = {max_workers}')
-        logger.debug('enering serial loop')
         self.logger.info(str(progress))
+        self.logger.debug('entering serial loop')
         for step in progress:
-            logger.debug('executing parallell loop')
+            self.logger.debug('executing parallell loop')
             this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers, search_within = search_only)
             feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
             self.logger.debug(feature_list)
@@ -431,6 +433,7 @@ class NewFeatureConcatenate():
             pass
         else:
             raise('not a grid search')
+        self.logger.debug('starting in parallell')
         thismodel : sklearn.model_selection._search.GridSearchCV = copy.deepcopy(self.model)
         thismodel.fit(self.xtrain[self.fixed_features + [ feature ]], self.ytrain)
         score2 =  score_fitted_model(
@@ -445,7 +448,6 @@ class NewFeatureConcatenate():
         return {feature: score}
 
     def get_best_feature(self, groupname: str, fixed_features = [], max_workers = 3, search_within : pd.core.indexes.base.Index = None) -> list[str]:
-        from multiprocessing import Pool
         self.fixed_features = fixed_features
         self.xtrain, self.xtest, self.ytrain,  self.ytest = self.DS.train_test_split(groupname)
         if search_within is None:
@@ -453,7 +455,14 @@ class NewFeatureConcatenate():
         else:
             inspect_features = search_within
         try_feature_list = inspect_features.difference(self.fixed_features)
-        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers, leave=False, file=open(os.devnull, 'w'))
+
+        if self.logger is not None:
+            self.logger.debug(f'max workers outsie {max_workers}')
+            message = ', '.join(try_feature_list)
+            self.logger.debug(f'current features : {message}')
+        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list , max_workers=max_workers, leave=False) #, **self.redirect)
+        if self.logger is not None:
+            self.logger.debug(f'current scores : {scores}')
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         scores.sort_values(by='test', inplace=True)

@@ -113,17 +113,17 @@ def run_feature_selection(list_of_features = iwanttoplot, nprocs = 3, logger=Non
         if 'Mag' not in reasonable_features:
             raise(  ValueError('Mag eliminated too soon ') )
         FittedGS[combi] = copy.deepcopy(TestCV)
-        logger.debug('init feature concatenate')
         FC = FeatureConcatenate(DS, FittedGS[combi], model_params_grid = MO.modeloptions[ModelName], logger=logger) #fmodel.best_params_,)
+        logger.debug('init feature concatenate')
         logger.debug('get list of best features')
         FCresults[combi].append(FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=nprocs, search_only = reasonable_features) )
         with open(feature_concat_resul_loc, 'wb') as pkl:
             pickle.dump(FCresults, pkl)
 
 if __name__ == '__main__' :
-    logging.basicConfig(filename='Feature_Concatenate.log', level=logging.DEBUG)
+    logging.basicConfig(filename='Feature_Concatenate.log', level=logging.INFO)
     logger = logging.getLogger()
-    nslots = int(os.environ["NSLOTS"])
+    nslots = int(sys.argv[1]) #int(os.environ["NSLOTS"])
     logger.info(f'NSLOTS = {nslots}')
     logging.debug('DEBUGGING')
     run_feature_selection(logger = logger, nprocs=nslots)
