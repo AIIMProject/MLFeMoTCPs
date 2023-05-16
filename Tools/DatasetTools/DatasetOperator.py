@@ -15,7 +15,7 @@ class  Dataset():
             target_name : str   = 'EF_fmbcc',
             selectPhase         = None, 
             selectMag   : str   = None,
-            remove_phases : str = None
+            remove_phases_query : str = None
             ):
         """initiate the dataset
         arguments
@@ -32,6 +32,8 @@ class  Dataset():
         self.BS = load_fully_curated_briefsummary(dataset)
         if selectPhase is not None:
             self.BS = self.BS[self.BS['Phase'] == selectphase]
+        if remove_phases_query is not None:
+            self.BS = self.BS.query(remove_phases_query)
         if selectMag is not None:
             if ( 'FM' != selectMag ) & ( 'NM' != selectMag ):
                 raise ValueError(" selectMag option can only be 'FM' or 'NM' ")
