@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(( os.path.dirname(os.path.dirname(__file__)) )))
 from Commoms import *
+import logging
 from pandas import Index
 import copy
 import  numpy as np
@@ -17,6 +18,10 @@ from FeatureConcatenate import NewFeatureConcatenate as FeatureConcatenate
 
 import warnings
 warnings.simplefilter('ignore')
+
+from sklearnex import patch_sklearn
+patch_sklearn()
+
 
 target_case = 'EF_nmhcp'
 
@@ -88,16 +93,18 @@ for featurename in iwanttoplot:
 
 FittedGS = {}
 
-def run_feature_selection(list_of_features = iwanttoplot):
-    for featurename in iwanttoplot:
-        print(featurename)
+def run_feature_selection(list_of_features = iwanttoplot, nprocs = 3, logger=None):
+    for i, featurename in enumerate(iwanttoplot):
+        logger.info(featurename)
         combi  = (ModelName, featurename)
         if len(FCresults[combi]) >= n_repeats:
+            continue
+        if len(FCresults[combi]) >= i:
             continue
         folder = StratifiedKFold(n_splits=5, shuffle=True) # , random_state=1024)
         fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
         folds = list(fold_generator)
-        TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error', refit=True)
+        TestCV = GridSearchCV(Models[ModelName], MO.modeloptions[ModelName], cv = folds, return_train_score=True, scoring='neg_root_mean_squared_error', refit=True, n_jobs = 1)
         if 'random' not in Features[featurename].columns:
             Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
         Features[featurename]=Features[featurename].convert_dtypes(convert_floating=True)
@@ -106,10 +113,17 @@ def run_feature_selection(list_of_features = iwanttoplot):
         if 'Mag' not in reasonable_features:
             raise(  ValueError('Mag eliminated too soon ') )
         FittedGS[combi] = copy.deepcopy(TestCV)
-        FC = FeatureConcatenate(DS, FittedGS[combi], model_params_grid = MO.modeloptions[ModelName] ) #fmodel.best_params_,)
-        FCresults[combi].append( FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=3, search_only = reasonable_features) )
+        logger.debug('init feature concatenate')
+        FC = FeatureConcatenate(DS, FittedGS[combi], model_params_grid = MO.modeloptions[ModelName], logger=logger) #fmodel.best_params_,)
+        logger.debug('get list of best features')
+        FCresults[combi].append(FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=nprocs, search_only = reasonable_features) )
         with open(feature_concat_resul_loc, 'wb') as pkl:
             pickle.dump(FCresults, pkl)
 
 if __name__ == '__main__' :
-    run_feature_selection()
+    logging.basicConfig(filename='Feature_Concatenate.log', level=logging.DEBUG)
+    logger = logging.getLogger()
+    nslots = int(os.environ["NSLOTS"])
+    logger.info(f'NSLOTS = {nslots}')
+    logging.debug('DEBUGGING')
+    run_feature_selection(logger = logger, nprocs=nslots)

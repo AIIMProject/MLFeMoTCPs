@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import sys
 import pickle
+import logging
 from sklearn.model_selection import train_test_split
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.svm import SVR
@@ -27,7 +28,6 @@ import os.path
 import re
 import warnings
 import time
-from sklearnex import patch_sklearn
 from threadpoolctl import ThreadpoolController
 controller = ThreadpoolController()
 warnings.filterwarnings('ignore')
@@ -123,7 +123,8 @@ class FeatureConcatenate(object):
             data_target='E_f',
             report_path='reports/',
             criterion = 'test_score',
-            sort_criteria = 'score_only'
+            sort_criteria = 'score_only',
+            logger=None
             ):
         """
         Params
@@ -148,6 +149,7 @@ class FeatureConcatenate(object):
         self.report_path = report_path
         self.criterion = criterion
         self.sort_criteria = sort_criteria
+        self.logger = logger 
         
 
     def getbestfeature(self,
@@ -361,7 +363,7 @@ def check_mag_in_index(feature_list : pd.Index, compare_with):
 
 class NewFeatureConcatenate():
 
-    def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}, model_params_grid={}):
+    def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}, model_params_grid={}, logger = None):
         self.model = model
         self.DS : Dataset = dataset
         self.samplesplit = dataset.get_samplesplit()
@@ -371,6 +373,7 @@ class NewFeatureConcatenate():
             self.model.set_params(**model_params)
         else:
             raise ValueError('undetermined model')
+        self.logger = logger
 
     def discard_correlated_features(self, thegroupname, the_best_feature_name, current_list):
         corrs = self.DS.Features[thegroupname].corr().abs()[the_best_feature_name]
@@ -383,15 +386,24 @@ class NewFeatureConcatenate():
             num_features = 2,
             max_workers=1,
             max_features: int = 200, 
-            search_only : pd.core.indexes.base.Index = None):
+            search_only : pd.core.indexes.base.Index = None, 
+            ):
         if search_only is not None:
             max_features = len(search_only)
         feature_list = pd.DataFrame()
         max_num_features = min(num_features, max_features)
-        progress = tqdm(range(max_num_features))
+        redirect = {}
+        if self.logger is not None:
+            redirect = {'file': open(os.devnull, 'w') }
+        progress = tqdm(range(max_num_features), **redirect)
+        self.logger.info(f'max_workers = {max_workers}')
+        logger.debug('enering serial loop')
+        self.logger.info(str(progress))
         for step in progress:
+            logger.debug('executing parallell loop')
             this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers, search_within = search_only)
             feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
+            self.logger.debug(feature_list)
             last_train = this_best_feature['train'][0]
             last_test = this_best_feature['test'][0]
             best = feature_list.sort_values(by='test').iloc[0]
@@ -408,6 +420,7 @@ class NewFeatureConcatenate():
             progress.set_postfix({this_best_feature.index[0]: description})
             progress.total = min(len(search_only), max_num_features)
             progress.refresh()
+            self.logger.info(str(progress))
         return feature_list
 
     @controller.wrap(limits=1)
@@ -440,7 +453,7 @@ class NewFeatureConcatenate():
         else:
             inspect_features = search_within
         try_feature_list = inspect_features.difference(self.fixed_features)
-        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers, leave=False)# max_workers,max_workers=max_workers,
+        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list, max_workers=max_workers, leave=False, file=open(os.devnull, 'w'))
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         scores.sort_values(by='test', inplace=True)
