@@ -376,9 +376,6 @@ class NewFeatureConcatenate():
         else:
             raise ValueError('undetermined model')
         self.logger = logger
-        #self.redirect = {}
-        #if self.logger is not None:
-        #    self.redirect = {'file': open(os.devnull, 'w') }
 
     def discard_correlated_features(self, thegroupname, the_best_feature_name, current_list):
         corrs = self.DS.Features[thegroupname].corr().abs()[the_best_feature_name]
@@ -397,7 +394,10 @@ class NewFeatureConcatenate():
             max_features = len(search_only)
         feature_list = pd.DataFrame()
         max_num_features = min(num_features, max_features)
-        progress = tqdm(range(max_num_features)) #, **self.redirect)
+        redirect = {}
+        if self.logger is not None:
+            redirect = {'file': open(os.devnull, 'w') }
+        progress = tqdm(range(max_num_features), ncols = 160, total=max_num_features, **redirect )
         self.logger.info(f'max_workers = {max_workers}')
         self.logger.info(str(progress))
         self.logger.debug('entering serial loop')
@@ -460,7 +460,8 @@ class NewFeatureConcatenate():
             self.logger.debug(f'max workers outsie {max_workers}')
             message = ', '.join(try_feature_list)
             self.logger.debug(f'current features : {message}')
-        scores: list[dict[str,dict[str, float]]] = process_map(self.train_fixed_plus_try, try_feature_list , max_workers=max_workers, leave=False) #, **self.redirect)
+        P = Pool(max_workers)
+        scores: list[dict[str,dict[str, float]]] = P.map(self.train_fixed_plus_try, try_feature_list) #, max_workers=max_workers, leave=False) #, **self.redirect)
         if self.logger is not None:
             self.logger.debug(f'current scores : {scores}')
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
