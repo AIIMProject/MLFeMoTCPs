@@ -466,5 +466,6 @@ class NewFeatureConcatenate():
             self.logger.debug(f'current scores : {scores}')
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
+        scores = scores.query('test > train')
         scores.sort_values(by='test', inplace=True)
         return scores.loc[scores.index[[0]]]
