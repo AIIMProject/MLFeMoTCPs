@@ -23,7 +23,7 @@ patch_sklearn()
 
 target_case = 'EF_nmhcp'
 
-suffix = 'no_hcp_bcc_fcc'
+suffix = 'no_hcp_bcc_fcc_TEST'
 
 DS = Dataset('Fe-Mo', target_name=target_case,  remove_phases_query = 'Phase != "bcc" and Phase != "fcc" and Phase !="hcp"')
 
@@ -118,7 +118,7 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
 if __name__ == '__main__' :
     ModelName = sys.argv[1]
     namefile = ModelName.replace(' ','')
-    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}_test.log', level=logging.INFO,)# 
+    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}.log', level=logging.INFO,)# 
     logger = logging.getLogger()
     nslots = int(sys.argv[2]) #int(os.environ["NSLOTS"])
     logger.info(f'NSLOTS = {nslots}')
