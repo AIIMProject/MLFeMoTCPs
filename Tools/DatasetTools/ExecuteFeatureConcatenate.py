@@ -56,13 +56,13 @@ samplefolds = list(DS.get_folds())
 FittedModels = {}
 
 n_repeats = 5
-
-iwanttoplot = ['ACE no CNAV']
-#iwanttoplot = n_repeats*['SOAP_specific no CNAV']
-iwanttoplot += ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
-iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',   '0.7 Projections OS BOP',  'Projections OS BOP'] #'0.6 Projections OS BOP','0.8 Projections OS BOP',
-iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
-iwanttoplot += ['dataset no CNAV', 'atomic no CNAV'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+iwanttoplot = []
+#iwanttoplot = ['ACE no CNAV']
+##iwanttoplot = n_repeats*['SOAP_specific no CNAV']
+#iwanttoplot += ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
+#iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',   '0.7 Projections OS BOP',  'Projections OS BOP'] #'0.6 Projections OS BOP','0.8 Projections OS BOP',
+#iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+#iwanttoplot += ['dataset no CNAV', 'atomic no CNAV'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 iwanttoplot += ['ACE']
 #iwanttoplot *= n_repeats
 
@@ -104,7 +104,7 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
                 Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
             Features[featurename]=Features[featurename].convert_dtypes(convert_floating=True)
             corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
-            reasonable_features = corrs[corrs>0.01].index.difference([target_case])
+            reasonable_features = corrs[corrs>=corrs['Mag']/2].index.difference([target_case])
             if 'Mag' not in reasonable_features:
                 raise(  ValueError('Mag eliminated too soon ') )
             FittedGS[combi] = copy.deepcopy(TestCV)
@@ -118,7 +118,7 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
 if __name__ == '__main__' :
     ModelName = sys.argv[1]
     namefile = ModelName.replace(' ','')
-    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}.log', level=logging.INFO)
+    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}_test.log', level=logging.INFO,)# 
     logger = logging.getLogger()
     nslots = int(sys.argv[2]) #int(os.environ["NSLOTS"])
     logger.info(f'NSLOTS = {nslots}')
