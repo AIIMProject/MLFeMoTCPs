@@ -1,19 +1,17 @@
 import sys
 import os
 sys.path.insert(0, os.path.dirname(( os.path.dirname(os.path.dirname(__file__)) )))
-from Commoms import *
+from Commoms import (pd, pickle)
 import logging
-from pandas import Index
 import copy
 import  numpy as np
 
 from sklearn.model_selection import StratifiedKFold
-from sklearn.gaussian_process.kernels import RBF, WhiteKernel, RationalQuadratic, ConstantKernel, ExpSineSquared, DotProduct, Product
 
 
-from DatasetOperator import Dataset, DatasetTester
+from DatasetOperator import Dataset
 from ModelSelection import ModelOptions
-from MLConveniences import *
+from MLConveniences import (Pipeline, RandomForestRegressor, GaussianProcessRegressor, MLPRegressor, KernelRidge, StandardScaler, GridSearchCV)
 from FeatureConcatenate import NewFeatureConcatenate as FeatureConcatenate
 
 import warnings
@@ -29,13 +27,7 @@ suffix = 'no_hcp_bcc_fcc'
 
 DS = Dataset('Fe-Mo', target_name=target_case,  remove_phases_query = 'Phase != "bcc" and Phase != "fcc" and Phase !="hcp"')
 
-ModelName = 'Kernel Ridge' 
-#ModelName = 'Random Forest' 
-#ModelName='Gaussian Process'
-#ModelName = 'Kernel Ridge'
-#ModelName = 'MLP'
-
-
+AllModelNames = [ 'Kernel Ridge' , 'Random Forest', 'Gaussian Process', 'Kernel Ridge','MLP']
 
 resultslocation = DS.resultslocation
 
@@ -58,13 +50,8 @@ Models = {
     'Gaussian Process': Pipeline([('regressor', GaussianProcessRegressor())])
 }
 
-MO = ModelOptions(DS.dataset)
-
-MO.load_model_options(ModelName)
 
 samplefolds = list(DS.get_folds())
-
-fittedmodelslocation = os.path.join(DS.resultslocation, f'{ModelName}_{target_case}__FittedCVSearch{suffix}.pkl')
 
 FittedModels = {}
 
@@ -79,21 +66,28 @@ iwanttoplot += ['dataset no CNAV', 'atomic no CNAV'] # ['0.7 Projections OS BOP'
 iwanttoplot += ['ACE']
 #iwanttoplot *= n_repeats
 
-feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}.pkl')  
 
-if os.path.exists(feature_concat_resul_loc):
-    with open(feature_concat_resul_loc, 'rb') as pkl:
-        FCresults = pickle.load(pkl)
-else:
-    FCresults = {(ModelName, featurename):[] for featurename in np.unique(iwanttoplot)}
+def load_fcresults(ModelName = "Random Forest"):
+    #fittedmodelslocation = os.path.join(DS.resultslocation, f'{ModelName}_{target_case}__FittedCVSearch{suffix}.pkl')
+    feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}_{ModelName}.pkl')  
 
-for featurename in iwanttoplot:
-    if (ModelName, featurename) not in FCresults.keys():
-        FCresults[(ModelName, featurename)] = []
+    if os.path.exists(feature_concat_resul_loc):
+        with open(feature_concat_resul_loc, 'rb') as pkl:
+            FCresults = pickle.load(pkl)
+    else:
+        FCresults = {(ModelName, featurename):[] for featurename in np.unique(iwanttoplot)}
+
+    for featurename in iwanttoplot:
+        if (ModelName, featurename) not in FCresults.keys():
+            FCresults[(ModelName, featurename)] = []
+    return FCresults, feature_concat_resul_loc
 
 FittedGS = {}
 
-def run_feature_selection(list_of_features = iwanttoplot, nprocs = 3, logger=None):
+def run_feature_selection(ModelName = "Random Forest", list_of_features = iwanttoplot, nprocs = 3, logger=None):
+    MO = ModelOptions(DS.dataset)
+    MO.load_model_options(ModelName)
+    FCresults, feature_concat_resul_loc = load_fcresults(ModelName = ModelName)
     for i in range(n_repeats):
         for featurename in iwanttoplot:
             logger.info(featurename)
@@ -122,9 +116,11 @@ def run_feature_selection(list_of_features = iwanttoplot, nprocs = 3, logger=Non
                 pickle.dump(FCresults, pkl)
 
 if __name__ == '__main__' :
-    logging.basicConfig(filename='Feature_Concatenate.log', level=logging.INFO)
+    ModelName = sys.argv[1]
+    namefile = ModelName.replace(' ','')
+    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}.log', level=logging.INFO)
     logger = logging.getLogger()
-    nslots = int(sys.argv[1]) #int(os.environ["NSLOTS"])
+    nslots = int(sys.argv[2]) #int(os.environ["NSLOTS"])
     logger.info(f'NSLOTS = {nslots}')
     logging.debug('DEBUGGING')
-    run_feature_selection(logger = logger, nprocs=nslots)
+    run_feature_selection(ModelName=ModelName, logger = logger, nprocs=nslots)
