@@ -20,6 +20,7 @@ warnings.simplefilter('ignore')
 from sklearnex import patch_sklearn
 patch_sklearn()
 
+import pdb
 
 target_case = 'EF_nmhcp'
 
@@ -69,7 +70,8 @@ iwanttoplot += ['ACE']
 
 def load_fcresults(ModelName = "Random Forest"):
     #fittedmodelslocation = os.path.join(DS.resultslocation, f'{ModelName}_{target_case}__FittedCVSearch{suffix}.pkl')
-    feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}_{ModelName}.pkl')  
+    namefile = ModelName.replace(' ','')
+    feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}_{namefile}.pkl')  
 
     if os.path.exists(feature_concat_resul_loc):
         with open(feature_concat_resul_loc, 'rb') as pkl:

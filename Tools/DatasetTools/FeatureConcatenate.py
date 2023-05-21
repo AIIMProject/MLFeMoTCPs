@@ -391,9 +391,10 @@ class NewFeatureConcatenate():
             search_only : pd.core.indexes.base.Index = None, 
             ):
         if search_only is not None:
-            max_features = len(search_only)
+            max_features = min(max_features, len(search_only))
         feature_list = pd.DataFrame()
         max_num_features = min(num_features, max_features)
+        self.logger.info(f'max num of features: {max_num_features}')
         redirect = {}
         if self.logger is not None:
             redirect = {'file': open(os.devnull, 'w') }
@@ -410,7 +411,7 @@ class NewFeatureConcatenate():
             last_test = this_best_feature['test'][0]
             best = feature_list.sort_values(by='test').iloc[0]
             best_test = best['test']
-            if last_test > 1.5*best_test:
+            if last_test > 1.2*best_test:
                 break
             description = f'      train: {last_train:.3f}, test: {last_test:.3f} , best = {best.name}, {best_test:.3f}' 
             search_only = self.discard_correlated_features(
