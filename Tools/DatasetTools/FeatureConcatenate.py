@@ -387,7 +387,7 @@ class NewFeatureConcatenate():
             groupname: str,
             num_features = 2,
             max_workers=1,
-            max_features: int = 200, 
+            max_features: int = 150, 
             search_only : pd.core.indexes.base.Index = None, 
             ):
         if search_only is not None:
