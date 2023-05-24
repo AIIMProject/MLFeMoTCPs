@@ -24,7 +24,7 @@ import pdb
 
 target_case = 'EF_nmhcp'
 
-suffix = 'no_hcp_bcc_fcc_TEST'
+suffix = 'no_hcp_bcc_fcc'
 
 DS = Dataset('Fe-Mo', target_name=target_case,  remove_phases_query = 'Phase != "bcc" and Phase != "fcc" and Phase !="hcp"')
 
@@ -58,12 +58,12 @@ FittedModels = {}
 
 n_repeats = 5
 iwanttoplot = []
-#iwanttoplot = ['ACE no CNAV']
-##iwanttoplot = n_repeats*['SOAP_specific no CNAV']
-#iwanttoplot += ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
-#iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',   '0.7 Projections OS BOP',  'Projections OS BOP'] #'0.6 Projections OS BOP','0.8 Projections OS BOP',
-#iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
-#iwanttoplot += ['dataset no CNAV', 'atomic no CNAV'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+iwanttoplot = ['ACE no CNAV']
+#iwanttoplot = n_repeats*['SOAP_specific no CNAV']
+iwanttoplot += ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
+iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',   '0.7 Projections OS BOP',  'Projections OS BOP'] #'0.6 Projections OS BOP','0.8 Projections OS BOP',
+iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
+iwanttoplot += ['dataset no CNAV', 'atomic no CNAV'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 iwanttoplot += ['ACE']
 #iwanttoplot *= n_repeats
 
@@ -106,14 +106,22 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
                 Features[featurename]['random'] = np.random.rand(Features[featurename].shape[0])
             Features[featurename]=Features[featurename].convert_dtypes(convert_floating=True)
             corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
-            reasonable_features = corrs[corrs>=corrs['Mag']/2].index.difference([target_case])
+            reasonable_features = corrs[corrs>=corrs['Mag']/3].index.difference([target_case])
             if 'Mag' not in reasonable_features:
                 raise(  ValueError('Mag eliminated too soon ') )
             FittedGS[combi] = copy.deepcopy(TestCV)
             FC = FeatureConcatenate(DS, FittedGS[combi], model_params_grid = MO.modeloptions[ModelName], logger=logger) #fmodel.best_params_,)
             logger.debug('init feature concatenate')
             logger.debug('get list of best features')
-            FCresults[combi].append(FC.get_best_features_list(combi[1], num_features = DS.Features[combi[1]].shape[1], max_workers=nprocs, search_only = reasonable_features) )
+            FCresults[combi].append(
+                    FC.get_best_features_list(combi[1],
+                                              num_features = DS.Features[combi[1]].shape[1],
+                                              max_workers=nprocs,
+                                              search_only = reasonable_features,
+                                              max_features=250, 
+                                              saveto = feature_concat_resul_loc.replace('.pkl', f'_{featurename}_{i}.pkl')
+                                              ) 
+                    )
             with open(feature_concat_resul_loc, 'wb') as pkl:
                 pickle.dump(FCresults, pkl)
 

@@ -387,8 +387,9 @@ class NewFeatureConcatenate():
             groupname: str,
             num_features = 2,
             max_workers=1,
-            max_features: int = 150, 
+            max_features: int = 200, 
             search_only : pd.core.indexes.base.Index = None, 
+            saveto = None
             ):
         if search_only is not None:
             max_features = min(max_features, len(search_only))
@@ -398,30 +399,42 @@ class NewFeatureConcatenate():
         redirect = {}
         if self.logger is not None:
             redirect = {'file': open(os.devnull, 'w') }
-        progress = tqdm(range(max_num_features), ncols = 160, total=max_num_features, **redirect )
+        progress = tqdm(range(len(search_only)), ncols = 160, total=len(search_only), **redirect )
+        self.logger.info(f'choosing {max_features} from {len(search_only)}')
         self.logger.info(f'max_workers = {max_workers}')
         self.logger.info(str(progress))
         self.logger.debug('entering serial loop')
+#        partial_file = saveto#.replace('.pkl', f'_{step}.pkl')
+        self.logger.info(f'saving this curve into {saveto}')
         for step in progress:
             self.logger.debug('executing parallell loop')
             this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers, search_within = search_only)
-            feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
             self.logger.debug(feature_list)
+            if len(this_best_feature) == 0:
+                break
             last_train = this_best_feature['train'][0]
             last_test = this_best_feature['test'][0]
+            feature_list  = pd.concat([ feature_list, this_best_feature ], axis=0) #i#, axis=1, ignore_index=False)
             best = feature_list.sort_values(by='test').iloc[0]
             best_test = best['test']
-            if last_test > 1.2*best_test:
-                break
             description = f'      train: {last_train:.3f}, test: {last_test:.3f} , best = {best.name}, {best_test:.3f}' 
             search_only = self.discard_correlated_features(
                     groupname, this_best_feature.index[0], search_only
                     )
             description += check_mag_in_index(feature_list.index, search_only)
+            feature_list.to_pickle(saveto)
+            if last_test > 1.2*best_test:
+                break
             if len(search_only) < 1:
                 break
+            if len(feature_list) > max_features:
+                self.logger.info(f'alredy have {len(feature_list)} features, exiting')
+                break
+            if os.path.exists('STOPFC'):
+                self.logger.info('signaled to stop, exiting')
+                break
             progress.set_postfix({this_best_feature.index[0]: description})
-            progress.total = min(len(search_only), max_num_features)
+            progress.total = len(search_only) # min(len(search_only), max_num_features)
             progress.refresh()
             self.logger.info(str(progress))
         return feature_list
@@ -467,6 +480,9 @@ class NewFeatureConcatenate():
             self.logger.debug(f'current scores : {scores}')
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
-        scores = scores.query('test > train')
-        scores.sort_values(by='test', inplace=True)
-        return scores.loc[scores.index[[0]]]
+        scores_g = scores.query('test >= train')
+        if len(scores_g) == 0:
+            scores.sort_values(by='test', inplace = True)
+            return scores_g
+        scores_g.sort_values(by='test', inplace=True)
+        return scores_g.iloc[[0]] #[scores.index[[0]]]
