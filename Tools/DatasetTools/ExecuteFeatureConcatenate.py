@@ -5,9 +5,9 @@ from Commoms import (pd, pickle)
 import logging
 import copy
 import  numpy as np
+import socket
 
 from sklearn.model_selection import StratifiedKFold
-
 
 from DatasetOperator import Dataset
 from ModelSelection import ModelOptions
@@ -21,6 +21,8 @@ from sklearnex import patch_sklearn
 patch_sklearn()
 
 import pdb
+
+hostname = socket.gethostname()
 
 target_case = 'EF_nmhcp'
 
@@ -113,22 +115,24 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
             FC = FeatureConcatenate(DS, FittedGS[combi], model_params_grid = MO.modeloptions[ModelName], logger=logger) #fmodel.best_params_,)
             logger.debug('init feature concatenate')
             logger.debug('get list of best features')
-            FCresults[combi].append(
-                    FC.get_best_features_list(combi[1],
+            #FCresults[combi].append(
+            new_curve = FC.get_best_features_list(combi[1],
                                               num_features = DS.Features[combi[1]].shape[1],
                                               max_workers=nprocs,
                                               search_only = reasonable_features,
                                               max_features=250, 
-                                              saveto = feature_concat_resul_loc.replace('.pkl', f'_{featurename}_{i}.pkl')
+                                              saveto = feature_concat_resul_loc.replace('.pkl', f'_{featurename}_{i}_{hostname}.pkl')
                                               ) 
-                    )
+            #        )
+            FCresults, feature_concat_resul_loc = load_fcresults(ModelName = ModelName)
+            FCresults[combi].append(new_curve)
             with open(feature_concat_resul_loc, 'wb') as pkl:
                 pickle.dump(FCresults, pkl)
 
 if __name__ == '__main__' :
     ModelName = sys.argv[1]
     namefile = ModelName.replace(' ','')
-    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}.log', level=logging.INFO,)# 
+    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}_{hostname}.log', level=logging.INFO,)# 
     logger = logging.getLogger()
     nslots = int(sys.argv[2]) #int(os.environ["NSLOTS"])
     logger.info(f'NSLOTS = {nslots}')
