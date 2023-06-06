@@ -51,6 +51,7 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'SOAP_specific': 'soap_features__specific__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
     'Pyscal' : 'CNAVPyscal.pkl',
     'ACE' :  'Fe-Mo-ACE-CNAV.pkl', 
+    'Canonical ACE' : 'Fe-Mo-canonical-ACE-CNAV.pkl', 
     'Canonical BOP': f'curated_{system}_initial_canonical_table_WUBIND_16.pkl',
     'Projections BOP': f'curated_{system}_initial_projections_table_WUBIND_16.pkl',
         'Projections OS BOP': f'curated_{system}_initial_projections_os_table_WUBIND_16.pkl',
