@@ -60,7 +60,9 @@ FittedModels = {}
 
 n_repeats = 10
 iwanttoplot = []
-iwanttoplot = ['ACE no CNAV']
+iwanttoplot += ['ACE no CNAV']
+iwanttoplot += ['Canonical ACE']
+iwanttoplot += ['Canonical ACE no CNAV']
 #iwanttoplot = n_repeats*['SOAP_specific no CNAV']
 iwanttoplot += ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
 iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',   '0.7 Projections OS BOP',  'Projections OS BOP'] #'0.6 Projections OS BOP','0.8 Projections OS BOP',
