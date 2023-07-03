@@ -58,7 +58,7 @@ samplefolds = list(DS.get_folds())
 
 FittedModels = {}
 
-n_repeats = 5
+n_repeats = 10
 iwanttoplot = []
 iwanttoplot += ['ACE no CNAV']
 iwanttoplot += ['Canonical ACE']
