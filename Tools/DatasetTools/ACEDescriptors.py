@@ -53,19 +53,42 @@ default_options_dict = \
                 }
             }
         }
+from pyace.basisextension import construct_bbasisconfiguration
+
+from pyace.basis import BBasisConfiguration
+
+def filter_basisfuncs_for_ls(bbasis: BBasisConfiguration, ls: list[int]) -> BBasisConfiguration :
+    new_blocks=[]
+    for block in  bbasis.funcspecs_blocks:
+        thefuncs = block.funcspecs
+
+        chosenfuncs = [ thisfunc for thisfunc in thefuncs if len(set([3,2]).intersection(thisfunc.ls))>0 ] #0 not in thisfunc.ls and 1 not in thisfunc.ls   ]
+
+        block.funcspecs=chosenfuncs
+        new_blocks.append(block)
+    bbasis.funcspecs_blocks = new_blocks
+    return bbasis
 
 class MyPyACECalculator(object):
     
     def __init__(self, 
                  components:list[str] = ['Fe', 'Mo'],
                  multispace_basis_config : dict  = default_options_dict, 
+                 select_ls = None
                  ):
 
         self.multispace_basis_config : dict = multispace_basis_config
         self.bbasis_configuration : object = pyace.create_multispecies_basis_config(
                 multispace_basis_config
             )
-        self.configured_calculator : object = pyace.PyACECalculator(self.bbasis_configuration)
+        if select_ls is None:
+            self.configured_calculator : pyace.asecalc.PyACECalculator = pyace.PyACECalculator(self.bbasis_configuration)
+        else :
+            raw_bbasis = construct_bbasisconfiguration(multispace_basis_config)
+            new_bbasis = filter_basisfuncs_for_ls(raw_bbasis, select_ls)
+            self.configured_calculator : pyace.asecalc.PyACECalculator = PyACECalculator(new_bbasis)
+
+
 
     def get_ace_projections(self, thisatoms: ase.atoms.Atoms):
         thisatoms.calc = self.configured_calculator
