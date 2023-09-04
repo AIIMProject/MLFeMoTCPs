@@ -57,12 +57,12 @@ from pyace.basisextension import construct_bbasisconfiguration
 
 from pyace.basis import BBasisConfiguration
 
-def filter_basisfuncs_for_ls(bbasis: BBasisConfiguration, ls: list[int]) -> BBasisConfiguration :
+def filter_basisfuncs_for_ls(bbasis: BBasisConfiguration, selectionls: list[int]) -> BBasisConfiguration :
     new_blocks=[]
     for block in  bbasis.funcspecs_blocks:
         thefuncs = block.funcspecs
 
-        chosenfuncs = [ thisfunc for thisfunc in thefuncs if len(set([3,2]).intersection(thisfunc.ls))>0 ] #0 not in thisfunc.ls and 1 not in thisfunc.ls   ]
+        chosenfuncs = [ thisfunc for thisfunc in thefuncs if len(set(selectionls).intersection(thisfunc.ls))>0 ] #0 not in thisfunc.ls and 1 not in thisfunc.ls   ]
 
         block.funcspecs=chosenfuncs
         new_blocks.append(block)
@@ -86,7 +86,7 @@ class MyPyACECalculator(object):
         else :
             raw_bbasis = construct_bbasisconfiguration(multispace_basis_config)
             new_bbasis = filter_basisfuncs_for_ls(raw_bbasis, select_ls)
-            self.configured_calculator : pyace.asecalc.PyACECalculator = PyACECalculator(new_bbasis)
+            self.configured_calculator : pyace.asecalc.PyACECalculator = pyace.PyACECalculator(new_bbasis)
 
 
 
