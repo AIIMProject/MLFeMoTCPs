@@ -69,7 +69,7 @@ iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',   '0.7 Projections OS BOP',
 iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 iwanttoplot += ['dataset no CNAV', 'atomic no CNAV'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 iwanttoplot += ['ACE']
-#iwanttoplot *= n_repeats
+iwanttoplot *= n_repeats
 
 
 def load_fcresults(ModelName = "Random Forest"):
@@ -126,6 +126,8 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
                                               saveto = feature_concat_resul_loc.replace('.pkl', f'_{featurename}_{i}_{hostname}.pkl')
                                               ) 
             #        )
+            if 'random' in new_curve.index:
+                logger.info('skipping because random was found chosen')
             FCresults, feature_concat_resul_loc = load_fcresults(ModelName = ModelName)
             FCresults[combi].append(new_curve)
             with open(feature_concat_resul_loc, 'wb') as pkl:
