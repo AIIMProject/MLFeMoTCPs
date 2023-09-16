@@ -57,12 +57,16 @@ from pyace.basisextension import construct_bbasisconfiguration
 
 from pyace.basis import BBasisConfiguration
 
-def filter_basisfuncs_for_ls(bbasis: BBasisConfiguration, selectionls: list[int]) -> BBasisConfiguration :
+def filter_basisfuncs_for_ls(bbasis: BBasisConfiguration, selectionls: list[int], is_select_exclusive : bool = False) -> BBasisConfiguration :
     new_blocks=[]
     for block in  bbasis.funcspecs_blocks:
         thefuncs = block.funcspecs
 
-        chosenfuncs = [ thisfunc for thisfunc in thefuncs if len(set(selectionls).intersection(thisfunc.ls))>0 ] #0 not in thisfunc.ls and 1 not in thisfunc.ls   ]
+        if  is_select_exclusive :
+            chosenfuncs = [ thisfunc for thisfunc in thefuncs if len(set(selectionls).difference(thisfunc.ls)) == 0 ] #0 not in thisfunc.ls and 1 not in thisfunc.ls   ]
+        else:
+            chosenfuncs = [ thisfunc for thisfunc in thefuncs if len(set(selectionls).intersection(thisfunc.ls))>0 ] #0 not in thisfunc.ls and 1 not in thisfunc.ls   ]
+
 
         block.funcspecs=chosenfuncs
         new_blocks.append(block)
@@ -74,7 +78,8 @@ class MyPyACECalculator(object):
     def __init__(self, 
                  components:list[str] = ['Fe', 'Mo'],
                  multispace_basis_config : dict  = default_options_dict, 
-                 select_ls = None
+                 select_ls : list[int] = None, 
+                 is_select_exclusive : bool = False
                  ):
 
         self.multispace_basis_config : dict = multispace_basis_config
@@ -85,7 +90,7 @@ class MyPyACECalculator(object):
             self.configured_calculator : pyace.asecalc.PyACECalculator = pyace.PyACECalculator(self.bbasis_configuration)
         else :
             raw_bbasis = construct_bbasisconfiguration(multispace_basis_config)
-            new_bbasis = filter_basisfuncs_for_ls(raw_bbasis, select_ls)
+            new_bbasis = filter_basisfuncs_for_ls(raw_bbasis, select_ls, is_select_exclusive = is_select_exclusive)
             self.configured_calculator : pyace.asecalc.PyACECalculator = pyace.PyACECalculator(new_bbasis)
 
 
