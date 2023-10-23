@@ -1,3 +1,13 @@
+/ parameters for generating this file 
+ 
+/ components : ['Fe', 'Mo'] 
+ 
+/ modelname = 0.7projections_os 
+ 
+/ element_pairs_kwargs = {'bond_integral_scale': 0.7, 'select_orbitals': {'Fe': 'd', 'Mo': 'd'}} 
+ 
+/ atom_blocks_kwargs = {'onsite_levels_scale': 0.5, 'select_orbitals': {'Fe': 'd', 'Mo': 'd'}} 
+ 
 model = 0.7projections_os
 
 version     = bop

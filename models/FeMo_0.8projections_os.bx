@@ -1,3 +1,13 @@
+/ parameters for generating this file 
+ 
+/ components : ['Fe', 'Mo'] 
+ 
+/ modelname = 0.8projections_os 
+ 
+/ element_pairs_kwargs = {'bond_integral_scale': 0.8, 'select_orbitals': {'Fe': 'd', 'Mo': 'd'}} 
+ 
+/ atom_blocks_kwargs = {'onsite_levels_scale': 0.5, 'select_orbitals': {'Fe': 'd', 'Mo': 'd'}} 
+ 
 model = 0.8projections_os
 
 version     = bop
@@ -12,7 +22,7 @@ atom = Fe
 Mass = 100
 ValenceOrbitals = 5
 ValenceElectrons = 3.0
-onsiteLevels =  -3.61
+onsiteLevels = -3.61
 
 
 atom = Mo
