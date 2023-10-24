@@ -121,6 +121,7 @@ def cn_average(
         coincidences = np.array(coord) == nneighbours
         norma = get_normalization(normalization, coincidences)
         average[f'_{polyhedra}'] = np.array(atomarray)[coincidences].sum()/norma
+
     return {index: average}
 
 def cn_composition(_chemicalsymbols : list[str], _coordination : tuple ):
@@ -147,10 +148,21 @@ def get_shape_factors(
 def featurize_series(
         _Feature: pd.core.series.Series, 
         _Coordinations: pd.core.series.Series , 
-        featurizer=cn_average, **kwargs
+        featurizer=cn_average,
+        debug = False, 
+        **kwargs
         ) -> pd.core.frame.DataFrame:
     iterator  = zip(_Feature.items(), _Coordinations.items())
-    thisresult = [featurizer(atomfeature, atomcoordinations, **kwargs) for atomfeature, atomcoordinations in iterator]
+    thisresult = [] 
+    if debug:
+        pdb.set_trace()
+    for atomfeature, atomcoordinations in iterator:
+        try:
+            newresult = featurizer(atomfeature, atomcoordinations, **kwargs)
+        except Exception as E:
+            pdb.set_trace()
+            newresult = featurizer(atomfeature, atomcoordinations, **kwargs)
+        thisresult.append(newresult)
     thisresult =  dict(map(dict.popitem, thisresult))
     return pd.DataFrame.from_dict(thisresult,orient='index' )
 
@@ -158,10 +170,13 @@ def featurize_dataframe(
         _Features : pd.core.frame.DataFrame, 
         _coordination : pd.core.series.Series, 
         featurizer=cn_average, 
+        debug = False,
         **kwargs) -> pd.core.frame.DataFrame:
     result = []
+    if debug:
+        pdb.set_trace()
     for colid, feature in _Features.iteritems():
-        result.append(featurize_series(feature, _coordination[feature.index], featurizer, **kwargs))
+        result.append(featurize_series(feature, _coordination[feature.index], featurizer, debug = debug, **kwargs))
         columns = result[-1].columns
         newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
         result[-1].columns = newcolumns
@@ -207,7 +222,7 @@ def array_expansions(
             if len(m.shape) == 1:
                 m = np.vstack([ np.zeros_like(m), m ]).transpose()
             natoms, nm = m.shape #eget_dimensions(m)
-            df[feature][index] = {f'{feature}_{this}' :  m[:,this] for this in range(1,nm)}
+            df[feature][index] = {f'{feature}_{this}' :  m[:,this] for this in range(0,nm)} # achnung moments !
         df[feature] = pd.DataFrame.from_dict(df[feature], orient='index')
     return pd.concat(df.values(), axis=1)
 
