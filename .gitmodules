@@ -1,3 +1,6 @@
 [submodule "dependencies/bopdftprojections"]
 	path = dependencies/bopdftprojections
 	url = git@git.noc.ruhr-uni-bochum.de:fortimtb/bopdftprojections.git
+[submodule "dependencies/bopfox"]
+	path = dependencies/bopfox
+	url = git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfox.git
