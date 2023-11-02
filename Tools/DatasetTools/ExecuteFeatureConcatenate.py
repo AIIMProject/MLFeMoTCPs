@@ -60,15 +60,27 @@ FittedModels = {}
 
 n_repeats = 10
 iwanttoplot = []
-iwanttoplot += ['ACE no CNAV']
-iwanttoplot += ['Canonical ACE']
-iwanttoplot += ['Canonical ACE no CNAV']
 #iwanttoplot = n_repeats*['SOAP_specific no CNAV']
 iwanttoplot += ['0.7 Projections OS BOP no CNAV', 'Canonical BOP no CNAV', 'SOAP_specific no CNAV'] 
-iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',   '0.7 Projections OS BOP',  'Projections OS BOP'] #'0.6 Projections OS BOP','0.8 Projections OS BOP',
+iwanttoplot += ['Canonical BOP', 'SOAP_canonicalFe',   '0.7 Projections OS BOP',  'Projections OS BOP', 'spProjections'] #'0.6 Projections OS BOP','0.8 Projections OS BOP',
 iwanttoplot += ['SOAP_specific', 'dataset', 'atomic'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 iwanttoplot += ['dataset no CNAV', 'atomic no CNAV'] # ['0.7 Projections OS BOP', 'Projections OS BOP', 'ACE', 'Projections sOS BOP', 'Projections BOP',  'Canonical BOP','SOAP_specific', 'dataset', 'atomic']#, 'ACE_CNAV']
 iwanttoplot += ['ACE']
+iwanttoplot += ['ACE no CNAV']
+iwanttoplot += ['NOZERO-ACE']
+iwanttoplot += ['NOZERO_NOONE-ACE']
+iwanttoplot += ['NOZERO_NOONE_NOTWO-ACE']
+iwanttoplot += ['NOTHREE-ACE']
+iwanttoplot += ['NOTHREE-NOTWO-ACE']
+iwanttoplot += ['NOTHREE-NOTWO_NOONE-ACE']
+iwanttoplot += ['NOZERO-ACE no CNAV']
+iwanttoplot += ['NOZERO_NOONE-ACE no CNAV']
+iwanttoplot += ['NOZERO_NOONE_NOTWO-ACE no CNAV']
+iwanttoplot += ['NOTHREE-ACE no CNAV']
+iwanttoplot += ['NOTHREE-NOTWO-ACE no CNAV']
+iwanttoplot += ['NOTHREE-NOTWO_NOONE-ACE no CNAV']
+iwanttoplot += ['Canonical ACE']
+iwanttoplot += ['Canonical ACE no CNAV']
 iwanttoplot *= n_repeats
 
 
