@@ -4,3 +4,6 @@
 [submodule "dependencies/bopfox"]
 	path = dependencies/bopfox
 	url = git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfox.git
+[submodule "dependencies/bopfoxfeaturizer"]
+	path = dependencies/bopfoxfeaturizer
+	url = git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfoxfeaturizer.git
