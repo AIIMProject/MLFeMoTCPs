@@ -66,6 +66,7 @@ def get_eos_goodness(thecurve):
         param_guess = [E0, B0, B0p, V0]
         vdata = thecurve['evcurve']['V']
         edata = thecurve['evcurve']['E']
+
         try:
             results, pcov = curve_fit(birchmurnaghan, vdata, edata, param_guess)
             e =  birchmurnaghan(vdata, *results) 
@@ -99,16 +100,20 @@ def get_goodness(EVcurves):
         fiteos[thisid] = {}
         r2[thisid] = {}
         for paramspec, paramcurve in curvedata.items():
+            goodness[thisid].update({ paramspec: False })
+#            if len(curvedata[paramspec]['evcurve']['V']) < 1:
+            if 'V' not in curvedata[paramspec]['evcurve'].keys():
+                continue
             fiteos[thisid][paramspec], r2[thisid][paramspec] = get_eos_goodness(paramcurve)
             if fiteos[thisid][paramspec] is None:
-                goodness[thisid].update({ paramspec: False })
+                #    goodness[thisid].update({ paramspec: False })
                 continue
             v0 = fiteos[thisid][paramspec][-1]
             vmax = np.max( curvedata[paramspec]['evcurve']['V'] )
             vmin = np.min( curvedata[paramspec]['evcurve']['V'] )
-            if  r2[thisid][paramspec] < 0.95 or (v0 < vmin or v0 > vmax):
-                goodness[thisid].update({ paramspec: False })
-            else:
+            if  r2[thisid][paramspec] >= 0.95 and (v0 >= vmin and v0 <= vmax):
+                #                goodness[thisid].update({ paramspec: False })
+#            else:
                 goodness[thisid].update({ paramspec: True })
     df = pd.Series(goodness)
     df.to_json('goodness.json')
@@ -165,7 +170,7 @@ class Evcurves(object):
         self._search_str :str = search_str
         self._atoms : list[str] = atoms
         self._EVFILES = self.load_files_matching()
-        self._Paths : pd.core.frame.DataFrame = pd.DataFrame(np.vstack(self.EVFILES.str.split('/')), index = self.EVFILES.index)
+        self._Paths : pd.core.frame.DataFrame = pd.DataFrame(np.vstack(self._EVFILES.str.split('/')), index = self._EVFILES.index)
         self._Roots : pd.core.frame.DataFrame = pd.Series(
                 self.Paths.iloc[:,:-2].apply(lambda p: '/'.join(p), axis = 1).unique(),
                 name='-'.join(atoms)
@@ -262,21 +267,19 @@ class Evcurves(object):
             fit_result_file = os.path.join(directory, 'fit_results.dat')
             if os.path.exists(fit_result_file):
                 results = pd.read_csv(fit_result_file, sep = '\s+', header=None, comment='#')
-            results_dict={res[0]: float(res[1]) for _, res in results.iterrows() if '_murn' in res[0]}
+                results_dict={res[0]: float(res[1]) for _, res in results.iterrows() if '_murn' in res[0]}
         return results_dict
 
     def get_curves_for_params(self, param, curve_files) -> dict:
         curves = {}
         if len(curve_files) > 0:
-        #    try:
-            curves = pd.read_csv(
-                    curve_files[curve_files.str.contains(param)].values[0], 
-                    sep='\s',
-                    header=None)
-        #    except pd.errors.EmptyDataError as E:
-        #        curves = pd.DataFrame(np.array([[np.nan]*3]))
-        #        pass
-            curves = {'V': curves[0].values, 'E': curves[1].values} 
+            thefile = curve_files[curve_files.str.contains(param)].values[0]
+            if os.path.exists(thefile) and os.path.getsize(thefile)>0:
+                curves = pd.read_csv(
+                        curve_files[curve_files.str.contains(param)].values[0], 
+                        sep='\s',
+                        header=None)
+                curves = {'V': curves[0].values, 'E': curves[1].values} 
         return curves
 
     def get_evcurves(self, Indexes = None, deltaks=None, encuts=None) -> pd.core.series.Series:
@@ -292,10 +295,13 @@ class Evcurves(object):
                 params = pd.Series(['dk']*len(selection))
             EVCURVES[thisindex] ={}
             for param in params.values:
-                EVCURVES[thisindex][param] ={
-                        'evcurve': self.get_curves_for_params(param, curve_files),
-                        'ev_fit_results': self.get_ev_fit_results(params, curve_files)
-                        }
+                thisevcurve = self.get_curves_for_params(param, curve_files)
+                this_ev_fit_results = self.get_ev_fit_results(params, curve_files)
+                if len (thisevcurve) > 0:
+                    EVCURVES[thisindex][param] ={
+                            'evcurve':  thisevcurve,
+                            'ev_fit_results': this_ev_fit_results
+                            }
         return pd.Series(EVCURVES)
 
     def load_evcurves(self, deltaks=None, encuts=None) -> pd.core.series.Series:
@@ -303,7 +309,7 @@ class Evcurves(object):
 
     def load_files_matching(self) -> pd.core.series.Series:
         saved_list = os.path.join(self.dataset, 'list_of_outcars.csv')
-        fullsearchstring = f'{self.dataset}/rawdata/**/volume_relaxed/{self.search_str}'
+        fullsearchstring = f'{self.dataset}/rawdata/*/bulk/*/volume_relaxed/{self.search_str}'
         if not need_to_update(saved_list):
             list_of_files = pd.read_csv(saved_list,  header=None).squeeze('columns')
         else:
