@@ -26,6 +26,8 @@ from sklearn.metrics import r2_score
 from scipy.optimize import curve_fit
 from ase.eos  import EquationOfState, birchmurnaghan
 
+eV_per_angstrom3_to_GPA = 160.21 # http://greif.geo.berkeley.edu/~driver/conversions.html @ 07/11/2023
+
 def need_to_update(file):
     return  not os.path.exists(file) # and (os.path.getmtime(file) > os.path.getmtime(__file__))
 
@@ -59,17 +61,22 @@ def plot_sample_curves(thecurves: pd.core.series.Series, location='.') -> Figure
 
 def get_eos_goodness(thecurve):
     if thecurve == thecurve  and len(thecurve['ev_fit_results']) > 0:
-        V0 = thecurve['ev_fit_results']['V_murn']
-        E0 = thecurve['ev_fit_results']['E_murn']
-        B0 = thecurve['ev_fit_results']['B_murn']
-        B0p = thecurve['ev_fit_results']['Bdev_murn']
-        param_guess = [E0, B0, B0p, V0]
+        #        V0 = thecurve['ev_fit_results']['V_murn']
+        #        E0 = thecurve['ev_fit_results']['E_murn']
+        #        B0 = thecurve['ev_fit_results']['B_murn']
+        #        B0p = thecurve['ev_fit_results']['Bdev_murn']
         vdata = thecurve['evcurve']['V']
         edata = thecurve['evcurve']['E']
+        V0 = vdata.mean()
+        E0 = edata.min()
+        B0 = 100
+        B0p = 1
+        param_guess = [E0, B0, B0p, V0]
 
         try:
             results, pcov = curve_fit(birchmurnaghan, vdata, edata, param_guess)
             e =  birchmurnaghan(vdata, *results) 
+            results[1] *= eV_per_angstrom3_to_GPA  # convert units of Bulk modulus
         except RuntimeError as RE:
             results = [np.mean(edata),  0, 0, np.mean(vdata)]
             e = [np.mean(edata)]*len(vdata)
@@ -83,7 +90,7 @@ def plot_fitted_curve(evcurve, thefit, r2, fig=None,  ax=None):
     l = []
     if thefit is not None:
         v = np.linspace(min(evcurve['V']), max(evcurve['V']), 100)
-        e =  birchmurnaghan(v,*thefit) #  thefit[0], thefit[1], thefit[2], thefit[3])
+        e =  birchmurnaghan(v,*thefit/np.array([1, eV_per_angstrom3_to_GPA, 1, 1])) #  thefit[0], thefit[1], thefit[2], thefit[3])
         thecovlabel = f'fit $R^2 = $ {r2:.3f}' 
         l.append(ax.plot(v,e,'-', label = thecovlabel)[0])
         l.append(ax.plot(evcurve['V'], evcurve['E'], 'o', color=l[-1].get_color(), label='calculations'))
@@ -104,6 +111,7 @@ def get_goodness(EVcurves):
 #            if len(curvedata[paramspec]['evcurve']['V']) < 1:
             if 'V' not in curvedata[paramspec]['evcurve'].keys():
                 continue
+
             fiteos[thisid][paramspec], r2[thisid][paramspec] = get_eos_goodness(paramcurve)
             if fiteos[thisid][paramspec] is None:
                 #    goodness[thisid].update({ paramspec: False })
@@ -111,7 +119,7 @@ def get_goodness(EVcurves):
             v0 = fiteos[thisid][paramspec][-1]
             vmax = np.max( curvedata[paramspec]['evcurve']['V'] )
             vmin = np.min( curvedata[paramspec]['evcurve']['V'] )
-            if  r2[thisid][paramspec] >= 0.95 and (v0 >= vmin and v0 <= vmax):
+            if  r2[thisid][paramspec] >= 0.995 and (v0 >= vmin and v0 <= vmax):
                 #                goodness[thisid].update({ paramspec: False })
 #            else:
                 goodness[thisid].update({ paramspec: True })
