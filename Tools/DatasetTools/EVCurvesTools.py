@@ -15,6 +15,7 @@ from matplotlib.figure import Figure as FigureType
 from tqdm.auto import tqdm
 import pandas as pd
 from pandas.core.series import Series as SeriesType
+import copy
 #from BopFoxFeaturizer.brief_summary_parser import StructSummaryParser
 #from BopFoxFeaturizer.Featurizer import Featurizer
 # types
@@ -160,6 +161,92 @@ def plot_curves_topdf(thecurves: pd.core.series.Series, thefits: pd.core.series.
 def invert_goodness(thegoodness):
     return thegoodness.map(lambda d: {key: not value for key, value in d.items()} )
 
+from itertools import combinations
+
+def find_the_good_curve_inside(thebadcurve):
+    betterv = thebadcurve['evcurve']['V']
+    bettere = thebadcurve['evcurve']['E']
+    betterparams = copy.copy(thebadcurve['fit'])
+    betterparams[1] /= eV_per_angstrom3_to_GPA
+    #predicte = birchmurnaghan(v, *params)
+    betterr2 = thebadcurve['r2']
+
+    param_guess = thebadcurve['fit']
+
+    all_indexs = np.linspace(0, len(betterv)-1, len(betterv), dtype=int)
+
+    nremove = 0
+
+    while betterr2 < 0.999:
+
+
+        nremove += 1
+
+        betterr2 = []
+
+        list_of_try_indexs = combinations(all_indexs, len(betterv) - nremove)
+
+        for try_indexs in list_of_try_indexs:
+
+            pdb.set_trace()
+
+            reducedv = thebadcurve['evcurve']['V'][list(try_indexs)]
+            reducede = thebadcurve['evcurve']['V'][list(try_indexs)]
+
+            newparams, pcov = curve_fit(birchmurnaghan, reducedv, reducede, betterparams)
+
+
+
+
+
+
+
+    pass
+
+def improve_goodness(thecurve):
+    """functin taken from thomas"""
+    betterv = [ thecurve['evcurve']['V'] ]
+    bettere = [ thecurve['evcurve']['E'] ]
+    betterparams = [copy.copy(thecurve['fit'])]
+    betterparams[-1][1] /= eV_per_angstrom3_to_GPA
+    #predicte = birchmurnaghan(v, *params)
+    betterr2 = [ thecurve['r2'] ]
+
+    param_guess = thecurve['fit']
+
+    def fit_in_all_minus_one(thexs, theys, the_param_guess):
+        thesize = len(thexs)
+        partialr2 = []
+        params_of_fit_on_reduced = []
+        reducedx = []
+        reducedy = []
+        for removethis in range(thesize):
+            reducedx.append( [thisx for i, thisx in enumerate(thexs) if i != removethis ])
+            reducedy.append( [thisy for i, thisy in enumerate(theys) if i != removethis ])
+            if the_param_guess[1] < 0:
+                the_param_guess[0] = np.mean(reducedy[-1])
+                the_param_guess[1] = 100
+                the_param_guess[2] = 1
+                the_param_guess[3] = np.mean(reducedx[-1])
+            try:
+                newparams, pcov = curve_fit(birchmurnaghan, reducedx[-1], reducedy[-1], the_param_guess)
+            except RuntimeError:
+                continue
+            params_of_fit_on_reduced.append(newparams)
+            reduced_prediction = birchmurnaghan(reducedx[-1], *newparams)
+            partialr2.append(r2_score(reduced_prediction, reducedy[-1]))
+
+        return partialr2, params_of_fit_on_reduced, reducedx, reducedy
+
+    while max(betterr2) < 0.995 and len(betterv[np.argmax(betterr2)]) > 5 :
+        best_previous = np.argmax(betterr2)
+        betterr2, betterparams, betterv, bettere = fit_in_all_minus_one(betterv[best_previous], bettere[best_previous], betterparams[best_previous])
+
+    ibest = np.argmax(betterr2)
+
+    betterparams[ibest][1] *= eV_per_angstrom3_to_GPA
+
+    return  betterr2[ibest], betterparams[ibest], betterv[ibest], bettere[ibest]
 
 
 class Evcurves(object):
