@@ -166,42 +166,42 @@ from itertools import combinations
 def find_the_good_curve_inside(thebadcurve):
     betterv = thebadcurve['evcurve']['V']
     bettere = thebadcurve['evcurve']['E']
-    betterparams = copy.copy(thebadcurve['fit'])
-    betterparams[1] /= eV_per_angstrom3_to_GPA
-    #predicte = birchmurnaghan(v, *params)
-    betterr2 = thebadcurve['r2']
-
-    param_guess = thebadcurve['fit']
+    param_guess = copy.copy(thebadcurve['fit'])
+    param_guess[1] /= eV_per_angstrom3_to_GPA
+    betterr2 = [ thebadcurve['r2'] ]
 
     all_indexs = np.linspace(0, len(betterv)-1, len(betterv), dtype=int)
 
     nremove = 0
 
-    while betterr2 < 0.999:
+    while np.max(betterr2) < 0.999:
 
 
         nremove += 1
 
         betterr2 = []
+        list_of_params = []
+        list_of_reducedvs = [] 
+        list_of_reducedes = []
 
         list_of_try_indexs = combinations(all_indexs, len(betterv) - nremove)
 
         for try_indexs in list_of_try_indexs:
 
-            pdb.set_trace()
-
             reducedv = thebadcurve['evcurve']['V'][list(try_indexs)]
-            reducede = thebadcurve['evcurve']['V'][list(try_indexs)]
+            reducede = thebadcurve['evcurve']['E'][list(try_indexs)]
+            try:
+                newparams, pcov = curve_fit(birchmurnaghan, reducedv, reducede, param_guess)
+            except RuntimeError as E:
+                continue
+            reduced_prediction = birchmurnaghan(reducedv, *newparams)
+            betterr2.append(r2_score(reducede, reduced_prediction))
+            list_of_reducedvs.append(reducedv)
+            list_of_reducedes.append(reducede)
+            list_of_params.append(newparams)
 
-            newparams, pcov = curve_fit(birchmurnaghan, reducedv, reducede, betterparams)
+    return betterr2, list_of_params, list_of_reducedvs, list_of_reducedes
 
-
-
-
-
-
-
-    pass
 
 def improve_goodness(thecurve):
     """functin taken from thomas"""
