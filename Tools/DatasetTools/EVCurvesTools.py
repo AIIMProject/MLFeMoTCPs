@@ -163,6 +163,17 @@ def invert_goodness(thegoodness):
 
 from itertools import combinations
 
+def is_common_sense_evcurve(v, e, params):
+    bulk_modulus_is_good = False
+    volumes_are_good = False
+
+    if v.min() < params[-1] and v.max() > params[-1]:
+        volumes_are_good  = True
+    if params[1] > 10 and params[1] < 500:
+        bulk_modulus_is_good = True
+
+    return volumes_are_good and bulk_modulus_is_good
+
 def find_the_good_curve_inside(thebadcurve):
     betterv = thebadcurve['evcurve']['V']
     bettere = thebadcurve['evcurve']['E']
@@ -175,7 +186,6 @@ def find_the_good_curve_inside(thebadcurve):
     nremove = 0
 
     while np.max(betterr2) < 0.999:
-
 
         nremove += 1
 
@@ -191,16 +201,24 @@ def find_the_good_curve_inside(thebadcurve):
             reducedv = thebadcurve['evcurve']['V'][list(try_indexs)]
             reducede = thebadcurve['evcurve']['E'][list(try_indexs)]
             try:
-                newparams, pcov = curve_fit(birchmurnaghan, reducedv, reducede, param_guess)
+                param_guess, pcov = curve_fit(birchmurnaghan, reducedv, reducede, param_guess)
             except RuntimeError as E:
                 continue
-            reduced_prediction = birchmurnaghan(reducedv, *newparams)
+            reduced_prediction = birchmurnaghan(reducedv, *param_guess)
             betterr2.append(r2_score(reducede, reduced_prediction))
             list_of_reducedvs.append(reducedv)
             list_of_reducedes.append(reducede)
-            list_of_params.append(newparams)
+            list_of_params.append(param_guess)
 
-    return betterr2, list_of_params, list_of_reducedvs, list_of_reducedes
+    if nremove == 0 :
+        return thebadcurve['r2'], thebadcurve['fit'],betterv, bettere
+
+    bestcombi = np.argmax(betterr2)
+    return_v = list_of_reducedvs[bestcombi]
+    return_e = list_of_reducedes[bestcombi]
+    return_params = list_of_params[bestcombi]
+    return_params[1] *= eV_per_angstrom3_to_GPA
+    return betterr2[bestcombi], return_params, return_v, return_e
 
 
 def improve_goodness(thecurve):
