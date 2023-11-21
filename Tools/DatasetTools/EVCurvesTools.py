@@ -92,7 +92,7 @@ def plot_fitted_curve(evcurve, thefit, r2, fig=None,  ax=None):
     if thefit is not None:
         v = np.linspace(min(evcurve['V']), max(evcurve['V']), 100)
         e =  birchmurnaghan(v,*thefit/np.array([1, eV_per_angstrom3_to_GPA, 1, 1])) #  thefit[0], thefit[1], thefit[2], thefit[3])
-        thecovlabel = f'fit $R^2 = $ {r2:.3f}' 
+        thecovlabel = f'fit $1- R^2 = $ {1-r2:.3e}' 
         l.append(ax.plot(v,e,'-', label = thecovlabel)[0])
         l.append(ax.plot(evcurve['V'], evcurve['E'], 'o', color=l[-1].get_color(), label='calculations'))
         fig.tight_layout()
@@ -120,7 +120,8 @@ def get_goodness(EVcurves):
             v0 = fiteos[thisid][paramspec][-1]
             vmax = np.max( curvedata[paramspec]['evcurve']['V'] )
             vmin = np.min( curvedata[paramspec]['evcurve']['V'] )
-            if  r2[thisid][paramspec] >= 0.995 and (v0 >= vmin and v0 <= vmax):
+            if  ( 1-r2[thisid][paramspec] <= 1e-6 ) and is_common_sense_evcurve(curvedata[paramspec]['evcurve']['V'], curvedata[paramspec]['evcurve']['E'], fiteos[thisid][paramspec]):
+                # (v0 >= vmin and v0 <= vmax):
                 #                goodness[thisid].update({ paramspec: False })
 #            else:
                 goodness[thisid].update({ paramspec: True })
@@ -165,11 +166,12 @@ from itertools import combinations
 
 def is_common_sense_evcurve(v, e, params):
     bulk_modulus_is_good = False
-    volumes_are_good = False
+    volumes_are_good = True #False
 
-    if v.min() < params[-1] and v.max() > params[-1]:
-        volumes_are_good  = True
-    if params[1] > 10 and params[1] < 500:
+    if v is not None:
+        if v.min() < params[-1] and v.max() > params[-1]:
+            volumes_are_good  = True
+    if params[1] > 160 and params[1] < 300:
         bulk_modulus_is_good = True
 
     return volumes_are_good and bulk_modulus_is_good
@@ -177,15 +179,18 @@ def is_common_sense_evcurve(v, e, params):
 def find_the_good_curve_inside(thebadcurve):
     betterv = thebadcurve['evcurve']['V']
     bettere = thebadcurve['evcurve']['E']
+#    param_guess = np.array([ np.min(bettere), 1, 1, np.mean(betterv)])
     param_guess = copy.copy(thebadcurve['fit'])
     param_guess[1] /= eV_per_angstrom3_to_GPA
+    param_guess[0] = bettere.min()
+    param_guess[-1] = betterv.mean()
     betterr2 = [ thebadcurve['r2'] ]
 
     all_indexs = np.linspace(0, len(betterv)-1, len(betterv), dtype=int)
 
     nremove = 0
 
-    while np.max(betterr2) < 0.999:
+    while 1-np.max(betterr2) > 1e-6 and ~is_common_sense_evcurve(None, None, param_guess) and nremove <= 4:
 
         nremove += 1
 
