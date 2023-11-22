@@ -183,7 +183,12 @@ def is_common_sense_evcurve(v, e, params, unitsofb0 = 'Pa'):
 
     return ( volumes_are_good and bulk_modulus_is_good and bdev_is_good )
 
-def find_the_good_curve_inside(thebadcurve):
+def find_the_good_curve_inside(
+        thebadcurve,
+        make_plot_of_options = False,
+        reset_guess_params = False
+        ):
+
     betterv = thebadcurve['evcurve']['V']
     bettere = thebadcurve['evcurve']['E']
 #    param_guess = np.array([ np.min(bettere), 1, 1, np.mean(betterv)])
@@ -208,10 +213,19 @@ def find_the_good_curve_inside(thebadcurve):
 
         list_of_try_indexs = combinations(all_indexs, len(betterv) - nremove)
 
-        for try_indexs in list_of_try_indexs:
+        for try_indexs in  list_of_try_indexs:
 
             reducedv = thebadcurve['evcurve']['V'][list(try_indexs)]
             reducede = thebadcurve['evcurve']['E'][list(try_indexs)]
+
+
+            if reset_guess_params:
+                themine = np.argmin(reducede)
+                param_guess[0] = reducede[themine]
+                param_guess[-1] = reducedv[themine]
+                #param_guess[1] = 1
+                params_orig = copy.copy(param_guess)
+
             try:
                 param_guess, pcov = curve_fit(birchmurnaghan, reducedv, reducede, param_guess)
             except RuntimeError as E:
@@ -221,6 +235,19 @@ def find_the_good_curve_inside(thebadcurve):
             list_of_reducedvs.append(reducedv)
             list_of_reducedes.append(reducede)
             list_of_params.append(param_guess)
+
+
+        if make_plot_of_options:
+            bestcombi = np.argmax(betterr2)
+            fig, ax = plt.subplots()
+            ax.plot(list_of_reducedvs[bestcombi][themine], list_of_reducedes[bestcombi][themine], 'sk', markersize=10)
+            ax.plot(betterv, bettere, 'ok')
+            ax.plot(list_of_reducedvs[bestcombi], list_of_reducedes[bestcombi], 'o', markersize = 10, markerfacecolor='None')
+            vv = np.linspace (list_of_reducedvs[bestcombi].min(), list_of_reducedvs[bestcombi].max(), 100)
+            ax.plot(vv, birchmurnaghan(vv, *param_guess), '--', label = f'R2 = {1-betterr2[-1]:.3e}')
+            ax.set_title(f'{params_orig}')
+            ax.set_xlabel(f'{param_guess}')
+            ax.legend()
 
     if nremove == 0 :
         return thebadcurve['r2'], thebadcurve['fit'],betterv, bettere
