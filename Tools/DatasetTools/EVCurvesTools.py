@@ -164,17 +164,24 @@ def invert_goodness(thegoodness):
 
 from itertools import combinations
 
-def is_common_sense_evcurve(v, e, params):
+def is_common_sense_evcurve(v, e, params, unitsofb0 = 'Pa'):
     bulk_modulus_is_good = False
-    volumes_are_good = True #False
+    bdev_is_good = False
+    volumes_are_good = False #False
 
     if v is not None:
-        if v.min() < params[-1] and v.max() > params[-1]:
+        if ( v.min() < params[-1] ) and ( v.max() > params[-1] ):
             volumes_are_good  = True
-    if params[1] > 160 and params[1] < 300:
-        bulk_modulus_is_good = True
+    if 'Pa' in unitsofb0 :
+        if ( params[1] > 140 ) and ( params[1] < 300 ):
+            bulk_modulus_is_good = True
+    elif 'eV' in unitsofb0:
+        if ( params[1] > 1 ) and ( params[1] < 3 ) :
+            bulk_modulus_is_good = True
+    if params[2] > 0 :
+        bdev_is_good = True
 
-    return volumes_are_good and bulk_modulus_is_good
+    return ( volumes_are_good and bulk_modulus_is_good and bdev_is_good )
 
 def find_the_good_curve_inside(thebadcurve):
     betterv = thebadcurve['evcurve']['V']
@@ -190,7 +197,7 @@ def find_the_good_curve_inside(thebadcurve):
 
     nremove = 0
 
-    while 1-np.max(betterr2) > 1e-6 and ~is_common_sense_evcurve(None, None, param_guess) and nremove <= 4:
+    while 1-np.max(betterr2) > 5e-6 and ~is_common_sense_evcurve(None, None, param_guess, unitsofb0 = 'ev' ) and nremove <= 4:
 
         nremove += 1
 
