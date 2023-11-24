@@ -26,7 +26,7 @@ import pdb
 from sklearn.metrics import r2_score
 from scipy.optimize import curve_fit
 from ase.eos  import EquationOfState, birchmurnaghan
-
+import warnings
 eV_per_angstrom3_to_GPA = 160.21 # http://greif.geo.berkeley.edu/~driver/conversions.html @ 07/11/2023
 
 def need_to_update(file):
@@ -98,7 +98,7 @@ def plot_fitted_curve(evcurve, thefit, r2, fig=None,  ax=None):
         fig.tight_layout()
     return l
 
-def get_goodness(EVcurves):
+def get_goodness(EVcurves, r2tol = 1e-4):
     goodness = {}
     fiteos = {}
     r2 = {}
@@ -120,7 +120,7 @@ def get_goodness(EVcurves):
             v0 = fiteos[thisid][paramspec][-1]
             vmax = np.max( curvedata[paramspec]['evcurve']['V'] )
             vmin = np.min( curvedata[paramspec]['evcurve']['V'] )
-            if  ( 1-r2[thisid][paramspec] <= 1e-6 ) and is_common_sense_evcurve(curvedata[paramspec]['evcurve']['V'], curvedata[paramspec]['evcurve']['E'], fiteos[thisid][paramspec]):
+            if  ( 1-r2[thisid][paramspec] <= r2tol ) and is_common_sense_evcurve(curvedata[paramspec]['evcurve']['V'], curvedata[paramspec]['evcurve']['E'], fiteos[thisid][paramspec]):
                 # (v0 >= vmin and v0 <= vmax):
                 #                goodness[thisid].update({ paramspec: False })
 #            else:
@@ -166,7 +166,7 @@ from itertools import combinations
 
 def is_common_sense_evcurve(v, e, params, unitsofb0 = 'Pa'):
     bulk_modulus_is_good = False
-    bdev_is_good = False
+    bdev_is_good = True
     volumes_are_good = False #False
 
     if v is not None:
@@ -180,83 +180,83 @@ def is_common_sense_evcurve(v, e, params, unitsofb0 = 'Pa'):
             bulk_modulus_is_good = True
     if params[2] > 0 :
         bdev_is_good = True
-
     return ( volumes_are_good and bulk_modulus_is_good and bdev_is_good )
 
 def find_the_good_curve_inside(
         thebadcurve,
+        tol = 1e-4, 
         make_plot_of_options = False,
-        reset_guess_params = False
+        reset_guess_params = False,
+        debug = False
         ):
-
     betterv = thebadcurve['evcurve']['V']
     bettere = thebadcurve['evcurve']['E']
 #    param_guess = np.array([ np.min(bettere), 1, 1, np.mean(betterv)])
     param_guess = copy.copy(thebadcurve['fit'])
     param_guess[1] /= eV_per_angstrom3_to_GPA
-    param_guess[0] = bettere.min()
-    param_guess[-1] = betterv.mean()
+    if reset_guess_params:
+        param_guess[0] = bettere.min()
+        param_guess[-1] = betterv.mean()
+        param_guess[1] = 2
     betterr2 = [ thebadcurve['r2'] ]
-
     all_indexs = np.linspace(0, len(betterv)-1, len(betterv), dtype=int)
-
     nremove = 0
-
-    while 1-np.max(betterr2) > 5e-6 and ~is_common_sense_evcurve(None, None, param_guess, unitsofb0 = 'ev' ) and nremove <= 4:
-
+    while 1-np.max(betterr2) > tol  and ((len(betterv) - nremove) >= 6 ): #and ~is_common_sense_evcurve(None, None, param_guess, unitsofb0 = 'ev' )
         nremove += 1
-
         betterr2 = []
         list_of_params = []
         list_of_reducedvs = [] 
         list_of_reducedes = []
-
         list_of_try_indexs = combinations(all_indexs, len(betterv) - nremove)
-
+        tried_indexs = []
         for try_indexs in  list_of_try_indexs:
-
+            tried_indexs.append(try_indexs)
             reducedv = thebadcurve['evcurve']['V'][list(try_indexs)]
             reducede = thebadcurve['evcurve']['E'][list(try_indexs)]
-
-
+            param_result = copy.copy(param_guess)
+            if make_plot_of_options:
+                params_orig = copy.copy(param_guess)
             if reset_guess_params:
                 themine = np.argmin(reducede)
                 param_guess[0] = reducede[themine]
                 param_guess[-1] = reducedv[themine]
-                #param_guess[1] = 1
-                params_orig = copy.copy(param_guess)
-
+                param_guess[1] = 2
             try:
-                param_guess, pcov = curve_fit(birchmurnaghan, reducedv, reducede, param_guess)
-            except RuntimeError as E:
-                continue
-            reduced_prediction = birchmurnaghan(reducedv, *param_guess)
+                param_result, pcov = curve_fit(birchmurnaghan, reducedv, reducede, param_guess)#,  maxfev=1000*len(try_indexs)) #, ftol=1e-12, xtol = 1e-16)
+            except Exception as E:
+                warnings.warn(f'with nremove = {nremove} can not fit, whith this error: \n {E}')
+            reduced_prediction = birchmurnaghan(reducedv, *param_result)
             betterr2.append(r2_score(reducede, reduced_prediction))
             list_of_reducedvs.append(reducedv)
             list_of_reducedes.append(reducede)
-            list_of_params.append(param_guess)
-
-
+            list_of_params.append(param_result)
         if make_plot_of_options:
+            themine = np.argmin(reducede)
+                #param_guess[0] = reducede[themine]
+                #param_guess[-1] = reducedv[themine]
+                #param_guess[1] = 1
             bestcombi = np.argmax(betterr2)
+            themine = np.argmin(list_of_reducedes[bestcombi])
             fig, ax = plt.subplots()
             ax.plot(list_of_reducedvs[bestcombi][themine], list_of_reducedes[bestcombi][themine], 'sk', markersize=10)
             ax.plot(betterv, bettere, 'ok')
-            ax.plot(list_of_reducedvs[bestcombi], list_of_reducedes[bestcombi], 'o', markersize = 10, markerfacecolor='None')
+            l = ax.plot(list_of_reducedvs[bestcombi], list_of_reducedes[bestcombi], 'o', markersize = 15, markerfacecolor='None')[0]
             vv = np.linspace (list_of_reducedvs[bestcombi].min(), list_of_reducedvs[bestcombi].max(), 100)
-            ax.plot(vv, birchmurnaghan(vv, *param_guess), '--', label = f'R2 = {1-betterr2[-1]:.3e}')
+            ax.plot(vv, birchmurnaghan(vv, *param_guess), '--', label = f'1-R2 = {1-betterr2[-1]:.3e}', color = l.get_color())
+            ax.plot(list_of_reducedvs[bestcombi], birchmurnaghan(list_of_reducedvs[bestcombi], *param_guess), 'd')
+            ax.plot([param_guess[-1]], [param_guess[0]], 'd', markerfacecolor='None', linewidth = 5, markersize = 15)
             ax.set_title(f'{params_orig}')
             ax.set_xlabel(f'{param_guess}')
-            ax.legend()
-
+            ax.legend(title=f'nremove = {nremove}')
     if nremove == 0 :
         return thebadcurve['r2'], thebadcurve['fit'],betterv, bettere
-
     bestcombi = np.argmax(betterr2)
     return_v = list_of_reducedvs[bestcombi]
     return_e = list_of_reducedes[bestcombi]
     return_params = list_of_params[bestcombi]
     return_params[1] *= eV_per_angstrom3_to_GPA
+    if debug :
+        return betterr2, list_of_params, list_of_reducedvs, list_of_reducedes
     return betterr2[bestcombi], return_params, return_v, return_e
 
 
