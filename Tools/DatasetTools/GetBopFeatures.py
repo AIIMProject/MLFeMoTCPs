@@ -26,8 +26,7 @@
 
 import os
 import sys
-sys.path.insert(0, '/home/storage/fortimtb/CuadernoTrabajo/bopfoxfeaturizer/')
-from BopFoxFeaturizer.Featurizer import Featurizer, BopfoxFeatures
+from dependencies.bopfoxfeaturizer.BopFoxFeaturizer.Featurizer import Featurizer, BopfoxFeatures
 import pandas as pd
 import pdb 
 
