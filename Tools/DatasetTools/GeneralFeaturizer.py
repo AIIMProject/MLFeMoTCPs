@@ -175,7 +175,7 @@ def featurize_dataframe(
     result = []
     if debug:
         pdb.set_trace()
-    for colid, feature in _Features.iteritems():
+    for colid, feature in _Features.items():
         result.append(featurize_series(feature, _coordination[feature.index], featurizer, debug = debug, **kwargs))
         columns = result[-1].columns
         newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
@@ -217,7 +217,7 @@ def array_expansions(
     df = {}
     for feature in columnstoexpand:
         df[feature] = {}
-        for index, compound in Features[feature].iteritems():
+        for index, compound in Features[feature].items():
             m = np.array(compound)
             if len(m.shape) == 1:
                 m = np.vstack([ np.zeros_like(m), m ]).transpose()
