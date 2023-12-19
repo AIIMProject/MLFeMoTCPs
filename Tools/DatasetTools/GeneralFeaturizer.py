@@ -176,7 +176,11 @@ def featurize_dataframe(
     if debug:
         pdb.set_trace()
     for colid, feature in _Features.items():
-        result.append(featurize_series(feature, _coordination[feature.index], featurizer, debug = debug, **kwargs))
+        try:
+            result.append(featurize_series(feature, _coordination[feature.index], featurizer, debug = debug, **kwargs))
+        except  Exception as E:
+            pdb.set_trace()
+            pass
         columns = result[-1].columns
         newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
         result[-1].columns = newcolumns
@@ -221,8 +225,11 @@ def array_expansions(
             m = np.array(compound)
             if len(m.shape) == 1:
                 m = np.vstack([ np.zeros_like(m), m ]).transpose()
-            natoms, nm = m.shape #eget_dimensions(m)
-            df[feature][index] = {f'{feature}_{this}' :  m[:,this] for this in range(0,nm)} # achnung moments !
+            if None not in m:
+                natoms, nm = m.shape #eget_dimensions(m)
+                df[feature][index] = {f'{feature}_{this}' :  m[:,this] for this in range(0,nm)} # achnung moments !
+            else:
+                df[feature][index] = {feature: None}
         df[feature] = pd.DataFrame.from_dict(df[feature], orient='index')
     return pd.concat(df.values(), axis=1)
 

@@ -30,8 +30,8 @@ def load_fully_curated_briefsummary(dataset: str) -> pd.core.frame.DataFrame:
     return pd.read_pickle(BSFile)
 
 
-def load_atoms_objects(dataset: str)-> pd.core.frame.DataFrame:
+def load_atoms_objects(dataset: str, case='inital', scaling='rescaled')-> pd.core.frame.DataFrame:
     system = dataset.replace('-', '')
-    atoms_object_location = os.path.join(dataset, 'Atomsobjects', f'{dataset}-POSCAR-initial-rescaled-AtomsObjects.pkl')
+    atoms_object_location = os.path.join(dataset, 'Atomsobjects', f'{dataset}-{case}-{scaling}-AtomsObjects.pkl')
     return pd.read_pickle(atoms_object_location)
 
