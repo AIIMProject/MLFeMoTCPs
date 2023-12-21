@@ -115,6 +115,9 @@ def cn_average(
     index, atomarray = vectorfeature
     _, coord = coordination
     norma = []
+    
+    if not isinstance( atomarray,np.ndarray):
+        return {index: np.nan}
     if return0:
         average['_0'] = np.sum(atomarray)/len(atomarray)
     for polyhedra, nneighbours in neighbours.items():
@@ -152,7 +155,12 @@ def featurize_series(
         debug = False, 
         **kwargs
         ) -> pd.core.frame.DataFrame:
-    iterator  = zip(_Feature.items(), _Coordinations.items())
+    try:
+        iterator  = zip(_Feature.items(), _Coordinations.items())
+    except Exception as E:
+        iterator  = zip(_Feature.items(), _Coordinations.items())
+        pdb.set_trace()
+        pass
     thisresult = [] 
     if debug:
         pdb.set_trace()
