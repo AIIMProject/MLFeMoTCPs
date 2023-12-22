@@ -71,6 +71,10 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
         elif filename[-3:] == 'csv': 
             Features[name] = pd.read_csv(filename, index_col = 0)
     Features.update({'dataset + '+name: add_dataset_feature(features, Features['dataset']) for name, features in Features.items() if 'BOP' in name})
+#    for name, features in Features.items():
+#        if 'BOP' not in name:
+#            continue
+#        Features[name] = features.filter('^(^moments)')
     return  Features
 
 def score_fitted_model(fittedmodel, xtrain,  xtest, ytrain,ytest):
