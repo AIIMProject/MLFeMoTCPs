@@ -31,7 +31,14 @@ def tags_to_cns(cptaglist : list[str] ):
 cn_persite : dict = {structure:  tags_to_cns(sites) for structure, sites in cn_dict.items()}
 
 def get_relevant_sorters(AtomsObjects : pd.core.frame.DataFrame , Sorters: pd.core.series.Series) -> pd.core.series.Series:
-    return Sorters[AtomsObjects.file.map(lambda f: f[0])]
+
+    try: 
+        return_value = Sorters[AtomsObjects.file.map(lambda f: f[0])]
+    except Exception as E: 
+        pdb.set_trace()
+        return_value = Sorters[AtomsObjects.file.map(lambda f: f[0])]
+        pass
+    return  return_value
 
 def sorting_feature(
         AtomsObjects: pd.core.frame.DataFrame,
@@ -155,21 +162,21 @@ def featurize_series(
         debug = False, 
         **kwargs
         ) -> pd.core.frame.DataFrame:
-    try:
-        iterator  = zip(_Feature.items(), _Coordinations.items())
-    except Exception as E:
-        iterator  = zip(_Feature.items(), _Coordinations.items())
-        pdb.set_trace()
-        pass
+    #    try:
+    iterator  = zip(_Feature.items(), _Coordinations.items())
+#   #except Exception as E:
+#       iterator  = zip(_Feature.items(), _Coordinations.items())
+#       pdb.set_trace()
+#       pass
     thisresult = [] 
     if debug:
         pdb.set_trace()
     for atomfeature, atomcoordinations in iterator:
-        try:
-            newresult = featurizer(atomfeature, atomcoordinations, **kwargs)
-        except Exception as E:
-            pdb.set_trace()
-            newresult = featurizer(atomfeature, atomcoordinations, **kwargs)
+#        try:
+        newresult = featurizer(atomfeature, atomcoordinations, **kwargs)
+#        except Exception as E:
+#            pdb.set_trace()
+#            newresult = featurizer(atomfeature, atomcoordinations, **kwargs)
         thisresult.append(newresult)
     thisresult =  dict(map(dict.popitem, thisresult))
     return pd.DataFrame.from_dict(thisresult,orient='index' )

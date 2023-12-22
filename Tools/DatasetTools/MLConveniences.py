@@ -46,31 +46,30 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     DescriptorList = {
     'atomic' : 'matminer_atomic_features.pkl',
     'dataset' : 'DatasetFeatures.pkl',
-    'SOAP_canonicalFe': 'soap_features__canonicalFe__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
-    'SOAP_canonicalW': 'soap_features__canonicalW__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
-    'SOAP_specific': 'soap_features__specific__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.kpl',
+    'SOAP_canonicalW': 'soap_features__canonicalW__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
+    'SOAP_specific': 'soap_features__specific__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
     'Pyscal' : 'CNAVPyscal.pkl',
-    'ACE' :  f'{dataset}-ACE-CNAV.pkl', 
-    'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.pkl', 
-    'NOZERO_NOONE-ACE' :  f'{dataset}-NOZERO_NOONE-ACE-CNAV.pkl', 
-    'NOZERO_NOONE_NOTWO-ACE' :  f'{dataset}-NOZERO_NOONE_NOTWO-ACE-CNAV.pkl', 
-    'NOTHREE-ACE' :  f'{dataset}-NOTHREE-ACE-CNAV.pkl', 
-    'NOTHREE-NOTWO-ACE' :  f'{dataset}-NOTHREE_NOTWO-ACE-CNAV.pkl', 
-    'NOTHREE-NOTWO_NOONE-ACE' :  f'{dataset}-NOTHREE_NOTWO_NOONE-ACE-CNAV.pkl', 
-    'Canonical ACE' : f'{dataset}-canonical-ACE-CNAV.pkl', 
-    'Canonical BOP': f'curated_{system}_initial_canonical_table_WUBIND_16.pkl',
-    'Projections BOP': f'curated_{system}_initial_projections_table_WUBIND_16.pkl',
-        'Projections OS BOP': f'curated_{system}_initial_projections_os_table_WUBIND_16.pkl',
-    #    '0.5 Projections OS BOP': f'curated_{system}_initial_0.5projections_os_table_WUBIND_16.pkl',
-        '0.6 Projections OS BOP': f'curated_{system}_initial_0.6projections_os_table_WUBIND_16.pkl',
-        '0.7 Projections OS BOP': f'curated_{system}_initial_0.7projections_os_table_WUBIND_16.pkl',
-        '0.8 Projections OS BOP': f'curated_{system}_initial_0.8projections_os_table_WUBIND_16.pkl',
-        'spProjections': f'curated_{system}_initial_spProjections_table_WUBIND_16.pkl',
-    #    'Projections sOS BOP': f'curated_{system}_initial_projections_sos_table_WUBIND_16.pkl',
+    'ACE' :  f'{dataset}-ACE-CNAV.csv', 
+    'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.csv', 
+    'NOZERO_NOONE-ACE' :  f'{dataset}-NOZERO_NOONE-ACE-CNAV.csv', 
+    'NOZERO_NOONE_NOTWO-ACE' :  f'{dataset}-NOZERO_NOONE_NOTWO-ACE-CNAV.csv', 
+    'NOTHREE-ACE' :  f'{dataset}-NOTHREE-ACE-CNAV.csv', 
+    'NOTHREE-NOTWO-ACE' :  f'{dataset}-NOTHREE_NOTWO-ACE-CNAV.csv', 
+    'NOTHREE-NOTWO_NOONE-ACE' :  f'{dataset}-NOTHREE_NOTWO_NOONE-ACE-CNAV.csv', 
+    'Canonical ACE' : f'{dataset}-canonical-ACE-CNAV.csv', 
+    'Canonical BOP': f'CNAV_parallel_{dataset}_initial_canonical_table_WUBIND_16.csv', 
+    '0.7dProjections 0.5OS  BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_table_WUBIND_16.csv', 
+    '0.7spProjections 0.5OS  BOP': f'CNAV_parallel_{dataset}_initial_0.7spProjections_0.5os_table_WUBIND_16.csv', 
     }
 
+
     DescriptorFileList = {name: os.path.join( f'{dataset}','Descriptors',f'{basename}') for name, basename in DescriptorList.items()}
-    Features = {name: pd.read_pickle(filename) for name, filename in DescriptorFileList.items()}
+    Features = {}
+    for name, filename in DescriptorFileList.items():
+        if filename[-3:] == 'pkl':
+            Features[name] = pd.read_pickle(filename)
+        elif filename[-3:] == 'csv': 
+            Features[name] = pd.read_csv(filename, index_col = 0)
     Features.update({'dataset + '+name: add_dataset_feature(features, Features['dataset']) for name, features in Features.items() if 'BOP' in name})
     return  Features
 
