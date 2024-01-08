@@ -58,8 +58,8 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'NOTHREE-NOTWO_NOONE-ACE' :  f'{dataset}-NOTHREE_NOTWO_NOONE-ACE-CNAV.csv', 
     'Canonical ACE' : f'{dataset}-canonical-ACE-CNAV.csv', 
     'Canonical BOP': f'CNAV_parallel_{dataset}_initial_canonical_table_WUBIND_16.csv', 
-    '0.7dProjections 0.5OS  BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_table_WUBIND_16.csv', 
-    '0.7spProjections 0.5OS  BOP': f'CNAV_parallel_{dataset}_initial_0.7spProjections_0.5os_table_WUBIND_16.csv', 
+    '0.7dProjections 0.5OS BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_table_WUBIND_16.csv', 
+    '0.7spProjections 0.5OS BOP': f'CNAV_parallel_{dataset}_initial_0.7spProjections_0.5os_table_WUBIND_16.csv', 
     }
 
 

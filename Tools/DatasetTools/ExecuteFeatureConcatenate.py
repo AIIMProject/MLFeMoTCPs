@@ -18,7 +18,7 @@ import warnings
 warnings.simplefilter('ignore')
 
 from sklearnex import patch_sklearn
-patch_sklearn()
+patch_sklearn(verbose=False)
 
 import pdb
 
