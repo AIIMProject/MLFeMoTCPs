@@ -7,3 +7,6 @@
 [submodule "dependencies/bopfoxfeaturizer"]
 	path = dependencies/bopfoxfeaturizer
 	url = git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfoxfeaturizer.git
+[submodule "dependencies/python-ace"]
+	path = dependencies/python-ace
+	url = git@github.com:ICAMS/python-ace.git
