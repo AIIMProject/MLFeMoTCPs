@@ -17,8 +17,8 @@ from FeatureConcatenate import NewFeatureConcatenate as FeatureConcatenate
 import warnings
 warnings.simplefilter('ignore')
 
-from sklearnex import patch_sklearn
-patch_sklearn(verbose=False)
+#from sklearnex import patch_sklearn
+#patch_sklearn(verbose=False)
 
 import pdb
 
@@ -56,6 +56,7 @@ iwanttoplot = ['atomic','dataset']
 iwanttoplot += ['Canonical ACE' , 'Canonical BOP', 'SOAP_canonicalW']
 iwanttoplot += ['0.7dProjections 0.5OS BOP', '0.7spProjections 0.5OS BOP']
 iwanttoplot  += [ 'ACE no CNAV' , 'ACE']
+iwanttoplot  += ['SOAP', 'SOAP no CNAV']
 iwanttoplot *= n_repeats
 
 
