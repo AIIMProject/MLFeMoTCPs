@@ -53,8 +53,10 @@ FittedModels = {}
 
 n_repeats = 10
 iwanttoplot = ['atomic','dataset']
-iwanttoplot += ['Canonical ACE' , 'Canonical BOP', 'SOAP_canonicalW']
+iwanttoplot = ['atomic no CNAV','dataset no CNAV']
+iwanttoplot += ['Canonical ACE' , 'Canonical BOP'] #, 'SOAP_canonicalW']
 iwanttoplot += ['0.7dProjections 0.5OS BOP', '0.7spProjections 0.5OS BOP']
+iwanttoplot += ['0.7dProjections 0.5OS BOP no CNAV', '0.7spProjections 0.5OS BOP no CNAV']
 iwanttoplot  += [ 'ACE no CNAV' , 'ACE']
 iwanttoplot  += ['SOAP', 'SOAP no CNAV']
 iwanttoplot *= n_repeats
