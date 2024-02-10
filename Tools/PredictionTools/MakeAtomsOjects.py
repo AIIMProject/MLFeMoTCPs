@@ -1,6 +1,16 @@
+import string
 from ase.io.vasp import read_vasp
+from itertools import product
 
-def permutate(structurename,Nelements,NWyckoff):
+def permutate(structurename: str, Nelements: int, NWyckoff: int):
+    # names of elements
+    element_names = list(string.ascii_uppercase)[:Nelements]
+    configs = []
+    for placement_tags in product(element_names, repeat=NWyckoff):
+        configs.append(structurename+'-'+''.join(placement_tags) )
+    return configs
+
+def old_permutate(structurename,Nelements,NWyckoff):
     # names of elements
     n=['A','B','C','D','E','F','G','H','I','J']
     # list container for all strings
@@ -184,10 +194,10 @@ def get_scaled_atomic_volume(new_atoms: Atoms):
 
 import pdb
 
-def decoratePOSCAR(filename, species_dict : dict[str, str], return_replacings = False):
-    strucname, occstring = filename.split('-')
+def decoratePOSCAR(taggedstrucname, species_dict : dict[str, str], return_replacings = False):
+    strucname, occstring = taggedstrucname.split('-')
     replacings = {i+1: species_dict[tag] for i, tag in enumerate(occstring)}
-    proto = read_vasp('R-structures/POSCAR_R_proto.vasp')
+    proto = read_vasp(f'PrototypeStructures/POSCAR_{strucname}_proto.vasp')
     new_symbols = [replacings[i] for i in proto.numbers]
     new_atoms = proto.copy()
     new_atoms.set_chemical_symbols(new_symbols)
