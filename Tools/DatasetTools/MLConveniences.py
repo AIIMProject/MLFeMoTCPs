@@ -46,8 +46,8 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     DescriptorList = {
     'atomic' : 'matminer_atomic_features.pkl',
     'dataset' : 'DatasetFeatures.pkl',
-    'SOAP_canonicalW': 'soap_features__canonicalW__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
-    'SOAP_specific': 'soap_features__specific__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
+    'SOAP_canonicalW': 'soap_features__canonicalW__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
+    'SOAP_specific': 'soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
     'Pyscal' : 'CNAVPyscal.pkl',
     'ACE' :  f'{dataset}-ACE-CNAV.csv', 
     'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.csv', 
