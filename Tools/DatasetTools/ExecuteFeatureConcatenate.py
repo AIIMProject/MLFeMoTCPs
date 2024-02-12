@@ -58,7 +58,7 @@ iwanttoplot += ['Canonical ACE' , 'Canonical BOP'] #, 'SOAP_canonicalW']
 iwanttoplot += ['0.7dProjections 0.5OS BOP', '0.7spProjections 0.5OS BOP']
 iwanttoplot += ['0.7dProjections 0.5OS BOP no CNAV', '0.7spProjections 0.5OS BOP no CNAV']
 iwanttoplot  += [ 'ACE no CNAV' , 'ACE']
-iwanttoplot  += ['SOAP', 'SOAP no CNAV']
+iwanttoplot  += ['SOAP_specific_small', 'SOAP_specific_small no CNAV']
 iwanttoplot *= n_repeats
 
 
