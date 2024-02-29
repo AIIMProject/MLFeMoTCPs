@@ -55,10 +55,11 @@ n_repeats = 10
 iwanttoplot = ['atomic','dataset']
 iwanttoplot = ['atomic no CNAV','dataset no CNAV']
 iwanttoplot += ['Canonical ACE' , 'Canonical BOP'] #, 'SOAP_canonicalW']
+iwanttoplot += ['Canonical ACE no CNAV' , 'Canonical BOP no CNAV'] #, 'SOAP_canonicalW']
 iwanttoplot += ['0.7dProjections 0.5OS BOP', '0.7spProjections 0.5OS BOP']
 iwanttoplot += ['0.7dProjections 0.5OS BOP no CNAV', '0.7spProjections 0.5OS BOP no CNAV']
 iwanttoplot  += [ 'ACE no CNAV' , 'ACE']
-iwanttoplot  += ['SOAP_specific_small', 'SOAP_specific_small no CNAV']
+iwanttoplot  += ['SOAP_specific_small', 'SOAP_specific_small no CNAV', 'SOAP_canonicalW']
 iwanttoplot *= n_repeats
 
 
@@ -85,13 +86,19 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
     MO.load_model_options(ModelName)
     FCresults, feature_concat_resul_loc = load_fcresults(ModelName = ModelName)
     for i in range(n_repeats):
+        logger.info(f'trying curve {i}')
         for featurename in iwanttoplot:
             logger.info(featurename)
             combi  = (ModelName, featurename)
-            if len(FCresults[combi]) >= n_repeats:
-                continue
             if len(FCresults[combi]) >= i:
-                continue
+                logger.info(f'{combi} has {len(FCresults[combi])} curves')
+                if len( FCresults[combi][i] ) > 0:
+                    logger.info(f'curve {i} exists and seems to be good')
+                    continue
+#                if len(FCresults[combi]) >= n_repeats:
+#                    logger.info('we already have enaugh curves')
+#                continue
+            logger.info(f'need to do or redo curve {i}')
             folder = StratifiedKFold(n_splits=5, shuffle=True) # , random_state=1024)
             fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
             folds = list(fold_generator)
