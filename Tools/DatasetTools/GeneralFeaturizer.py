@@ -29,6 +29,7 @@ cn_dict : dict = {
         'delta' : ['Z12a','Z12a', 'Z12a', 'Z12a',
                    'Z12b', 'Z12b', 'Z12b', 'Z12b',  
                    'Z12c', 'Z12c', 'Z12c', 'Z12c',  
+                   'Z12d', 'Z12d', 'Z12d', 'Z12d',  
                    'Z12e', 'Z12e', 'Z12e', 'Z12e',  
                    'Z12f', 'Z12f', 'Z12f', 'Z12f',  
                    'Z14a', 'Z14a', 'Z14a', 'Z14a',  
@@ -193,24 +194,16 @@ def featurize_series(
         debug = False, 
         **kwargs
         ) -> pd.core.frame.DataFrame:
-    #    try:
     iterator  = zip(_Feature.items(), _Coordinations.items())
-#   #except Exception as E:
-#       iterator  = zip(_Feature.items(), _Coordinations.items())
-#       pdb.set_trace()
-#       pass
     thisresult = [] 
     if debug:
         pdb.set_trace()
     for atomfeature, atomcoordinations in iterator:
-#        try:
         newresult = featurizer(atomfeature, atomcoordinations, **kwargs)
-#        except Exception as E:
-#            pdb.set_trace()
-#            newresult = featurizer(atomfeature, atomcoordinations, **kwargs)
         thisresult.append(newresult)
     thisresult =  dict(map(dict.popitem, thisresult))
-    return pd.DataFrame.from_dict(thisresult,orient='index' )
+    return pd.DataFrame.from_dict(thisresult,orient='index', )
+
 
 def featurize_dataframe(
         _Features : pd.core.frame.DataFrame, 
@@ -221,16 +214,14 @@ def featurize_dataframe(
     result = []
     if debug:
         pdb.set_trace()
-    for colid, feature in _Features.items():
-        try:
-            result.append(featurize_series(feature, _coordination[feature.index], featurizer, debug = debug, **kwargs))
-        except  Exception as E:
-            pdb.set_trace()
-            pass
+    progress = tqdm(_Features.items(), total = len(_Features.columns))
+    for colid, feature in progress: # _Features.items():
+        result.append(featurize_series(feature, _coordination[feature.index], featurizer, debug = debug, **kwargs))
         columns = result[-1].columns
         newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
         result[-1].columns = newcolumns
     return pd.concat(result, axis=1)
+#    return result
         
 def featurize_many(
         _Features : pd.core.frame.DataFrame, 
