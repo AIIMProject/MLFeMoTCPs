@@ -19,6 +19,9 @@ from ase.build import bulk
 import copy 
 import matplotlib
 import matplotlib.pyplot as plt
+from tqdm.auto import tqdm 
+import pdb
+
 default_options_dict = \
             {
             'deltaSplineBins': 0.001,
@@ -104,23 +107,19 @@ class MyPyACECalculator(object):
             self.new_bbasis = filter_basisfuncs_for_ls(self.raw_bbasis, selectionls = select_ls, is_select_exclusive = is_select_exclusive, excludels = exclude_ls)
             self.configured_calculator : pyace.asecalc.PyACECalculator = pyace.PyACECalculator(self.new_bbasis)
 
-
-
-
-
     def get_ace_projections(self, thisatoms: ase.atoms.Atoms):
         thisatoms.calc = self.configured_calculator
         thisatoms.get_potential_energy()
         thisprojections = np.array(thisatoms.calc.ace.projections)
         return thisprojections
 
-    def featurize_many(self, theatoms: pd.core.series.Series(ase.atoms.Atoms)) -> pd.core.series.Series(ase.atoms.Atoms):
-        thefeatures = {}
-        for name, atom in theatoms.items():
+    def featurize_series(self, theatoms: pd.core.series.Series(ase.atoms.Atoms)) -> pd.core.series.Series(ase.atoms.Atoms):
+        thefeatures = {}# pd.Series([], dtype='object')
+        progress = tqdm(theatoms.items(), total = len(theatoms) )
+        for name, atom in progress: # theatoms.items():
             thefeatures[name] = self.get_ace_projections(atom)
-        return pd.Series(thefeatures)
+        return pd.Series( thefeatures )
 
-import pdb
 
 class TestMyPyAce(unittest.TestCase):
 
