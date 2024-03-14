@@ -1,6 +1,11 @@
 import string
 from ase.io.vasp import read_vasp
 from itertools import product
+import re
+import  mendeleev
+import numpy as np
+from ase.atoms import Atoms
+from mp_api.client import MPRester
 
 def permutate(structurename: str, Nelements: int, NWyckoff: int):
     # names of elements
@@ -165,12 +170,24 @@ def generatePOSCAR(filename):
     writePOSCAR('POSCAR.'+filename,poscar)
     return
 
-import re
-import  mendeleev
-import numpy as np
-from ase.atoms import Atoms
 
-def get_scaled_atomic_volume(new_atoms: Atoms):
+#MP_keys = {'Fe' : 'mp-13', 'Mo' : 'mp-129'}
+
+def get_atom_volume_from_mp(mp_keys_dict):
+    global atom, nsites
+    atom_volume_keys = {}
+    with  MPRester("XMK2lneoOyVOQDnhEnVmyX3h4dyJuSyo") as mpr:
+        for atom, key in mp_keys_dict.items():
+            result = mpr.summary.search(material_ids=[key])[0]
+            total_vol = result.volume
+            nsites = result.nsites
+            atom_volume_keys[atom] = total_vol / nsites
+
+    return atom_volume_keys
+
+def get_scaled_atomic_volume(
+        new_atoms: Atoms,
+        atom_volume_dict: dict[str, float]=None):
     symbol_counts = pd.Series(new_atoms.get_chemical_symbols()).value_counts()
     unique_symbols = symbol_counts.index.tolist()
     # re.findall('[A-Za-z]{1,2}', new_atoms.get_chemical_formula())
@@ -179,30 +196,28 @@ def get_scaled_atomic_volume(new_atoms: Atoms):
     atom_num : dict = { symb: num for symb, num in zip(unique_symbols, unique_nspecs)}
     vols_dict = {} 
     for s in unique_symbols:
-        try:
-            vols_dict[s] = (4/3)*np.pi*(mendeleev.element(s).atomic_radius/100)**3  
-        except Exception as E:
-            pdb.set_trace()
-            pass
-    try:
-        total_atom_vol = np.sum([ vols_dict[s] * atom_num[s] for s in unique_symbols] )
-    except Exception as E:
-        pdb.set_trace()
-        pass
-    
+        if atom_volume_dict is None:
+            vols_dict[s] = (4/3)*np.pi*(mendeleev.element(s).atomic_radius/100)**3
+        else:
+            vols_dict[s] = atom_volume_dict[s]
+
+    total_atom_vol = np.sum([ vols_dict[s] * atom_num[s] for s in unique_symbols] )
     return total_atom_vol
 
-import pdb
+def decoratePOSCAR(
+        taggedstrucname: str,
+        species_dict : dict[str, str],
+        atom_volume_dict : dict[str] = None,
+        return_replacings = False):
 
-def decoratePOSCAR(taggedstrucname, species_dict : dict[str, str], return_replacings = False):
     strucname, occstring = taggedstrucname.split('-')
     replacings = {i+1: species_dict[tag] for i, tag in enumerate(occstring)}
     proto = read_vasp(f'PrototypeStructures/POSCAR_{strucname}_proto.vasp')
     new_symbols = [replacings[i] for i in proto.numbers]
     new_atoms = proto.copy()
     new_atoms.set_chemical_symbols(new_symbols)
-    scaled_atomic_volume = get_scaled_atomic_volume(new_atoms)
-    new_cell = new_atoms.cell * ( (scaled_atomic_volume / new_atoms.get_volume())**(1./3.) )
+    scaled_atomic_volume = get_scaled_atomic_volume(new_atoms, atom_volume_dict)
+    new_cell = new_atoms.cell * ((scaled_atomic_volume / new_atoms.get_volume())**(1./3.))
     new_atoms.set_cell(new_cell, scale_atoms = True)
     return_values = new_atoms
     if return_replacings :
@@ -212,10 +227,18 @@ def decoratePOSCAR(taggedstrucname, species_dict : dict[str, str], return_replac
 import pandas as pd 
 from tqdm.auto import tqdm
 
-def make_all_atoms_objects(list_of_binary_tags, species_dict={'A': 'Fe', 'B': 'Mo'}):
+def make_all_atoms_objects(
+        list_of_binary_tags: list,
+        species_dict: dict[str, str]={'A': 'Fe', 'B': 'Mo'},
+        atom_volumes_def: dict[str, float] = None):
+    """
+
+    Args:
+        atom_volumes_def (object):
+    """
     binary_atoms = {}
     for tag in tqdm(list_of_binary_tags):
-        this_atoms = decoratePOSCAR(tag, species_dict)
+        this_atoms = decoratePOSCAR(tag, species_dict, atom_volumes_def)
         formula = this_atoms.get_chemical_formula()
         formula = formula.replace('Fe','Fe_pv').replace('Mo','Mo_sv')
         index = formula+'.'+tag

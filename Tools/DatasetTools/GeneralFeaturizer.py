@@ -180,7 +180,7 @@ def get_shape_factors(
     B1 = BOP.filter(regex='bn_1_.*')
     B2 = BOP.filter(regex='bn_2_.*')
     SF = pd.DataFrame([], index=B1.index)
-    for (name, B1CN), (_, B2CN ) in zip(B1.iteritems(), B2.iteritems()):
+    for (name, B1CN), (_, B2CN ) in zip(B1.items(), B2.items()):
         sfname = name.split('_')[-1]
         VALIDB2 = B2CN != 0
         SF['sf_'+sfname] = B1CN
