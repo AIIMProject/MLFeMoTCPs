@@ -90,7 +90,7 @@ class Plotting:
     def compare_features(featureone, titleone, featuretwo, titletwo):
         fig, ax = plt.subplots(1,2,figsize=(30,10))
         h3=featureone.hist(bins=100, fill='k', ax=ax[1], density=True, label='total eneregy')
-        h1=featuretwo.hist(bins=100, ax=ax[0],density=True,label='$\Delta E_f$')
+        h1=featuretwo.hist(bins=100, ax=ax[0],density=True,label=r'$\Delta E_f$')
         ax[1].set_xlabel(titleone, labelpad=20)
         ax[0].set_xlabel(titletwo, labelpad = 20)
         return fig
@@ -131,7 +131,7 @@ class Plotting:
         return fig, axg
 
     def plot_learning_curve(
-            thescores, 
+            thescores: list, 
             feature_titles,
             ax=None, modelname='RandomForest',dothelabels = True, 
             Labels_Dict = {'ylabel':'RMSE', 'xlabel':'number of features'}
@@ -192,7 +192,7 @@ class Plotting:
                 pdb.set_trace()
                 withviewp = np.vstack([thispoints, viewpoint])
                 pass
-            chulls[phase] = ConvexHull(withviewp, qhull_options=f'QG{len(withviewp)-1}')
+            chulls[phase] = ConvexHull(withviewp, qhull_options=f'QG{len(withviewp)-1}J')
 
         if return_points:
             return chulls, points
