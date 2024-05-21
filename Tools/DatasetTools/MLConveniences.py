@@ -144,12 +144,17 @@ def clean_zeros(name: str, features: pd.core.frame.DataFrame):
     else:
         return features
 
-def get_optimal_features(FeatureScoreData:pd.core.frame.DataFrame):
+def get_optimal_features(FeatureScoreData:pd.core.frame.DataFrame, remove_structure=False):
     thisatmin = FeatureScoreData['test'].argmin()
-    return FeatureScoreData.index[:thisatmin]
+    optimal_features = FeatureScoreData.index[:thisatmin]
+    if remove_structure:
+        optimal_features=optimal_features[optimal_features != 'Structure']
+    return optimal_features # FeatureScoreData.in
+#    thisatmin = FeatureScoreData['test'].argmin()
+#    return FeatureScoreData.index[:thisatmin]
 
-def filter_features (Features_DF: pd.core.frame.DataFrame, learning_curve = pd.core.frame.DataFrame):
+def filter_features(Features_DF: pd.core.frame.DataFrame, learning_curve = pd.core.frame.DataFrame, remove_structure=False):
     if 'params' not in learning_curve.columns:
         raise ValueError('the learning curve provided is not an evaluation of best features')
-    columns = get_optimal_features(learning_curve)
+    columns = get_optimal_features(learning_curve, remove_structure = remove_structure)
     return Features_DF[columns]
