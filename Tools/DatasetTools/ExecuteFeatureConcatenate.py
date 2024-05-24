@@ -52,14 +52,17 @@ samplefolds = list(DS.get_folds())
 FittedModels = {}
 
 n_repeats = 10
+
+iwanttoplot = []
 iwanttoplot = ['atomic','dataset']
 iwanttoplot = ['atomic no CNAV','dataset no CNAV']
-iwanttoplot += ['Canonical ACE' , 'Canonical BOP'] #, 'SOAP_canonicalW']
+iwanttoplot += ['Canonical ACE']
+iwanttoplot += ['Canonical BOP'] #, 'SOAP_canonicalW']
 iwanttoplot += ['Canonical ACE no CNAV' , 'Canonical BOP no CNAV'] #, 'SOAP_canonicalW']
 iwanttoplot += ['0.7dProjections 0.5OS BOP', '0.7spProjections 0.5OS BOP']
 iwanttoplot += ['0.7dProjections 0.5OS BOP no CNAV', '0.7spProjections 0.5OS BOP no CNAV']
 iwanttoplot  += [ 'ACE no CNAV' , 'ACE']
-iwanttoplot  += ['SOAP_specific_small', 'SOAP_specific_small no CNAV', 'SOAP_canonicalW']
+iwanttoplot  += ['SOAP_specific_small', 'SOAP_specific_small no CNAV', 'SOAP_canonicalW_small']
 iwanttoplot *= n_repeats
 
 
@@ -89,12 +92,14 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
         logger.info(f'trying curve {i}')
         for featurename in iwanttoplot:
             logger.info(featurename)
-            combi  = (ModelName, featurename)
-            if len(FCresults[combi]) >= i:
-                logger.info(f'{combi} has {len(FCresults[combi])} curves')
-                if len( FCresults[combi][i] ) > 0:
-                    logger.info(f'curve {i} exists and seems to be good')
-                    continue
+            combi = (ModelName, featurename)
+            logger.info(f'has {combi}: {combi in FCresults.keys()}')
+            if combi in FCresults.keys():
+                if len(FCresults[combi]) > i:
+                    logger.info(f'{combi} has {len(FCresults[combi])} curves')
+                    if len( FCresults[combi][i] ) > 0:
+                        logger.info(f'curve {i} exists and seems to be good')
+                        continue
 #                if len(FCresults[combi]) >= n_repeats:
 #                    logger.info('we already have enaugh curves')
 #                continue
@@ -108,6 +113,7 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
             Features[featurename]=Features[featurename].convert_dtypes(convert_floating=True)
             corrs = pd.concat([Features[featurename],DS.target], axis = 1).corr()[target_case].abs()
             reasonable_features = corrs[corrs>=corrs['Mag']/3].index.difference([target_case])
+            logger.info(f'at init, only {len(reasonable_features)} features are left after removing low correlated')
             if 'Mag' not in reasonable_features:
                 raise(  ValueError('Mag eliminated too soon ') )
             FittedGS[combi] = copy.deepcopy(TestCV)
@@ -133,7 +139,7 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
 if __name__ == '__main__' :
     ModelName = sys.argv[1]
     namefile = ModelName.replace(' ','')
-    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}_{hostname}.log', level=logging.INFO,)# 
+    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}_{hostname}.log', level=logging.INFO,)#
     logger = logging.getLogger()
     nslots = int(sys.argv[2]) #int(os.environ["NSLOTS"])
     logger.info(f'NSLOTS = {nslots}')
