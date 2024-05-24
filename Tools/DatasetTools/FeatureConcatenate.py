@@ -126,7 +126,7 @@ class FeatureConcatenate(object):
             report_path='reports/',
             criterion = 'test_score',
             sort_criteria = 'score_only',
-            logger=None
+            logger : logging.Logger =None
             ):
         """
         Params
@@ -151,7 +151,7 @@ class FeatureConcatenate(object):
         self.report_path = report_path
         self.criterion = criterion
         self.sort_criteria = sort_criteria
-        self.logger = logger 
+        self.logger : logging.Logger = logger
         
 
     def getbestfeature(self,
@@ -365,7 +365,7 @@ def check_mag_in_index(feature_list : pd.Index, compare_with):
 
 class NewFeatureConcatenate():
 
-    def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}, model_params_grid={}, logger = None):
+    def __init__(self, dataset: Dataset, model: RegressorMixin , model_params = {}, model_params_grid={}, logger :  logging.Logger = None):
         self.model = model
         self.DS : Dataset = dataset
         self.samplesplit = dataset.get_samplesplit()
@@ -375,7 +375,7 @@ class NewFeatureConcatenate():
             self.model.set_params(**model_params)
         else:
             raise ValueError('undetermined model')
-        self.logger = logger
+        self.logger : logging.Logger = logger
 
     def discard_correlated_features(self, thegroupname, the_best_feature_name, current_list):
         corrs = self.DS.Features[thegroupname].corr().abs()[the_best_feature_name]
@@ -409,8 +409,8 @@ class NewFeatureConcatenate():
         for step in progress:
             self.logger.debug('executing parallell loop')
             this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers, search_within = search_only)
-            self.logger.debug(feature_list)
             if len(this_best_feature) == 0:
+                self.logger.info(' list of best features ended up empty, exiting ')
                 break
             last_train = this_best_feature['train'][0]
             last_test = this_best_feature['test'][0]
@@ -471,20 +471,19 @@ class NewFeatureConcatenate():
         try_feature_list = inspect_features.difference(self.fixed_features)
 
         if self.logger is not None:
-            self.logger.debug(f'max workers outsie {max_workers}')
+            self.logger.debug(f'max workers outside {max_workers}')
             message = ', '.join(try_feature_list)
             self.logger.debug(f'current features : {message}')
         P = Pool(max_workers)
         scores: list[dict[str,dict[str, float]]] = P.map(self.train_fixed_plus_try, try_feature_list) #, max_workers=max_workers, leave=False) #, **self.redirect)
-        if self.logger is not None:
-            self.logger.debug(f'current scores : {scores}')
         scores: dict[str, dict[str,float]] = dict(map(dict.popitem, scores))
         scores = pd.DataFrame.from_dict(scores, orient='index')
         if 'random' in scores.index:
-            self.logger.info ('random found in selection list')
-        scores_g = scores.query('test >= train')
+            self.logger.warning('random found in selection list')
+        scores_g = scores.query('test >= train').copy()
         if len(scores_g) == 0:
+            self.logger.warning('WARNING: on this loop all test scores larger than train scores. ommiting!')
             scores.sort_values(by='test', inplace = True)
-            return scores_g
+            return scores.iloc[[0]]
         scores_g.sort_values(by='test', inplace=True)
         return scores_g.iloc[[0]] #[scores.index[[0]]]
