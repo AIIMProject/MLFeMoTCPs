@@ -15,7 +15,8 @@ class  Dataset():
             target_name : str   = 'EF_fmbcc',
             selectPhase         = None, 
             selectMag   : str   = None,
-            remove_phases_query : str = None
+            remove_phases_query : str = None,
+            load_features_only : list[str] = None
             ):
         """initiate the dataset
         arguments
@@ -39,7 +40,10 @@ class  Dataset():
                 raise ValueError(" selectMag option can only be 'FM' or 'NM' ")
             self.BS = self.BS[self.BS.index.str.contains(selectMag+'$', regex=True)]
         self.resultslocation = load_results_location(dataset)
-        self.Features = self.load_features(dataset)
+        Features = self.load_features(dataset)
+        if load_features_only is not None:
+            Features = { this_feature: Features[this_feature] for this_feature in load_features_only}
+        self.Features = Features
         self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
         self.Features = {group: feature.loc[self.allindex] for group, feature in self.Features.items()}
         self.Features.update({
@@ -57,7 +61,7 @@ class  Dataset():
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 
-    def load_features(self, dataset):
+    def load_features(self, dataset) -> dict[str, pd.core.frame.DataFrame]:
         features_dict = load_features(dataset)
         features_dict.update({name+' no CNAV': clean_CNAVS(name, features) for name, features in features_dict.items() if notyetclean(name)})
         return features_dict
@@ -76,9 +80,9 @@ class  Dataset():
             savedsamplesplit = pickle.load(pkl)
         return saved_split_random_state, savedsamplesplit
 
-    def  load_indexsplit(self, split_random_state):
+    def  load_indexsplit(self, split_random_state, test_size=0.2):
         indexsplitloc = os.path.join(self.dataset, 'samplsplit.pkl')
-        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state, stratify=self.StructureNames)
+        indextrain, indextest = train_test_split(self.allindex, shuffle=True, random_state = split_random_state, stratify=self.StructureNames, test_size=test_size)
         samplesplit = {'test': indextest, 'train': indextrain}
         with open(indexsplitloc, 'wb') as pkl:
             pickle.dump(split_random_state, pkl)
