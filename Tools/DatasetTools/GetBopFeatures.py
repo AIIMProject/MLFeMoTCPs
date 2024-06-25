@@ -30,26 +30,58 @@ model_definitions = {
             },
             'atom_blocks_kwargs': {
                 'onsite_levels_scale' : 0.5,
-                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'}
+                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
             },
         },
         'calculator_options' : {
             'moments' : globalmoments
         }
     },
-    '0.7projections_0.5os_10scf': {
+    '0.7projections_0.5os_0scf': {
         'model_maker_options' : {
             'element_pairs_kwargs' : {
                 'bond_integral_scale': 0.7,
             },
             'atom_blocks_kwargs': {
                 'onsite_levels_scale' : 0.5,
-                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'}
+                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
             },
         },
         'calculator_options':{
             'moments' : globalmoments,
-            'scfsteps': 10
+            'scfsteps' : 0,
+        }
+    },
+    '0.7projections_0.5os_10scf_jii8.0': {
+        'model_maker_options' : {
+            'element_pairs_kwargs' : {
+                'bond_integral_scale': 0.7,
+            },
+            'atom_blocks_kwargs': {
+                'onsite_levels_scale' : 0.5,
+                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
+                'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
+            },
+        },
+        'calculator_options':{
+            'moments' : globalmoments,
+            'scfsteps' : 10,
+        }
+    },
+    '0.7projections_0.5os_100scf_jii8.0': {
+        'model_maker_options' : {
+            'element_pairs_kwargs' : {
+                'bond_integral_scale': 0.7,
+            },
+            'atom_blocks_kwargs': {
+                'onsite_levels_scale' : 0.5,
+                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
+                'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
+            },
+        },
+        'calculator_options':{
+            'moments' : globalmoments,
+            'scfsteps' : 100,
         }
     },
 }
@@ -143,6 +175,9 @@ for (model, definition), (case, atoms_df) in product(model_definitions.items(), 
         ApplyOnAtoms = atoms_df.atoms
     print('atoms: ', case, 'model: ', model, '  cutoff: ', cutoff, ' moments:', thismoments)
     resultspickle[(model, thismoments, case)] = os.path.join(dataset, 'Descriptors', f'parallel_{dataset}_{case}_{model}_{cutoff}_WUBIND_{thismoments}.pkl')
+    log_files_loc = os.path.join(dataset, 'results', model)
+    if not os.path.exists(log_files_loc):
+        os.makedirs(log_files_loc)
     if not os.path.exists(resultspickle[(model, thismoments, case)]):
         cwd = os.getcwd()
         BOPC = BopfoxFeatures(
@@ -150,9 +185,14 @@ for (model, definition), (case, atoms_df) in product(model_definitions.items(), 
             cutoffby=cutoff, 
             binary = os.path.join(cwd, 'dependencies', 'bopfox','src', 'bopfox'),
             savelog=True,
+            printsc=True,
             **definition['calculator_options']
             )
-        BOPC.featurize_dataframe(input_pickle=resultspickle, output_pickle=resultspickle, )
+        BOPC.featurize_dataframe(input_pickle=resultspickle, output_pickle=resultspickle, max_workers=12)
+        logfiles = glob.glob('bopfoxASE*gz')
+        if len(logfiles) > 0:
+            for file in logfiles:
+                os.rename(file, os.path.join(log_files_loc, file))
         results[(model, thismoments, case)] = BOPC.RESULTS #pd.read_pickle(resultspickle[model]) 
         results[(model, thismoments, case)].to_pickle(resultspickle[(model, thismoments, case)])
     else:
