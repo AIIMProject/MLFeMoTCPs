@@ -23,6 +23,10 @@ atomsobjectloc = os.path.join(dataset, 'Atomsobjects')
 components = dataset.replace('-','')
 globalmoments = 16
 model_definitions = {
+    'canonical': {
+        'replace atoms' : {'Fe': 'W', 'Mo': 'W'},
+        'moments' : globalmoments
+    },
     '0.7projections_0.5os': {
         'model_maker_options' : {
             'element_pairs_kwargs' : {
