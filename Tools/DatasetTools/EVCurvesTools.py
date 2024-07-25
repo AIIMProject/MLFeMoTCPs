@@ -27,7 +27,15 @@ from sklearn.metrics import r2_score
 from scipy.optimize import curve_fit
 from ase.eos  import EquationOfState, birchmurnaghan
 import warnings
+import logging
+import sys
 eV_per_angstrom3_to_GPA = 160.21 # http://greif.geo.berkeley.edu/~driver/conversions.html @ 07/11/2023
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+stdouthandler = logging.StreamHandler(sys.stdout)
+stdouthandler.setLevel(logging.INFO)
+logger.addHandler(stdouthandler)
 
 def need_to_update(file):
     return  not os.path.exists(file) # and (os.path.getmtime(file) > os.path.getmtime(__file__))
@@ -46,7 +54,7 @@ def load_parsed(Parsed_Briefsummary):
 def plot_sample_curves(thecurves: pd.core.series.Series, location='.') -> FigureType:
     multipdf = os.path.join(location, 'evcurves_multipage.pdf')
     with PdfPages(multipdf) as pdf:
-        progress = tqdm(thecurves.iteritems(), total = len(thecurves))
+        progress = tqdm(thecurves.items(), total = len(thecurves))
         for index, data in progress:
             fig, ax = plt.subplots(1,1)
             ax.set_xlabel(index, fontsize=12)
@@ -102,7 +110,7 @@ def get_goodness(EVcurves, r2tol = 1e-4):
     goodness = {}
     fiteos = {}
     r2 = {}
-    progress = tqdm(EVcurves.iteritems(), total = len(EVcurves))
+    progress = tqdm(EVcurves.items(), total = len(EVcurves))
     for thisid, curvedata in progress:
         goodness[thisid] =  {}
         fiteos[thisid] = {}
@@ -150,7 +158,7 @@ def plot_curves(thesample: pd.core.series.Series, thefits: pd.core.series.Series
     return fig_collection, ax_collection
 
 def plot_curves_topdf(thecurves: pd.core.series.Series, thefits: pd.core.series.Series, ther2: pd.core.series.Series, pdffile: str):
-    collection = zip(thecurves.iteritems(), thefit.values, ther2s.values)
+    collection = zip(thecurves.items(), thefit.values, ther2s.values)
     progress = tqdm(collection, total = len(collection))
     with PdfPages(pdffile) as pdf:
         for thisid, curvedata in progress:
@@ -402,7 +410,7 @@ class Evcurves(object):
     def make_selection(self, theindex, thisdeltaks, thisencut) -> pd.core.series.Series:
         elements, structure, mag = self.read_index(theindex)
         select_elements = self.EVFILES.str.contains(elements) & (~ self.EVFILES.str.contains(elements+'-'))
-        select_structure = self.EVFILES.str.contains(structure)
+        select_structure = self.EVFILES.str.contains(f'/{structure}/')
         if mag == 'FM':
             select_mag = self.EVFILES.str.contains(mag)
         elif ( 'U' in mag ) or ( 'D' in mag ):
@@ -430,7 +438,8 @@ class Evcurves(object):
                 curves = pd.read_csv(
                         curve_files[curve_files.str.contains(param)].values[0], 
                         sep='\s',
-                        header=None)
+                        header=None,
+                        engine='python')
                 curves = {'V': curves[0].values, 'E': curves[1].values} 
         return curves
 
@@ -441,10 +450,13 @@ class Evcurves(object):
             progress.set_description(thisindex)
             selection = self.make_selection(thisindex, deltaks[thisindex], encuts[thisindex])
             curve_files = self.EVFILES[selection]
+            progress.set_description(f'{thisindex}, made selection')
             if self.Paths.shape[1] > 1:
                 params = self.Paths[selection].iloc[:,-2]
+                logger.debug(f'param values {thisindex}: {params.values}')
             else:
                 params = pd.Series(['dk']*len(selection))
+            progress.set_description(f'{thisindex}, got paramas, selections = {len(selection)}')
             EVCURVES[thisindex] ={}
             for param in params.values:
                 thisevcurve = self.get_curves_for_params(param, curve_files)
@@ -461,15 +473,42 @@ class Evcurves(object):
 
     def load_files_matching(self) -> pd.core.series.Series:
         saved_list = os.path.join(self.dataset, 'list_of_outcars.csv')
-        fullsearchstring = f'{self.dataset}/rawdata/*/bulk/*/volume_relaxed/{self.search_str}'
+#        fullsearchstring = f'{self.dataset}/rawdata/*/bulk/*/volume_relaxed/{self.search_str}'
+        fullsearchstring = f'{self.dataset}/**/{self.search_str}'
         if not need_to_update(saved_list):
+            logger.debug(f'reading list of energy-volume curves from {saved_list}')
             list_of_files = pd.read_csv(saved_list,  header=None).squeeze('columns')
         else:
             list_of_files = pd.Series(glob.glob(fullsearchstring,  recursive=True))
             list_of_files.name = 'full_path'
             list_of_files.to_csv(saved_list, header=False, index=False)
-        if len( list_of_files ) > 0:
-            return list_of_files
+        search_results = pd.Series([])
+        for index, filepath in list_of_files.items():
+            if re.match('.*___BACKUP___.*', filepath):
+                logger.debug(f'excluding {index}: {filepath}')
+            else:
+                search_results[index] = filepath
+        if len( search_results ) > 0:
+            return search_results
         else:
             result =  pd.Series(['']*len(self.Indexes), index=self.Indexes)
             return result[result.map(len)] # something strange happens in some files for FeMo
+
+if __name__ == '__main__':
+    import os
+    import sys
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    sys.path.insert(0, project_root)
+    logger.info (f'root directory: {project_root}')
+    from DatasetOperator import Dataset
+    from dependencies.bopfoxfeaturizer.BopFoxFeaturizer.brief_summary_parser import StructSummaryParser
+    from Tools.DatasetTools import EVCurvesTools as EVtools
+    import pandas as pd
+    import os
+    validation_dataset = 'validation_data'
+    validationBS = StructSummaryParser(dataset='validation_data',ForceMakeBS=True).BriefSummary
+    fittedcurvesloc = os.path.join(validation_dataset, 'evcurvesfitted.json')
+    evcurvesloc = os.path.join(validation_dataset,'evcurves.json' )
+    goodnessloc = os.path.join(validation_dataset, 'goodness.json')
+    force = True
+    EV = Evcurves(Indexes = validationBS.index, atoms=['Fe','Mo'], dataset = validation_dataset )
