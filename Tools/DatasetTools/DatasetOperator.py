@@ -7,6 +7,9 @@ from Tools.DatasetTools.MLConveniences import *
 from itertools import product
 from tqdm.auto import tqdm
 
+def get_compound_composition(compound: pd.core.series.Series) -> dict:
+    raise NotImplementedError
+
 class  Dataset():
 
     def  __init__(
