@@ -6,6 +6,10 @@ import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
 from scipy.spatial import ConvexHull
+import logging
+
+Logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 import seaborn as sns
 #Plt.style.use('default')
@@ -169,7 +173,8 @@ class Plotting:
             components: list[str],
             viewpoint : list[float] = [0.6, -10] ,
             return_points = False, 
-            getproperty = '^EF$'
+            getproperty = '^EF$',
+            logger = Logger
             ):
         """
         finds 2d convex hulls for the compositions saved in a dictionary as 
@@ -185,13 +190,19 @@ class Plotting:
         points = cls.get_x_ef_points(PhaseBS, components, property = getproperty)
 
         for (phase, bs ), x_ef in zip(PhaseBS.items(), points.values()):
+            logger.debug(f'phase: {phase}, data shape: {bs.shape}')
             thispoints = x_ef[bs['nelem']<3 ]
+            logger.debug(f'shape this points = {thispoints.shape}')
+            logger.debug(f'this points = {thispoints}')
+            logger.debug(f'shape x_ef = {x_ef.shape}')
+            logger.debug(f'shape x_ef = {x_ef}')
+            logger.debug(f'nels: {bs.nelem}')
             try:
                 withviewp = np.vstack([thispoints, viewpoint])
             except Exception as E:
-                pdb.set_trace()
-                withviewp = np.vstack([thispoints, viewpoint])
-                pass
+                logger.debug(f'{E}')
+                #withviewp = np.vstack([thispoints, viewpoint])
+                #pass
             chulls[phase] = ConvexHull(withviewp, qhull_options=f'QG{len(withviewp)-1}J')
 
         if return_points:
@@ -200,7 +211,6 @@ class Plotting:
             return chulls
 
 class PlottingChulls:
-
 
     def clean_bad_populated(thephasesBS, return_removed = False):
         remove = []
