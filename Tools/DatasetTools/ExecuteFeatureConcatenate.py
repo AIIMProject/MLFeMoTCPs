@@ -60,11 +60,11 @@ iwanttoplot += ['Canonical ACE']
 iwanttoplot += ['Canonical BOP'] #, 'SOAP_canonicalW']
 iwanttoplot += ['Canonical ACE no CNAV' , 'Canonical BOP no CNAV'] #, 'SOAP_canonicalW']
 iwanttoplot += ['0.7dProjections 0.5OS BOP', '0.7spProjections 0.5OS BOP']
-iwanttoplot += ['0.7dProjections 10scf 8.0jii BOP', '0.7dProjections 10scf 8.0jii BOP no CNAV']
-iwanttoplot += ['0.7dProjections 100scf 8.0jii BOP', '0.7dProjections 100scf 8.0jii BOP no CNAV']
+#iwanttoplot += ['0.7dProjections 10scf 8.0jii BOP', '0.7dProjections 10scf 8.0jii BOP no CNAV']
+#iwanttoplot += ['0.7dProjections 100scf 8.0jii BOP', '0.7dProjections 100scf 8.0jii BOP no CNAV']
 iwanttoplot += ['0.7dProjections 0.5OS BOP no CNAV', '0.7spProjections 0.5OS BOP no CNAV']
 iwanttoplot  += [ 'ACE no CNAV' , 'ACE']
-iwanttoplot  += ['SOAP_specific_small', 'SOAP_specific_small no CNAV', 'SOAP_canonicalW_small']
+iwanttoplot  += ['SOAP_specific_small', 'SOAP_specific_small no CNAV', 'SOAP_canonicalW_small', 'SOAP_canonicalW_small no CNAV']
 iwanttoplot *= n_repeats
 
 
@@ -96,15 +96,17 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
             logger.info(featurename)
             combi = (ModelName, featurename)
             logger.info(f'has {combi}: {combi in FCresults.keys()}')
+            if 'SOAP_canonicalW' in combi:
+                pdb.set_trace()
             if combi in FCresults.keys():
                 if len(FCresults[combi]) > i:
                     logger.info(f'{combi} has {len(FCresults[combi])} curves')
                     if len( FCresults[combi][i] ) > 0:
                         logger.info(f'curve {i} exists and seems to be good')
                         continue
-#                if len(FCresults[combi]) >= n_repeats:
-#                    logger.info('we already have enaugh curves')
-#                continue
+                if len(FCresults[combi]) >= n_repeats:
+                    logger.info('we already have enaugh curves')
+                continue
             logger.info(f'need to do or redo curve {i}')
             folder = StratifiedKFold(n_splits=5, shuffle=True) # , random_state=1024)
             fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
