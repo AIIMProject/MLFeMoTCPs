@@ -397,9 +397,9 @@ class NewFeatureConcatenate():
         max_num_features = min(num_features, max_features)
         self.logger.info(f'max num of features: {max_num_features}')
         redirect = {}
-        if self.logger is not None:
-            redirect = {'file': open(os.devnull, 'w') }
-        progress = tqdm(range(len(search_only)), ncols = 160, total=len(search_only), **redirect )
+#        if self.logger is not None:
+#            redirect = {'file': open(os.devnull, 'w') }
+        progress = tqdm(range(len(search_only)), ncols = 160, total=len(search_only))#, **redirect )
         self.logger.info(f'choosing {max_features} from {len(search_only)}')
         self.logger.info(f'max_workers = {max_workers}')
         self.logger.info(str(progress))
@@ -408,7 +408,9 @@ class NewFeatureConcatenate():
         self.logger.info(f'saving this curve into {saveto}')
         for step in progress:
             self.logger.debug('executing parallell loop')
+            t0 = time.time()
             this_best_feature : pd.core.frame.DataFrame = self.get_best_feature(groupname, feature_list.index.tolist(), max_workers=max_workers, search_within = search_only)
+            dt = t0 - time.time()
             if len(this_best_feature) == 0:
                 self.logger.info(' list of best features ended up empty, exiting ')
                 break
@@ -423,6 +425,7 @@ class NewFeatureConcatenate():
                     )
             description += check_mag_in_index(feature_list.index, search_only)
             feature_list.to_pickle(saveto)
+            self.logger.info(f'-{{selected: {best.name},  in order: {len(feature_list)}, needed ms: {dt} }}')
             if last_test > 1.2*best_test:
                 break
             if len(search_only) < 1:
