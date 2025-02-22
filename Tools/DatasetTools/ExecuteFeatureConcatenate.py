@@ -71,7 +71,7 @@ iwanttoplot *= n_repeats
 def load_fcresults(ModelName = "Random Forest"):
     #fittedmodelslocation = os.path.join(DS.resultslocation, f'{ModelName}_{target_case}__FittedCVSearch{suffix}.pkl')
     namefile = ModelName.replace(' ','')
-    feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}_{namefile}.pkl')  
+    feature_concat_resul_loc = os.path.join(DS.dataset, 'results', f'concatenation_results_{target_case}_{suffix}_{namefile}_timing.pkl')  
 
     if os.path.exists(feature_concat_resul_loc):
         with open(feature_concat_resul_loc, 'rb') as pkl:
@@ -106,7 +106,7 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
                         continue
                 if len(FCresults[combi]) >= n_repeats:
                     logger.info('we already have enaugh curves')
-                continue
+                    continue
             logger.info(f'need to do or redo curve {i}')
             folder = StratifiedKFold(n_splits=5, shuffle=True) # , random_state=1024)
             fold_generator = folder.split(DS.samplesplit['train'], DS.StructureNames[DS.samplesplit['train']])
@@ -143,7 +143,7 @@ def run_feature_selection(ModelName = "Random Forest", list_of_features = iwantt
 if __name__ == '__main__' :
     ModelName = sys.argv[1]
     namefile = ModelName.replace(' ','')
-    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}_{hostname}.log', level=logging.INFO,)#
+    logging.basicConfig(filename=f'Feature_Concatenate_{namefile}_{hostname}_timing.log', level=logging.INFO,)#
     logger = logging.getLogger()
     nslots = int(sys.argv[2]) #int(os.environ["NSLOTS"])
     logger.info(f'NSLOTS = {nslots}')
