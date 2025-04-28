@@ -5,7 +5,7 @@ import re
 import  mendeleev
 import numpy as np
 from ase.atoms import Atoms
-from mp_api.client import MPRester
+# from mp_api.client import MPRester ## this is incompatible right now
 
 def permutate(structurename: str, Nelements: int, NWyckoff: int):
     # names of elements
