@@ -94,7 +94,7 @@ def sorting_feature(
     relevantsorters = get_relevant_sorters(AtomsObjects, Sorters)
     relevanttags = SublatticeTags[relevantsorters.index]
     df = {}
-    for index, file in AtomsObjects.file.iteritems():
+    for index, file in AtomsObjects.file.items(): #iteritems():
         df[index] = {'sorters': np.array(relevantsorters[file[0]]), 'sublatticetags': relevanttags[file[0]], 'file' : file[0]}
     return pd.DataFrame.from_dict(df, orient='index')
 
@@ -130,7 +130,7 @@ def get_sitecn(
         sorters_feature: pd.core.series.Series, 
         ) -> pd.core.series.Series:
     sitecn = {}
-    progress = tqdm(phase_feature.iteritems(), total=phase_feature.shape[0])
+    progress = tqdm(phase_feature.items(), total=phase_feature.shape[0])
     for index, phase in progress:
         if phase in specialphases:
             sitecn[index] = np.tile(np.unique(cn_persite[phase]), len(atoms_objects[index]))
