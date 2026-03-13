@@ -414,7 +414,10 @@ class Evcurves(object):
     def make_selection(self, theindex, thisdeltaks, thisencut) -> pd.core.series.Series:
         elements, structure, mag = self.read_index(theindex)
         select_elements = self.EVFILES.str.contains(elements) & (~ self.EVFILES.str.contains(elements+'-'))
-        select_structure = self.EVFILES.str.contains(structure)
+        # Match structure as a directory component under bulk/, not as a raw substring.
+        # This avoids overmatching short labels like "P" against "PBE-PAW".
+        structure_pattern = rf'/bulk/{re.escape(structure)}(?:/|\.)'
+        select_structure = self.EVFILES.str.contains(structure_pattern, regex=True)
         if mag == 'FM':
             select_mag = self.EVFILES.str.contains(mag)
         elif ( 'U' in mag ) or ( 'D' in mag ):
@@ -430,8 +433,14 @@ class Evcurves(object):
             directory = os.path.dirname(curvefile)
             fit_result_file = os.path.join(directory, 'fit_results.dat')
             if os.path.exists(fit_result_file):
-                results = pd.read_csv(fit_result_file, sep = '\s+', header=None, comment='#')
-                results_dict={res[0]: float(res[1]) for _, res in results.iterrows() if '_murn' in res[0]}
+                if ( 'Mo_sv' in fit_result_file ) and ('/P/' in fit_result_file):
+                    pass
+                try:
+                    results = pd.read_csv(fit_result_file, sep = '\s+', header=None, comment='#')
+                    results_dict={res[0]: float(res[1]) for _, res in results.iterrows() if '_murn' in res[0]}
+                except FileNotFoundError as e:
+                    print('Warning: problem reading')
+                    print(fit_result_file)
         return results_dict
 
     def get_curves_for_params(self, param, curve_files) -> dict:
