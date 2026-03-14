@@ -1,0 +1,12 @@
+seed: 42
+global_permutation_type: constrained
+composition: [Fe, Mo]
+delta/*cfg: &id001
+- relax
+- murnaghan
+- composition:
+    EleA:
+    - Fe
+    EleB:
+    - Mo
+R/Fe_pv39Mo_sv14.R-AAAAAABAABB.NM.cfg: *id001
