@@ -1,0 +1,28 @@
+seed: 42
+global_permutation_type: constrained
+composition: [Fe, Mo]
+delta/*cfg: &id001
+- relax
+- murnaghan
+- composition:
+    EleA:
+    - Fe
+    EleB:
+    - Mo
+R/Fe_pv39Mo_sv14.R-AAAAAABAABB.NM.cfg: *id001
+M/Mo_sv52.M-BBBBBBBBBBB.NM.cfg:        *id001        
+M/Fe_pv16Mo_sv36.M-AABBABBBBBB.NM.cfg: *id001
+M/Fe_pv24Mo_sv28.M-AABAABBBBBB.NM.cfg: *id001
+M/Fe_pv32Mo_sv20.M-AAAAABABBBB.NM.cfg: *id001
+M/Fe_pv40Mo_sv12.M-AAAAAAAABBB.NM.cfg: *id001
+M/Fe_pv48Mo_sv4.M-AAAAAAAABAA.NM.cfg:  *id001
+M/Fe_pv52.M-AAAAAAAAAAA.NM.cfg:        *id001 
+P/Mo_sv56.P-BBBBBBBBBBBB.NM.cfg:           *id001
+P/Fe_pv16Mo_sv40.P-ABABBBBBBBAB.NM.cfg:    *id001
+P/Fe_pv20Mo_sv36.P-ABABBBBABBAB.NM.cfg:    *id001
+P/Fe_pv28Mo_sv28.P-AAABBBBAABAB.NM.cfg:    *id001
+P/Fe_pv36Mo_sv20.P-AAABBBAABBAA.NM.cfg:    *id001
+P/Fe_pv40Mo_sv16.P-AAAABBBAABAA.NM.cfg:    *id001
+P/Fe_pv44Mo_sv12.P-AAAABBAAABAA.NM.cfg:    *id001
+P/Fe_pv48Mo_sv8.P-AAAABBAAAAAA.NM.cfg:     *id001
+P/Fe_pv56.P-AAAAAAAAAAAA.NM.cfg:           *id001
