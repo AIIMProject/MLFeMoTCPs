@@ -139,7 +139,11 @@ def get_goodness(EVcurves, r2tol = 1e-4):
 
 def plot_the_sample(theindex, thedata, thefit_data, r2_data):
     fig, ax = plt.subplots(1,1)
-    ax.set_title(theindex)
+    thetitle = theindex#ax.get_title()
+    for key, data in thedata.items():
+        thetitle+=f', B0={data["ev_fit_results"]["B_murn"]:.0f}'
+    ax.set_title(thetitle)
+       
     ax.set_xlabel('V ($\AA ^3$)')
     ax.set_ylabel('E (eV)')
     legendhandles = []
@@ -181,7 +185,7 @@ def is_common_sense_evcurve(v, e, params, unitsofb0 = 'Pa'):
         if ( v.min() < params[-1] ) and ( v.max() > params[-1] ):
             volumes_are_good  = True
     if 'Pa' in unitsofb0 :
-        if ( params[1] > 140 ) and ( params[1] < 300 ):
+        if ( params[1] > 90 ) and ( params[1] < 400 ):
             bulk_modulus_is_good = True
     elif 'eV' in unitsofb0:
         if ( params[1] > 1 ) and ( params[1] < 3 ) :
@@ -410,7 +414,7 @@ class Evcurves(object):
     def make_selection(self, theindex, thisdeltaks, thisencut) -> pd.core.series.Series:
         elements, structure, mag = self.read_index(theindex)
         select_elements = self.EVFILES.str.contains(elements) & (~ self.EVFILES.str.contains(elements+'-'))
-        select_structure = self.EVFILES.str.contains(f'/{structure}/')
+        select_structure = self.EVFILES.str.contains(structure)
         if mag == 'FM':
             select_mag = self.EVFILES.str.contains(mag)
         elif ( 'U' in mag ) or ( 'D' in mag ):

@@ -42,30 +42,30 @@ cn_dict : dict = {
                    'Z12e', 'Z12e', 'Z12e', 'Z12e',  
                    'Z12f', 'Z12f', 'Z12f', 'Z12f',  
                    ],
-        'P' : [ 'Z12', 'Z12','Z12','Z12',
-               'Z12', 'Z12','Z12','Z12',
-               'Z12', 'Z12','Z12','Z12',
-               'Z14','Z14','Z14','Z14',
-               'Z15','Z15','Z15','Z15',
-               'Z16','Z16','Z16','Z16',
-               'Z14','Z14','Z14','Z14',
-               'Z12','Z12','Z12','Z12',
-               'Z14', 'Z14', 'Z14', 'Z14', 
-               'Z15', 'Z15', 'Z15', 'Z15',
-               'Z12','Z12','Z12','Z12','Z12','Z12','Z12','Z12',
-               'Z14','Z14','Z14','Z14','Z14','Z14','Z14','Z14' ],
+        'P' : [ 'Z12a', 'Z12a','Z12a','Z12a',
+               'Z12b', 'Z12b','Z12b','Z12b',
+               'Z12c', 'Z12c','Z12c','Z12c',
+               'Z14a','Z14a','Z14a','Z14a',
+               'Z15a','Z15a','Z15a','Z15a',
+               'Z16a','Z16a','Z16a','Z16a',
+               'Z14b','Z14b','Z14b','Z14b',
+               'Z12d','Z12d','Z12d','Z12d',
+               'Z14c', 'Z14c', 'Z14c', 'Z14c', 
+               'Z15b', 'Z15b', 'Z15b', 'Z15b',
+               'Z12e','Z12e','Z12e','Z12e','Z12e','Z12e','Z12e','Z12e',
+               'Z14d','Z14d','Z14d','Z14d','Z14d','Z14d','Z14d','Z14d' ],
         'M' : [
-            'Z12','Z12','Z12','Z12', 
-            'Z12','Z12','Z12','Z12', 
-            'Z12','Z12','Z12','Z12', 
-            'Z12','Z12','Z12','Z12', 'Z12','Z12','Z12','Z12', 
-            'Z12','Z12','Z12','Z12', 'Z12','Z12','Z12','Z12', 
-            'Z14','Z14','Z14','Z14',
-            'Z14','Z14','Z14','Z14',
-            'Z15','Z15','Z15','Z15',
-            'Z15','Z15','Z15','Z15',
-            'Z16','Z16','Z16','Z16',
-            'Z16','Z16','Z16','Z16',
+            'Z12a','Z12a','Z12a','Z12a', 
+            'Z12b','Z12b','Z12b','Z12b', 
+            'Z12c','Z12c','Z12c','Z12c', 
+            'Z12d','Z12d','Z12d','Z12d', 'Z12d','Z12d','Z12d','Z12d', 
+            'Z12e','Z12e','Z12e','Z12e', 'Z12e','Z12e','Z12e','Z12e', 
+            'Z14a','Z14a','Z14a','Z14a',
+            'Z14b','Z14b','Z14b','Z14b',
+            'Z15a','Z15a','Z15a','Z15a',
+            'Z15b','Z15b','Z15b','Z15b',
+            'Z16a','Z16a','Z16a','Z16a',
+            'Z16b','Z16b','Z16b','Z16b',
             ]
         }
 
@@ -94,7 +94,7 @@ def sorting_feature(
     relevantsorters = get_relevant_sorters(AtomsObjects, Sorters)
     relevanttags = SublatticeTags[relevantsorters.index]
     df = {}
-    for index, file in AtomsObjects.file.iteritems():
+    for index, file in AtomsObjects.file.items(): #iteritems():
         df[index] = {'sorters': np.array(relevantsorters[file[0]]), 'sublatticetags': relevanttags[file[0]], 'file' : file[0]}
     return pd.DataFrame.from_dict(df, orient='index')
 
@@ -130,7 +130,7 @@ def get_sitecn(
         sorters_feature: pd.core.series.Series, 
         ) -> pd.core.series.Series:
     sitecn = {}
-    progress = tqdm(phase_feature.iteritems(), total=phase_feature.shape[0])
+    progress = tqdm(phase_feature.items(), total=phase_feature.shape[0])
     for index, phase in progress:
         if phase in specialphases:
             sitecn[index] = np.tile(np.unique(cn_persite[phase]), len(atoms_objects[index]))
