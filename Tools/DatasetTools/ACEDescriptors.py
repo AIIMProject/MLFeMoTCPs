@@ -6,8 +6,16 @@ import pandas as pd
 import sys
 import os
 sys.path.insert(0, os.path.dirname( os.path.dirname(os.path.dirname(__file__)) ))
-from dependencies.bopfoxfeaturizer.BopFoxFeaturizer.Featurizer import Featurizer
-import pyace
+try:
+    from dependencies.bopfoxfeaturizer.BopFoxFeaturizer.Featurizer import Featurizer
+    _HAS_BOPFOX_FEATURIZER = True
+except (ImportError, Exception):
+    _HAS_BOPFOX_FEATURIZER = False
+try:
+    import pyace
+    _HAS_PYACE = True
+except ImportError:
+    _HAS_PYACE = False
 from Tools.DatasetTools.DatasetOperator import Dataset
 from Tools.DatasetTools.Commoms import load_atoms_objects
 import Tools.DatasetTools.GeneralFeaturizer as gf
@@ -55,9 +63,11 @@ default_options_dict = \
                 }
             }
         }
-from pyace.basisextension import construct_bbasisconfiguration
-
-from pyace.basis import BBasisConfiguration
+if _HAS_PYACE:
+    from pyace.basisextension import construct_bbasisconfiguration
+    from pyace.basis import BBasisConfiguration
+else:
+    BBasisConfiguration = None  # type alias for type hints when pyace unavailable
 
 def filter_basisfuncs_for_ls(
         bbasis: BBasisConfiguration,

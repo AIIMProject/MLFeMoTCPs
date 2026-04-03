@@ -1,0 +1,12 @@
+diff --git a/lib/ace/ace-evaluator/lib/yaml-cpp/src/emitterutils.cpp b/lib/ace/ace-evaluator/lib/yaml-cpp/src/emitterutils.cpp
+index 588c855..530a40a 100644
+--- a/lib/ace/ace-evaluator/lib/yaml-cpp/src/emitterutils.cpp
++++ b/lib/ace/ace-evaluator/lib/yaml-cpp/src/emitterutils.cpp
+@@ -2,6 +2,7 @@
+ #include <iomanip>
+ #include <sstream>
+ 
++#include "inttypes.h"
+ #include "emitterutils.h"
+ #include "exp.h"
+ #include "indentation.h"

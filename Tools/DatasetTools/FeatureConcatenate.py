@@ -219,9 +219,9 @@ class FeatureConcatenate(object):
             y_train_pred = clf.predict(X_train)
             y_test_pred = clf.predict(X_test)
             y_pred = clf.predict(feature_union)
-            score_train = mean_squared_error(y_train, y_train_pred, squared=False)
-            score_test = mean_squared_error(y_test, y_test_pred, squared=False)
-            thisscore = mean_squared_error(TARGET, y_pred, squared=False)
+            score_train = np.sqrt(mean_squared_error(y_train, y_train_pred))
+            score_test = np.sqrt(mean_squared_error(y_test, y_test_pred))
+            thisscore = np.sqrt(mean_squared_error(TARGET, y_pred))
             report = pd.concat(
                     [
                         report, 
