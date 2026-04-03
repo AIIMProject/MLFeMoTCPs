@@ -84,7 +84,7 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
 def score_fitted_model(fittedmodel, xtrain,  xtest, ytrain,ytest):
     predict_train = fittedmodel.predict(xtrain)
     predict_test = fittedmodel.predict(xtest)
-    return {'test': mean_squared_error(ytest, predict_test, squared = False), 'train':mean_squared_error(ytrain, predict_train, squared = False)}
+    return {'test': np.sqrt(mean_squared_error(ytest, predict_test)), 'train': np.sqrt(mean_squared_error(ytrain, predict_train))}
 
 def load_results_location(dataset:str) -> str:
     """simply makes the results location"""
