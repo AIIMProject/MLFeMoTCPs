@@ -102,9 +102,13 @@ target_case = 'EF_nmhcp' # only for correlation plots
 # In[6]:
 
 
-AtomsObjects = {'initial' : load_atoms_objects(dataset,case='POSCAR.initial', scaling='rescaled'),
-                'relaxed' : load_atoms_objects(dataset, case='POSCAR.relaxed-all', scaling='noscaled')
-               }
+try:
+    AtomsObjects = {'initial' : load_atoms_objects(dataset,case='POSCAR.initial', scaling='rescaled'),
+                    'relaxed' : load_atoms_objects(dataset, case='POSCAR.relaxed-all', scaling='noscaled')}
+except Exception as _e:
+    import warnings
+    warnings.warn(f"GetBopFeatures: could not load AtomsObjects ({_e}). Set AtomsObjects={{}}")
+    AtomsObjects = {}
 BS = load_fully_curated_briefsummary(dataset)
 
 # In[8]:

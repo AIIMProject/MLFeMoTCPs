@@ -174,6 +174,14 @@ def plot_curves_topdf(thecurves: pd.core.series.Series, thefits: pd.core.series.
 def invert_goodness(thegoodness):
     return thegoodness.map(lambda d: {key: not value for key, value in d.items()} )
 
+def get_key_for_curves(evcurves, key):
+    """Extract a named key from each curve dict in an EVcurves Series."""
+    import pandas as pd
+    return pd.Series({
+        index: {k: v[key] for k, v in data.items() if isinstance(v, dict) and key in v}
+        for index, data in evcurves.items()
+    })
+
 from itertools import combinations
 
 def is_common_sense_evcurve(v, e, params, unitsofb0 = 'Pa'):
@@ -201,8 +209,8 @@ def find_the_good_curve_inside(
         reset_guess_params = False,
         debug = False
         ):
-    betterv = thebadcurve['evcurve']['V']
-    bettere = thebadcurve['evcurve']['E']
+    betterv = np.array(thebadcurve['evcurve']['V'])
+    bettere = np.array(thebadcurve['evcurve']['E'])
 #    param_guess = np.array([ np.min(bettere), 1, 1, np.mean(betterv)])
     param_guess = copy.copy(thebadcurve['fit'])
     param_guess[1] /= eV_per_angstrom3_to_GPA
@@ -223,8 +231,8 @@ def find_the_good_curve_inside(
         tried_indexs = []
         for try_indexs in  list_of_try_indexs:
             tried_indexs.append(try_indexs)
-            reducedv = thebadcurve['evcurve']['V'][list(try_indexs)]
-            reducede = thebadcurve['evcurve']['E'][list(try_indexs)]
+            reducedv = np.array(thebadcurve['evcurve']['V'])[list(try_indexs)]
+            reducede = np.array(thebadcurve['evcurve']['E'])[list(try_indexs)]
             param_result = copy.copy(param_guess)
             if make_plot_of_options:
                 params_orig = copy.copy(param_guess)
@@ -424,7 +432,10 @@ class Evcurves(object):
             select_mag = self.EVFILES.str.contains(mag)
         else:
             select_mag = ~self.EVFILES.str.contains('FM')
-        select_params = self.EVFILES.str.contains(thisdeltaks) & self.EVFILES.str.contains(thisencut) 
+        if pd.isna(thisdeltaks) or pd.isna(thisencut):
+            select_params = pd.Series([True] * len(self.EVFILES), index=self.EVFILES.index)
+        else:
+            select_params = self.EVFILES.str.contains(str(thisdeltaks)) & self.EVFILES.str.contains(str(thisencut))
         return select_elements & select_structure & select_mag & select_params
 
     def get_ev_fit_results(self, params, curve_files) -> dict:
@@ -461,7 +472,12 @@ class Evcurves(object):
         progress = tqdm(self.Indexes, total=len(self.Indexes))# 
         for thisindex in progress:
             progress.set_description(thisindex)
-            selection = self.make_selection(thisindex, deltaks[thisindex], encuts[thisindex])
+            _dk = deltaks[thisindex]
+            _ec = encuts[thisindex]
+            # Guard against duplicate-index Series returns
+            if hasattr(_dk, 'iloc'): _dk = _dk.iloc[0] if len(_dk) > 0 else None
+            if hasattr(_ec, 'iloc'): _ec = _ec.iloc[0] if len(_ec) > 0 else None
+            selection = self.make_selection(thisindex, _dk, _ec)
             curve_files = self.EVFILES[selection]
             progress.set_description(f'{thisindex}, made selection')
             if self.Paths.shape[1] > 1:

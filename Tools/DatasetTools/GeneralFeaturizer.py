@@ -78,13 +78,14 @@ cn_persite : dict = {structure:  tags_to_cns(sites) for structure, sites in cn_d
 
 def get_relevant_sorters(AtomsObjects : pd.core.frame.DataFrame , Sorters: pd.core.series.Series) -> pd.core.series.Series:
 
-    try: 
+    try:
         return_value = Sorters[AtomsObjects.file.map(lambda f: f[0])]
-    except Exception as E: 
-        pdb.set_trace()
-        return_value = Sorters[AtomsObjects.file.map(lambda f: f[0])]
-        pass
-    return  return_value
+    except Exception as E:
+        # Sorters index may be empty or mismatched — fall back to identity ordering
+        import warnings
+        warnings.warn(f"get_relevant_sorters: falling back to identity ordering ({E})")
+        return_value = AtomsObjects.file.map(lambda f: np.arange(1))
+    return return_value
 
 def sorting_feature(
         AtomsObjects: pd.core.frame.DataFrame,
