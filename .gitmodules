@@ -10,3 +10,7 @@
 [submodule "dependencies/python-ace"]
 	path = dependencies/python-ace
 	url = git@github.com:ICAMS/python-ace.git
+[submodule "dependencies/PyCEF"]
+	path = dependencies/PyCEF
+	url = https://github.com/AIIMProject/PyCEF.git
+	branch = packaging
