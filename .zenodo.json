@@ -1,0 +1,40 @@
+{
+  "title": "Data-efficient machine-learning of complex Fe-Mo intermetallics using domain knowledge of chemistry and crystallography",
+  "description": "Source code and pre-computed data for the machine-learning pipeline used to predict formation energies and sublattice occupancies of complex TCP (topologically close-packed) intermetallic phases in the Fe-Mo binary system. Includes Jupyter notebooks, the datasetsml-tools Python package, pre-computed BOP/ACE/SOAP descriptor files, forward feature selection results, and final model predictions.",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    {"name": "Forti, Mariano",       "affiliation": "Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universität Bochum, Germany", "orcid": ""},
+    {"name": "Malakhova, Alesya",    "affiliation": "Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universität Bochum, Germany"},
+    {"name": "Lysogorskiy, Yury",   "affiliation": "Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universität Bochum, Germany"},
+    {"name": "Zhang, Wenhao",       "affiliation": "CNRS-Saint-Gobain-NIMS, IRL 3629, Laboratory for Innovative Key Materials and Structures (LINK), Tsukuba, Japan"},
+    {"name": "Crivello, Jean-Claude","affiliation": "Univ Paris Est Creteil, CNRS, ICMPE, UMR 7182, Thiais, France"},
+    {"name": "Joubert, Jean-Marc",  "affiliation": "Univ Paris Est Creteil, CNRS, ICMPE, UMR 7182, Thiais, France"},
+    {"name": "Drautz, Ralf",         "affiliation": "Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universität Bochum, Germany"},
+    {"name": "Hammerschmidt, Thomas","affiliation": "Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universität Bochum, Germany"}
+  ],
+  "keywords": [
+    "machine learning",
+    "intermetallics",
+    "topologically close-packed phases",
+    "TCP phases",
+    "Fe-Mo",
+    "bond-order potentials",
+    "BOP",
+    "ACE",
+    "SOAP",
+    "formation energy",
+    "sublattice occupation",
+    "domain knowledge",
+    "DFT"
+  ],
+  "related_identifiers": [
+    {
+      "scheme": "doi",
+      "identifier": "PAPER_DOI_PLACEHOLDER",
+      "relation": "isSupplementTo",
+      "resource_type": "publication-article"
+    }
+  ],
+  "access_right": "open"
+}
