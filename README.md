@@ -112,40 +112,17 @@ Pre-computed BOP descriptor files for the complex TCP phases are provided in the
 pip install -e Tools/
 ```
 
-### Install the python-ace
+### Install python-ace
 
 ```bash
-git clone https://@github.com:ICAMS/python-ace.git dependencies/python-ace 
+git clone https://github.com/ICAMS/python-ace.git dependencies/python-ace
 cd dependencies/python-ace
-python setup.py install
-pip insall . 
+# Apply compatibility patch for newer cmake/compilers (adds missing inttypes.h)
+git apply ../../python-ace-cmake-compat.patch
+pip install .
 ```
 
-It is possible that with latest versions of cmake python ace fails to install due to a undefined type in cpp-yaml header. apply this patch to solve:
-
-
-```patch
-diff --git a/lib/ace/ace-evaluator/lib/yaml-cpp/src/emitterutils.cpp b/lib/ace/ace-evaluator/lib/yaml-cpp/src/emitterutils.cpp
-index 588c855..530a40a 100644
---- a/lib/ace/ace-evaluator/lib/yaml-cpp/src/emitterutils.cpp
-+++ b/lib/ace/ace-evaluator/lib/yaml-cpp/src/emitterutils.cpp
-@@ -2,6 +2,7 @@
- #include <iomanip>
- #include <sstream>
-
-+#include "inttypes.h"
- #include "emitterutils.h"
- #include "exp.h"
- #include "indentation.h"
-```
-
-then try again
-
-```bash
-cd dependencies/python-ace
-python setup.py install
-pip insall . 
-```
+> **Note:** Without the patch, builds with cmake ≥ 3.20 may fail with an undefined type error in `yaml-cpp/emitterutils.cpp`. The patch adds a single `#include "inttypes.h"` line. The patch file is included in this repository at `python-ace-cmake-compat.patch`.
 
 ---
 
