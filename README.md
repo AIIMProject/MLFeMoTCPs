@@ -106,10 +106,12 @@ Notebooks `05_ComputeBOPFeatures.ipynb` and `09_PrepareFeaturesPrediction.ipynb`
 BOPfox is not openly distributed. Please contact the authors to request access.  
 Pre-computed BOP descriptor files for the complex TCP phases are provided in the Zenodo archive so that notebooks 09–11 can be run without BOPfox.
 
-### Install the Tools package
+### Install the Tools package and PyCEF
 
 ```bash
 pip install -e Tools/
+git submodule update --init dependencies/PyCEF
+pip install -e dependencies/PyCEF/
 ```
 
 ### Install python-ace
