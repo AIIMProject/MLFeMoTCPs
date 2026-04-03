@@ -1,4 +1,4 @@
-name: ml_datasets
+name: datasets_ml
 channels:
   - conda-forge
 dependencies:
@@ -193,4 +193,4 @@ dependencies:
     - datasetsml-tools==0.1.0
     - pycef==0.1.0
 
-prefix: "/home/users/fortimtb/.local/python-envs/ml_datasets"
+prefix: "/home/users/fortimtb/.local/python-envs/datasets_ml"
