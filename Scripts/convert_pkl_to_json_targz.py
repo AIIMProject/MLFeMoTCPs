@@ -1,13 +1,12 @@
 """
-Convert curated DFT data and Atoms objects pkl files to json.tar.gz for Zenodo upload,
-then package everything (json.tar.gz + BOP pkl files) into a single zip archive that
-preserves the repository directory structure.
+Convert curated DFT data and Atoms objects pkl files to JSON, then package everything
+(JSON files + BOP pkl files) into a single zip archive that preserves the repository
+directory structure, ready for upload to Zenodo.
 
 Usage:
     python Scripts/convert_pkl_to_json_targz.py
 
 Output:
-    zenodo_upload/                      individual json.tar.gz files
     zenodo_upload/FeMo_TCP_dataset.zip  single archive for Zenodo upload
 """
 
@@ -15,9 +14,7 @@ import sys
 import types
 import pickle
 import json
-import tarfile
 import zipfile
-import io
 from pathlib import Path
 
 import numpy
@@ -69,67 +66,41 @@ def atomsdf_to_json_bytes(df: pd.DataFrame) -> bytes:
     return json.dumps(records, indent=2, cls=_NumpyEncoder).encode()
 
 
-def make_targz(json_bytes: bytes, json_filename: str, output_path: Path) -> None:
-    """Wrap json_bytes in a tar.gz archive at output_path."""
-    buf = io.BytesIO(json_bytes)
-    buf.seek(0)
-    with tarfile.open(output_path, "w:gz") as tar:
-        info = tarfile.TarInfo(name=json_filename)
-        info.size = len(json_bytes)
-        tar.addfile(info, buf)
-    size_mb = output_path.stat().st_size / 1024 / 1024
-    print(f"  -> {output_path.name}  ({size_mb:.2f} MB)")
-
-
 FILES = [
     {
         "pkl": "Fe-Mo/FullyCuratedParsedBriefSummary.pkl",
-        "json_name": "FullyCuratedParsedBriefSummary.json",
-        "out": "FullyCuratedParsedBriefSummary.json.tar.gz",
-        "zip_path": "Fe-Mo/FullyCuratedParsedBriefSummary.json.tar.gz",
+        "zip_path": "Fe-Mo/FullyCuratedParsedBriefSummary.json",
         "atoms": False,
     },
     {
         "pkl": "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.pkl",
-        "json_name": "ValidationFullyCuratedParsedBriefSummary.json",
-        "out": "ValidationFullyCuratedParsedBriefSummary.json.tar.gz",
-        "zip_path": "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.json.tar.gz",
+        "zip_path": "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.json",
         "atoms": False,
     },
     {
         "pkl": "Fe-Mo/inchulldft/BriefSummary.pkl.gz",
-        "json_name": "inchulldft_BriefSummary.json",
-        "out": "inchulldft_BriefSummary.json.tar.gz",
-        "zip_path": "Fe-Mo/inchulldft/inchulldft_BriefSummary.json.tar.gz",
+        "zip_path": "Fe-Mo/inchulldft/inchulldft_BriefSummary.json",
         "atoms": False,
         "gzipped": True,
     },
     {
         "pkl": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.pkl",
-        "json_name": "Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json",
-        "out": "Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json.tar.gz",
-        "zip_path": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json.tar.gz",
+        "zip_path": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json",
         "atoms": True,
     },
     {
         "pkl": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.pkl",
-        "json_name": "Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json",
-        "out": "Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json.tar.gz",
-        "zip_path": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json.tar.gz",
+        "zip_path": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json",
         "atoms": True,
     },
     {
         "pkl": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.pkl",
-        "json_name": "SUBLATICETAGS_POSCAR-initial.json",
-        "out": "SUBLATICETAGS_POSCAR-initial.json.tar.gz",
-        "zip_path": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.json.tar.gz",
+        "zip_path": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.json",
         "atoms": False,
     },
     {
         "pkl": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.pkl",
-        "json_name": "SUBLATICETAGS_POSCAR-relaxed-all.json",
-        "out": "SUBLATICETAGS_POSCAR-relaxed-all.json.tar.gz",
-        "zip_path": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.json.tar.gz",
+        "zip_path": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.json",
         "atoms": False,
     },
 ]
@@ -148,34 +119,28 @@ BOP_PKLS = [
 def main():
     import gzip as _gzip
 
-    # --- Step 1: convert pkl files to json.tar.gz ---
-    for entry in FILES:
-        pkl_path = REPO_ROOT / entry["pkl"]
-        out_path = OUTPUT_DIR / entry["out"]
-
-        print(f"Processing {pkl_path.name} ...")
-        opener = _gzip.open if entry.get("gzipped") else open
-        with opener(pkl_path, "rb") as fh:
-            df = pickle.load(fh)
-
-        if entry["atoms"]:
-            json_bytes = atomsdf_to_json_bytes(df)
-        else:
-            json_bytes = df_to_json_bytes(df)
-
-        make_targz(json_bytes, entry["json_name"], out_path)
-
-    # --- Step 2: package everything into one zip with directory structure ---
     zip_path = OUTPUT_DIR / "FeMo_TCP_dataset.zip"
-    print(f"\nBuilding {zip_path.name} ...")
+    print(f"Building {zip_path.name} ...")
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        # json.tar.gz files at their repo-relative paths
-        for entry in FILES:
-            src = OUTPUT_DIR / entry["out"]
-            zf.write(src, arcname=entry["zip_path"])
-            print(f"  + {entry['zip_path']}")
 
-        # BOP pkl files at their repo-relative paths (large; stored uncompressed)
+        # JSON files converted from pkl
+        for entry in FILES:
+            pkl_path = REPO_ROOT / entry["pkl"]
+            print(f"  Converting {pkl_path.name} ...")
+            opener = _gzip.open if entry.get("gzipped") else open
+            with opener(pkl_path, "rb") as fh:
+                df = pickle.load(fh)
+
+            if entry["atoms"]:
+                json_bytes = atomsdf_to_json_bytes(df)
+            else:
+                json_bytes = df_to_json_bytes(df)
+
+            zf.writestr(entry["zip_path"], json_bytes)
+            size_kb = len(json_bytes) / 1024
+            print(f"    + {entry['zip_path']}  ({size_kb:.0f} kB uncompressed)")
+
+        # BOP pkl files stored as-is (already dense binary; compression gives minimal benefit)
         for rel_path in BOP_PKLS:
             src = REPO_ROOT / rel_path
             if src.exists():
@@ -187,7 +152,6 @@ def main():
 
     total_mb = zip_path.stat().st_size / 1024 / 1024
     print(f"\nDone. {zip_path.name}: {total_mb:.1f} MB")
-    print(f"Individual json.tar.gz files also in {OUTPUT_DIR}/")
 
 
 if __name__ == "__main__":
