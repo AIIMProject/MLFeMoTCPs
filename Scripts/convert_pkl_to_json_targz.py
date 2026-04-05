@@ -177,6 +177,13 @@ MODEL_PKLS = [
     "Fe-Mo/results/Fe-Mo_Kernel Ridge_OptimalScores_EF_nmhcp.pkl",
 ]
 
+# Feature-selection learning curve results (nb07 — model selection notebook)
+CONCAT_RESULTS_PKLS = [
+    f"Fe-Mo/results/{f}"
+    for f in sorted(__import__("os").listdir("Fe-Mo/results"))
+    if f.startswith("concatenation_results_")
+]
+
 # Prediction output CSV files (nb11 — final validation plots)
 PREDICTION_CSVS = [
     f"Fe-Mo/results/{f}"
@@ -217,6 +224,7 @@ def main():
             ("SOAP descriptors", SOAP_CSVS, zipfile.ZIP_DEFLATED),
             ("Small descriptor pkls", DESCRIPTOR_PKLS, zipfile.ZIP_DEFLATED),
             ("Trained model pkls", MODEL_PKLS, zipfile.ZIP_DEFLATED),
+            ("Feature-selection results pkls", CONCAT_RESULTS_PKLS, zipfile.ZIP_DEFLATED),
             ("Prediction CSV outputs", PREDICTION_CSVS, zipfile.ZIP_DEFLATED),
         ]
 
