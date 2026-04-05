@@ -1,10 +1,14 @@
 """
-Convert curated DFT data and Atoms objects pkl files to json.tar.gz for Zenodo upload.
+Convert curated DFT data and Atoms objects pkl files to json.tar.gz for Zenodo upload,
+then package everything (json.tar.gz + BOP pkl files) into a single zip archive that
+preserves the repository directory structure.
 
 Usage:
     python Scripts/convert_pkl_to_json_targz.py
 
-Output files are written to zenodo_upload/ at the repository root.
+Output:
+    zenodo_upload/                      individual json.tar.gz files
+    zenodo_upload/FeMo_TCP_dataset.zip  single archive for Zenodo upload
 """
 
 import sys
@@ -12,6 +16,7 @@ import types
 import pickle
 import json
 import tarfile
+import zipfile
 import io
 from pathlib import Path
 
@@ -81,18 +86,21 @@ FILES = [
         "pkl": "Fe-Mo/FullyCuratedParsedBriefSummary.pkl",
         "json_name": "FullyCuratedParsedBriefSummary.json",
         "out": "FullyCuratedParsedBriefSummary.json.tar.gz",
+        "zip_path": "Fe-Mo/FullyCuratedParsedBriefSummary.json.tar.gz",
         "atoms": False,
     },
     {
         "pkl": "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.pkl",
         "json_name": "ValidationFullyCuratedParsedBriefSummary.json",
         "out": "ValidationFullyCuratedParsedBriefSummary.json.tar.gz",
+        "zip_path": "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.json.tar.gz",
         "atoms": False,
     },
     {
         "pkl": "Fe-Mo/inchulldft/BriefSummary.pkl.gz",
         "json_name": "inchulldft_BriefSummary.json",
         "out": "inchulldft_BriefSummary.json.tar.gz",
+        "zip_path": "Fe-Mo/inchulldft/inchulldft_BriefSummary.json.tar.gz",
         "atoms": False,
         "gzipped": True,
     },
@@ -100,31 +108,47 @@ FILES = [
         "pkl": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.pkl",
         "json_name": "Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json",
         "out": "Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json.tar.gz",
+        "zip_path": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json.tar.gz",
         "atoms": True,
     },
     {
         "pkl": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.pkl",
         "json_name": "Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json",
         "out": "Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json.tar.gz",
+        "zip_path": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json.tar.gz",
         "atoms": True,
     },
     {
         "pkl": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.pkl",
         "json_name": "SUBLATICETAGS_POSCAR-initial.json",
         "out": "SUBLATICETAGS_POSCAR-initial.json.tar.gz",
+        "zip_path": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.json.tar.gz",
         "atoms": False,
     },
     {
         "pkl": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.pkl",
         "json_name": "SUBLATICETAGS_POSCAR-relaxed-all.json",
         "out": "SUBLATICETAGS_POSCAR-relaxed-all.json.tar.gz",
+        "zip_path": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.json.tar.gz",
         "atoms": False,
     },
+]
+
+# BOP descriptor pkl files added directly to the zip (no conversion needed)
+BOP_PKLS = [
+    "Fe-Mo/Descriptors/parallel_Fe-Mo_initial_0.7projections_0.5os_table_WUBIND_20.pkl",
+    "Fe-Mo/Descriptors/parallel_Fe-Mo_relaxed_0.7projections_0.5os_table_WUBIND_20.pkl",
+    "Fe-Mo/Descriptors/PREDICTION_Fe-Mo_R_0.7dprojections_0.5os_table_WUBIND_16.pkl",
+    "Fe-Mo/Descriptors/PREDICTION_Fe-Mo_M_0.7dprojections_0.5os_table_WUBIND_16.pkl",
+    "Fe-Mo/Descriptors/PREDICTION_Fe-Mo_P_0.7dprojections_0.5os_table_WUBIND_16.pkl",
+    "Fe-Mo/Descriptors/PREDICTION_Fe-Mo_delta_0.7dprojections_0.5os_table_WUBIND_16.pkl",
 ]
 
 
 def main():
     import gzip as _gzip
+
+    # --- Step 1: convert pkl files to json.tar.gz ---
     for entry in FILES:
         pkl_path = REPO_ROOT / entry["pkl"]
         out_path = OUTPUT_DIR / entry["out"]
@@ -141,7 +165,29 @@ def main():
 
         make_targz(json_bytes, entry["json_name"], out_path)
 
-    print(f"\nAll files written to {OUTPUT_DIR}/")
+    # --- Step 2: package everything into one zip with directory structure ---
+    zip_path = OUTPUT_DIR / "FeMo_TCP_dataset.zip"
+    print(f"\nBuilding {zip_path.name} ...")
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        # json.tar.gz files at their repo-relative paths
+        for entry in FILES:
+            src = OUTPUT_DIR / entry["out"]
+            zf.write(src, arcname=entry["zip_path"])
+            print(f"  + {entry['zip_path']}")
+
+        # BOP pkl files at their repo-relative paths (large; stored uncompressed)
+        for rel_path in BOP_PKLS:
+            src = REPO_ROOT / rel_path
+            if src.exists():
+                zf.write(src, arcname=rel_path, compress_type=zipfile.ZIP_STORED)
+                size_mb = src.stat().st_size / 1024 / 1024
+                print(f"  + {rel_path}  ({size_mb:.0f} MB)")
+            else:
+                print(f"  ! MISSING: {rel_path}")
+
+    total_mb = zip_path.stat().st_size / 1024 / 1024
+    print(f"\nDone. {zip_path.name}: {total_mb:.1f} MB")
+    print(f"Individual json.tar.gz files also in {OUTPUT_DIR}/")
 
 
 if __name__ == "__main__":
