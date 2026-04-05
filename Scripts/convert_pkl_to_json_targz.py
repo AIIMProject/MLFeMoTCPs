@@ -80,6 +80,11 @@ FILES = [
         "atoms": False,
     },
     {
+        "pkl": "Fe-Mo/validation_data/ParsedBriefsummary.pkl",
+        "zip_path": "Fe-Mo/validation_data/ParsedBriefsummary.json",
+        "atoms": False,
+    },
+    {
         "pkl": "Fe-Mo/inchulldft/BriefSummary.pkl.gz",
         "zip_path": "Fe-Mo/inchulldft/inchulldft_BriefSummary.json",
         "atoms": False,
