@@ -12,7 +12,7 @@ DOI: **TODO — insert Zenodo DOI after upload**
 
 | Location | Contents |
 |----------|----------|
-| **Git repository** (GitHub) | Notebooks, scripts, Tools package, curated DFT data, Atoms objects, derived descriptors (CSV), model hyperparameter JSONs, validation data |
+| **Git repository** (GitHub) | Notebooks, scripts, Tools package, derived descriptors (CSV), model hyperparameter JSONs |
 | **Zenodo** (this archive) | Raw BOP descriptor pkl files — require BOPfox to recompute |
 | **Sciebo** | Trained ML learning-curve results (`concatenation_results_*.pkl`) — expensive to recompute |
 | **Rebuilt on demand** | Final ensemble regressors (`voting_regressor_*.pkl`) — run notebook 07 from `concatenation_results` |
@@ -29,24 +29,23 @@ Uploaded as `json.tar.gz` archives (converted from pkl for long-term readability
 |------|------|-------------|
 | `Fe-Mo/FullyCuratedParsedBriefSummary.pkl` → `FullyCuratedParsedBriefSummary.json.tar.gz` | 21 KB | Curated DFT results for all training structures |
 | `Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.pkl` → `ValidationFullyCuratedParsedBriefSummary.json.tar.gz` | 1.6 KB | Curated DFT results for validation structures |
+| `Fe-Mo/inchulldft/BriefSummary.pkl.gz` → `inchulldft_BriefSummary.json.tar.gz` | 48 KB | Extra validation DFT data from a different HT framework (same DFT setup) |
 | `Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.pkl` → `Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json.tar.gz` | 93 KB | ASE Atoms objects, initial (guess) geometry |
 | `Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.pkl` → `Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json.tar.gz` | 144 KB | ASE Atoms objects, DFT-relaxed geometry |
+| `Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.pkl` → `SUBLATICETAGS_POSCAR-initial.json.tar.gz` | 4 KB | Atomic sublattice tags for CNAV averaging, initial geometry |
+| `Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.pkl` → `SUBLATICETAGS_POSCAR-relaxed-all.json.tar.gz` | 4 KB | Atomic sublattice tags for CNAV averaging, relaxed geometry |
 
-### 1. Raw BOP training descriptors (~27 MB)
+### 1. Raw BOP training descriptors (~15 MB)
 
 Raw BOPfox moment descriptor tables for all training structures
 (simple TCP: A15, C14, C15, C36, σ, χ, μ and reference bcc/fcc/hcp phases).
 Direct output of `REQUIRE_RAW_DATA_05_ComputeBOPFeatures.ipynb`.
-
-The CNAV-averaged variants (`CNAV_parallel_Fe-Mo_*.csv`) are derived from these and
-are already in the git repository.
+Require BOPfox to recompute; all other descriptor files can be reproduced from the Atoms objects above.
 
 | File | Size | Description |
 |------|------|-------------|
 | `Fe-Mo/Descriptors/parallel_Fe-Mo_initial_0.7projections_0.5os_table_WUBIND_20.pkl` | 7.2 MB | BOP raw moments, initial geometry, 0.7d-projections/0.5os model, 20 moments |
-| `Fe-Mo/Descriptors/parallel_Fe-Mo_initial_canonical_table_WUBIND_16.pkl` | 6.5 MB | BOP raw moments, initial geometry, canonical (W-like) model, 16 moments |
 | `Fe-Mo/Descriptors/parallel_Fe-Mo_relaxed_0.7projections_0.5os_table_WUBIND_20.pkl` | 7.2 MB | BOP raw moments, relaxed geometry, 0.7d-projections/0.5os model, 20 moments |
-| `Fe-Mo/Descriptors/parallel_Fe-Mo_relaxed_canonical_table_WUBIND_16.pkl` | 6.5 MB | BOP raw moments, relaxed geometry, canonical (W-like) model, 16 moments |
 
 ### 2. BOP prediction descriptors for complex TCP phases (~1.3 GB)
 
@@ -67,8 +66,6 @@ a download fallback is built into notebook 09.
 
 | File / Pattern | Description |
 |----------------|-------------|
-| `Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.pkl` | Sublattice tags, initial geometry (4 KB) |
-| `Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.pkl` | Sublattice tags, relaxed geometry (4 KB) |
 | `Fe-Mo/Descriptors/Fe-Mo-*ACE-CNAV.csv` | ACE training descriptors |
 | `Fe-Mo/Descriptors/soap_features_*.csv` | SOAP training descriptors |
 | `Fe-Mo/results/*_options.json` | Hyperparameter options per model |
@@ -120,16 +117,17 @@ python Scripts/convert_pkl_to_json_targz.py
 # Output goes to zenodo_upload/
 
 # Step 2 — Zenodo: upload via web UI at https://zenodo.org/deposit
-# Curated DFT data (json.tar.gz):
+# Curated DFT data (json.tar.gz from zenodo_upload/):
 FullyCuratedParsedBriefSummary.json.tar.gz
 ValidationFullyCuratedParsedBriefSummary.json.tar.gz
+inchulldft_BriefSummary.json.tar.gz
 Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json.tar.gz
 Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json.tar.gz
+SUBLATICETAGS_POSCAR-initial.json.tar.gz
+SUBLATICETAGS_POSCAR-relaxed-all.json.tar.gz
 # BOP descriptors (pkl):
 Fe-Mo/Descriptors/parallel_Fe-Mo_initial_0.7projections_0.5os_table_WUBIND_20.pkl
-Fe-Mo/Descriptors/parallel_Fe-Mo_initial_canonical_table_WUBIND_16.pkl
 Fe-Mo/Descriptors/parallel_Fe-Mo_relaxed_0.7projections_0.5os_table_WUBIND_20.pkl
-Fe-Mo/Descriptors/parallel_Fe-Mo_relaxed_canonical_table_WUBIND_16.pkl
 Fe-Mo/Descriptors/PREDICTION_Fe-Mo_R_0.7dprojections_0.5os_table_WUBIND_16.pkl
 Fe-Mo/Descriptors/PREDICTION_Fe-Mo_M_0.7dprojections_0.5os_table_WUBIND_16.pkl
 Fe-Mo/Descriptors/PREDICTION_Fe-Mo_P_0.7dprojections_0.5os_table_WUBIND_16.pkl

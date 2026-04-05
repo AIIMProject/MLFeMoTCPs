@@ -90,6 +90,13 @@ FILES = [
         "atoms": False,
     },
     {
+        "pkl": "Fe-Mo/inchulldft/BriefSummary.pkl.gz",
+        "json_name": "inchulldft_BriefSummary.json",
+        "out": "inchulldft_BriefSummary.json.tar.gz",
+        "atoms": False,
+        "gzipped": True,
+    },
+    {
         "pkl": "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.pkl",
         "json_name": "Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json",
         "out": "Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json.tar.gz",
@@ -101,16 +108,30 @@ FILES = [
         "out": "Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json.tar.gz",
         "atoms": True,
     },
+    {
+        "pkl": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.pkl",
+        "json_name": "SUBLATICETAGS_POSCAR-initial.json",
+        "out": "SUBLATICETAGS_POSCAR-initial.json.tar.gz",
+        "atoms": False,
+    },
+    {
+        "pkl": "Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.pkl",
+        "json_name": "SUBLATICETAGS_POSCAR-relaxed-all.json",
+        "out": "SUBLATICETAGS_POSCAR-relaxed-all.json.tar.gz",
+        "atoms": False,
+    },
 ]
 
 
 def main():
+    import gzip as _gzip
     for entry in FILES:
         pkl_path = REPO_ROOT / entry["pkl"]
         out_path = OUTPUT_DIR / entry["out"]
 
         print(f"Processing {pkl_path.name} ...")
-        with open(pkl_path, "rb") as fh:
+        opener = _gzip.open if entry.get("gzipped") else open
+        with opener(pkl_path, "rb") as fh:
             df = pickle.load(fh)
 
         if entry["atoms"]:
