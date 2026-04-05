@@ -26,16 +26,20 @@ from pathlib import Path
 import numpy
 
 # ---------------------------------------------------------------------------
-# numpy 2.x -> 1.x compatibility shim (pkl files in the zip may be numpy 2.x)
+# numpy 2.x -> 1.x compatibility shim
+# pkl files were saved with numpy 2.x which uses numpy._core instead of
+# numpy.core. Only apply the shim when running under numpy 1.x; numpy 2.x
+# already has numpy._core as a real module and does not need the shim.
 # ---------------------------------------------------------------------------
-_core_mod = types.ModuleType("numpy._core")
-for _attr in ("numeric", "multiarray", "fromnumeric", "umath", "shape_base",
-              "function_base", "arrayprint", "defchararray", "records",
-              "memmap", "einsumfunc", "overrides"):
-    if hasattr(numpy.core, _attr):
-        setattr(_core_mod, _attr, getattr(numpy.core, _attr))
-        sys.modules[f"numpy._core.{_attr}"] = getattr(numpy.core, _attr)
-sys.modules["numpy._core"] = _core_mod
+if tuple(int(x) for x in numpy.__version__.split(".")[:2]) < (2, 0):
+    _core_mod = types.ModuleType("numpy._core")
+    for _attr in ("numeric", "multiarray", "fromnumeric", "umath", "shape_base",
+                  "function_base", "arrayprint", "defchararray", "records",
+                  "memmap", "einsumfunc", "overrides"):
+        if hasattr(numpy.core, _attr):
+            setattr(_core_mod, _attr, getattr(numpy.core, _attr))
+            sys.modules[f"numpy._core.{_attr}"] = getattr(numpy.core, _attr)
+    sys.modules["numpy._core"] = _core_mod
 
 import pandas as pd
 from ase.io.jsonio import decode as ase_decode
