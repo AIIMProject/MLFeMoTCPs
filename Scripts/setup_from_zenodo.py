@@ -139,6 +139,25 @@ def main(zip_path: Path):
             print(f"    OK ({size_mb:.1f} MB)")
 
     print("\nDone. All files restored to their repository locations.")
+    _precompile_dscribe()
+
+
+def _precompile_dscribe():
+    """Pre-compile dscribe so its .pyc files are clean before the Jupyter kernel first sees them.
+
+    IPython 8.x escalates SyntaxWarning to SyntaxError during cell execution when
+    dscribe's source files are compiled on-the-fly (they contain LaTeX escape sequences
+    such as ``\\lvert`` and ``\\eta`` in docstrings).  Importing SOAP here, outside the
+    kernel, with the warning suppressed creates valid .pyc files that the kernel reuses.
+    """
+    import warnings
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", SyntaxWarning)
+            from dscribe.descriptors import SOAP  # noqa: F401 — compiles all dscribe .pyc files
+        print("dscribe pre-compiled OK")
+    except Exception as exc:
+        print(f"  (dscribe not available or pre-compile failed: {exc})")
 
 
 if __name__ == "__main__":

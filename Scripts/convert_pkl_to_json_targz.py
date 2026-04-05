@@ -160,31 +160,24 @@ SOAP_CSVS = [
     "Fe-Mo/Descriptors/soap_features__specific__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv",
 ]
 
-# Small descriptor pkl files (nb04lib guard + matminer + pyscal)
+# Small descriptor pkl files (nb04lib guard + matminer)
 DESCRIPTOR_PKLS = [
     "Fe-Mo/Descriptors/DatasetFeatures.pkl",
-    "Fe-Mo/Descriptors/CNAVPyscal.pkl",
     "Fe-Mo/Descriptors/matminer_atomic_features.pkl",
     "Fe-Mo/Descriptors/CNList.pkl",
 ]
 
-# Trained model pkl files (nb08, nb09 — allow prediction without re-training)
-MODEL_PKLS = [
-    "Fe-Mo/results/voting_regressor_KernelRidge.pkl",
-    "Fe-Mo/results/regressors_bag_KernelRidge.pkl",
-    "Fe-Mo/results/indexed_bag_KernelRidge.pkl",
-    "Fe-Mo/results/KernelRidge_inportances.pkl",
-    "Fe-Mo/results/Fe-Mo_Kernel Ridge_OptimalScores_EF_nmhcp.pkl",
-]
-
 # Feature-selection learning curve results (nb07 — model selection notebook)
+# Only the three main variants used by the pipeline are included.
 CONCAT_RESULTS_PKLS = [
     f"Fe-Mo/results/{f}"
     for f in sorted(__import__("os").listdir("Fe-Mo/results"))
     if f.startswith("concatenation_results_")
+    and not any(tag in f for tag in ("FixedOS", "FixedNames"))
 ]
 
-# Prediction output CSV files (nb11 — final validation plots)
+# Prediction output CSV files for complex phases (R, M, P, δ).
+# Require BOPfox and pyace which are not available in the public env — must ship pre-computed.
 PREDICTION_CSVS = [
     f"Fe-Mo/results/{f}"
     for f in sorted(__import__("os").listdir("Fe-Mo/results"))
@@ -223,7 +216,6 @@ def main():
             ("ACE descriptors", ACE_CSVS, zipfile.ZIP_DEFLATED),
             ("SOAP descriptors", SOAP_CSVS, zipfile.ZIP_DEFLATED),
             ("Small descriptor pkls", DESCRIPTOR_PKLS, zipfile.ZIP_DEFLATED),
-            ("Trained model pkls", MODEL_PKLS, zipfile.ZIP_DEFLATED),
             ("Feature-selection results pkls", CONCAT_RESULTS_PKLS, zipfile.ZIP_DEFLATED),
             ("Prediction CSV outputs", PREDICTION_CSVS, zipfile.ZIP_DEFLATED),
         ]

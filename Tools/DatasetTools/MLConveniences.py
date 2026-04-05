@@ -48,7 +48,6 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'dataset' : 'DatasetFeatures.pkl',
     'SOAP_canonicalW_small': 'soap_features__canonicalW__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
     'SOAP_specific_small': 'soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
-    'Pyscal' : 'CNAVPyscal.pkl',
     'ACE' :  f'{dataset}-ACE-CNAV.csv', 
     'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.csv', 
     'NOZERO_NOONE-ACE' :  f'{dataset}-NOZERO_NOONE-ACE-CNAV.csv', 
@@ -70,6 +69,8 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     DescriptorFileList = {name: os.path.join( f'{dataset}','Descriptors',f'{basename}') for name, basename in DescriptorList.items()}
     Features = {}
     for name, filename in DescriptorFileList.items():
+        if not os.path.exists(filename):
+            continue
         if filename[-3:] == 'pkl':
             Features[name] = pd.read_pickle(filename)
         elif filename[-3:] == 'csv': 
