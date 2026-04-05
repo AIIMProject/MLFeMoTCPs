@@ -111,8 +111,11 @@ Pre-computed BOP descriptor files for the complex TCP phases are provided in the
 ```bash
 pip install -e Tools/
 git submodule update --init dependencies/PyCEF
+git -C dependencies/PyCEF checkout packaging
 pip install -e dependencies/PyCEF/
 ```
+
+> **Note:** PyCEF is required only for `15_A_Thermodynamics.ipynb` (Bragg–Williams thermodynamic analysis). Notebooks 03–11 do not require it.
 
 ### Install python-ace
 
