@@ -43,6 +43,9 @@ Upload should contain only the files that can not be reproduced in a reasonable 
 zenodo doi is 10.5281/zenodo.19427673 (data still not published)
 one link is https://zenodo.org/records/19427673?preview=1&token=eyJhbGciOiJIUzUxMiIsImlhdCI6MTc3NTQwMDE3NiwiZXhwIjoxNzc3NTA3MTk5fQ.eyJpZCI6IjRmMzQ1MjAxLTNmYjYtNDgwYS1iM2JjLTlhZjgyNTNhMWI1NiIsImRhdGEiOnt9LCJyYW5kb20iOiI3OGQ3NWU3ZDcwYmNmYzBlZTFkZDgyYjJmYzAxOTBjNyJ9.VecEIoXMCIo7UiOmkoIqOrQ4G2vTkdkiNRjUBqHoTNKc9v_3jb3wDoaV0nCPL2G6gaBcEUmgvUDpd7TBNUa49w
 
+or alternatively from sciebo:
+
+
 ## Files to share
 
 Stored as pkl files, maybe it is good idea to share them in zipped jsons. 
