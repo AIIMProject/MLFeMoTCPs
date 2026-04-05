@@ -1,10 +1,47 @@
 ---
 applyTo: "**"
 ---
+
+# DFT dataset accompanying publication of research paper:
+
+Data-efficient machine-learning of complex Fe–Mo intermetallics using domain knowledge of chemistry and crystallography 
+doi: 10.5281/zenodo.19427673
+accepted in NPJ computational materials.
+
+authors
+``` latex
+\author{Mariano Forti} \email{mariano.forti@rub.de}
+\affiliation{Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universit{\"a}t Bochum, 44801 Bochum, Germany}
+
+\author{Alesya Malakhova} 
+\affiliation{Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universit{\"a}t Bochum, 44801 Bochum, Germany}
+
+\author{Yury Lysogorskiy} \affiliation{Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universit{\"a}t Bochum, 44801 Bochum, Germany}
+
+\author{Wenhao Zhang}
+\affiliation{CNRS-Saint-Gobain-NIMS, IRL 3629, Laboratory for Innovative Key Materials and Structures (LINK), 1-1 Namiki, Tsukuba, 305-0044, Ibaraki, Japan}
+\affiliation{Research Center for Structural Materials, National Institute for Materials Science, 1-2-1 Sengen, Tsukuba, 305-0047, Ibaraki, Japan}
+
+\author{Jean-Claude Crivello}
+\affiliation{CNRS-Saint-Gobain-NIMS, IRL 3629, Laboratory for Innovative Key Materials and Structures (LINK), 1-1 Namiki, Tsukuba, 305-0044, Ibaraki, Japan}
+\affiliation{Univ Paris Est Creteil, CNRS, ICMPE, UMR 7182, 2 rue Henri Dunant, 94320, Thiais, France}
+
+\author{Jean-Marc Joubert}
+\affiliation{Univ Paris Est Creteil, CNRS, ICMPE, UMR 7182, 2 rue Henri Dunant, 94320, Thiais, France}
+
+\author{Ralf Drautz} \affiliation{Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universit{\"a}t Bochum, 44801 Bochum, Germany}
+
+\author{Thomas Hammerschmidt} 
+\affiliation{Interdisciplinary Centre for Advanced Materials Simulation (ICAMS), Ruhr-Universit{\"a}t Bochum, 44801 Bochum, Germany}
+```
+
 # Data sharing policies
 
 Data will be shared through a zenodo upload. 
 Upload should contain only the files that can not be reproduced in a reasonable time frame.
+
+zenodo doi is 10.5281/zenodo.19427673 (data still not published)
+one link is https://zenodo.org/records/19427673?preview=1&token=eyJhbGciOiJIUzUxMiIsImlhdCI6MTc3NTQwMDE3NiwiZXhwIjoxNzc3NTA3MTk5fQ.eyJpZCI6IjRmMzQ1MjAxLTNmYjYtNDgwYS1iM2JjLTlhZjgyNTNhMWI1NiIsImRhdGEiOnt9LCJyYW5kb20iOiI3OGQ3NWU3ZDcwYmNmYzBlZTFkZDgyYjJmYzAxOTBjNyJ9.VecEIoXMCIo7UiOmkoIqOrQ4G2vTkdkiNRjUBqHoTNKc9v_3jb3wDoaV0nCPL2G6gaBcEUmgvUDpd7TBNUa49w
 
 ## Files to share
 
@@ -17,11 +54,14 @@ Stored as pkl files, maybe it is good idea to share them in zipped jsons.
 - `Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.pkl` (relaxed atoms objects)
 - `Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.pkl` (markers for atomic sublattice used later for CNAV averaging)
 - `Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-relaxed-all.pkl`
-- `validation_data/ValidationFullyCuratedParsedBriefSummary.pkl`  (curated DFT results for validation structures)   
+- `Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.pkl`  (curated DFT results for validation structures)   
+- `Fe-Mo/inchulldft/BriefSummary.pkl.gz` extra dft data validation, comming from a different HT framework (same DFT setup)
 
 ### Raw descriptors
 
 This are also stored as pkl files, but best option would be to share them as zipped jsons also.
+These are BOP descriptors that can not be calculated without BOPFOX. BOPFOX can be shared upon reasonable request. 
+All other descriptor files can be reproduced from the Atoms objects 
 
 **Descriptors for raw dft data**
 - `Fe-Mo/Descriptors/parallel_Fe-Mo_initial_0.7projections_0.5os_table_WUBIND_20.pkl`
@@ -32,8 +72,6 @@ This are also stored as pkl files, but best option would be to share them as zip
 - `Fe-Mo/Descriptors/PREDICTION_Fe-Mo_R_0.7dprojections_0.5os_table_WUBIND_16.pkl`
 - `Fe-Mo/Descriptors/PREDICTION_Fe-Mo_delta_0.7dprojections_0.5os_table_WUBIND_16.pkl`
 
-These are BOP descriptors that can not be calculated without BOPFOX. BOPFOX can be shared upon reasonable request. 
-All other descriptor files can be reproduced from the Atoms objects 
 
 
 # git policy

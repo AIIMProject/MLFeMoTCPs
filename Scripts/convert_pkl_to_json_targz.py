@@ -117,6 +117,73 @@ BOP_PKLS = [
     "Fe-Mo/Descriptors/PREDICTION_Fe-Mo_delta_0.7dprojections_0.5os_table_WUBIND_16.pkl",
 ]
 
+# ---------------------------------------------------------------------------
+# Pre-computed descriptor and model files — added directly to zip.
+# These allow notebooks 04, 07, 08, 09, 11 to skip expensive recomputation.
+# ---------------------------------------------------------------------------
+
+# BOP CN-averaged training CSV files (guard for nb04/nb07 feature loading)
+BOP_CNAV_CSVS = [
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_initial_0.7projections_0.5os_table_WUBIND_16.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_initial_0.7projections_0.5os_table_WUBIND_20.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_initial_0.7spProjections_0.5os_table_WUBIND_16.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_initial_0.7spProjections_0.5os_table_WUBIND_20.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_initial_canonical_table_WUBIND_16.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_initial_canonical_table_WUBIND_20.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_0.7projections_0.5os_table_WUBIND_16.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_0.7projections_0.5os_table_WUBIND_20.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_0.7spProjections_0.5os_table_WUBIND_16.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_0.7spProjections_0.5os_table_WUBIND_20.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_canonical_table_WUBIND_16.csv",
+    "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_canonical_table_WUBIND_20.csv",
+]
+
+# ACE descriptor CSV files (guard for nb04-ACE + nb07)
+ACE_CSVS = [
+    "Fe-Mo/Descriptors/Fe-Mo-ACE-CNAV.csv",
+    "Fe-Mo/Descriptors/Fe-Mo-ACE-CNAV.pkl",
+    "Fe-Mo/Descriptors/Fe-Mo-NOTHREE-ACE-CNAV.csv",
+    "Fe-Mo/Descriptors/Fe-Mo-NOTHREE_NOTWO-ACE-CNAV.csv",
+    "Fe-Mo/Descriptors/Fe-Mo-NOTHREE_NOTWO_NOONE-ACE-CNAV.csv",
+    "Fe-Mo/Descriptors/Fe-Mo-NOZERO-ACE-CNAV.csv",
+    "Fe-Mo/Descriptors/Fe-Mo-NOZERO_NOONE-ACE-CNAV.csv",
+    "Fe-Mo/Descriptors/Fe-Mo-NOZERO_NOONE_NOTWO-ACE-CNAV.csv",
+    "Fe-Mo/Descriptors/Fe-Mo-canonical-ACE-CNAV.csv",
+]
+
+# SOAP descriptor CSV files (nb07)
+SOAP_CSVS = [
+    "Fe-Mo/Descriptors/soap_features__canonicalFe__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv",
+    "Fe-Mo/Descriptors/soap_features__canonicalW__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv",
+    "Fe-Mo/Descriptors/soap_features__canonicalW__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv",
+    "Fe-Mo/Descriptors/soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv",
+    "Fe-Mo/Descriptors/soap_features__specific__rcut_4__nmax_9__lmax_6__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv",
+]
+
+# Small descriptor pkl files (nb04lib guard + matminer + pyscal)
+DESCRIPTOR_PKLS = [
+    "Fe-Mo/Descriptors/DatasetFeatures.pkl",
+    "Fe-Mo/Descriptors/CNAVPyscal.pkl",
+    "Fe-Mo/Descriptors/matminer_atomic_features.pkl",
+    "Fe-Mo/Descriptors/CNList.pkl",
+]
+
+# Trained model pkl files (nb08, nb09 — allow prediction without re-training)
+MODEL_PKLS = [
+    "Fe-Mo/results/voting_regressor_KernelRidge.pkl",
+    "Fe-Mo/results/regressors_bag_KernelRidge.pkl",
+    "Fe-Mo/results/indexed_bag_KernelRidge.pkl",
+    "Fe-Mo/results/KernelRidge_inportances.pkl",
+    "Fe-Mo/results/Fe-Mo_Kernel Ridge_OptimalScores_EF_nmhcp.pkl",
+]
+
+# Prediction output CSV files (nb11 — final validation plots)
+PREDICTION_CSVS = [
+    f"Fe-Mo/results/{f}"
+    for f in sorted(__import__("os").listdir("Fe-Mo/results"))
+    if f.startswith("PREDICTION__")
+]
+
 
 def main():
     import gzip as _gzip
@@ -142,15 +209,27 @@ def main():
             size_kb = len(json_bytes) / 1024
             print(f"    + {entry['zip_path']}  ({size_kb:.0f} kB uncompressed)")
 
-        # BOP pkl files stored as-is (already dense binary; compression gives minimal benefit)
-        for rel_path in BOP_PKLS:
-            src = REPO_ROOT / rel_path
-            if src.exists():
-                zf.write(src, arcname=rel_path, compress_type=zipfile.ZIP_STORED)
-                size_mb = src.stat().st_size / 1024 / 1024
-                print(f"  + {rel_path}  ({size_mb:.0f} MB)")
-            else:
-                print(f"  ! MISSING: {rel_path}")
+        # All additional file groups — added as-is with compression
+        extra_groups = [
+            ("BOP raw pkl (large — stored uncompressed)", BOP_PKLS, zipfile.ZIP_STORED),
+            ("BOP CN-averaged CSVs", BOP_CNAV_CSVS, zipfile.ZIP_DEFLATED),
+            ("ACE descriptors", ACE_CSVS, zipfile.ZIP_DEFLATED),
+            ("SOAP descriptors", SOAP_CSVS, zipfile.ZIP_DEFLATED),
+            ("Small descriptor pkls", DESCRIPTOR_PKLS, zipfile.ZIP_DEFLATED),
+            ("Trained model pkls", MODEL_PKLS, zipfile.ZIP_DEFLATED),
+            ("Prediction CSV outputs", PREDICTION_CSVS, zipfile.ZIP_DEFLATED),
+        ]
+
+        for group_label, file_list, compress_type in extra_groups:
+            print(f"\n  [{group_label}]")
+            for rel_path in file_list:
+                src = REPO_ROOT / rel_path
+                if src.exists():
+                    zf.write(src, arcname=rel_path, compress_type=compress_type)
+                    size_mb = src.stat().st_size / 1024 / 1024
+                    print(f"    + {rel_path}  ({size_mb:.1f} MB)")
+                else:
+                    print(f"    ! MISSING: {rel_path}")
 
     total_mb = zip_path.stat().st_size / 1024 / 1024
     print(f"\nDone. {zip_path.name}: {total_mb:.1f} MB")

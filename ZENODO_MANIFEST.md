@@ -2,9 +2,12 @@
 
 This file documents the data files that are archived on Zenodo as supplementary material to:
 
-> M. Seiser et al., *Machine-learning prediction of Fe-Mo TCP phase stability from BOP descriptors*, npj Computational Materials (2025).
+> Forti et. al. "Data-efficient machine-learning of complex Fe–Mo intermetallics using domain knowledge of chemistry and crystallography"
+doi: 10.5281/zenodo.19427673
+accepted in NPJ computational materials.
 
-DOI: **TODO — insert Zenodo DOI after upload**
+
+DOI: **10.5281/zenodo.19427673**
 
 ---
 

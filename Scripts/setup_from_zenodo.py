@@ -124,8 +124,9 @@ def main(zip_path: Path):
             print(f"    OK ({len(df)} rows)")
 
         # --- BOP pkl → extract directly ---
-        bop_entries = [n for n in names_in_zip if n.endswith(".pkl")]
-        for zip_name in sorted(bop_entries):
+        # Also handles all other non-JSON files in the zip (CSVs, pkls)
+        direct_entries = [n for n in names_in_zip if not n.endswith(".json")]
+        for zip_name in sorted(direct_entries):
             out_path = REPO_ROOT / zip_name
             out_path.parent.mkdir(parents=True, exist_ok=True)
             if out_path.exists():
@@ -135,7 +136,7 @@ def main(zip_path: Path):
             data = zf.read(zip_name)
             out_path.write_bytes(data)
             size_mb = len(data) / 1024 / 1024
-            print(f"    OK ({size_mb:.0f} MB)")
+            print(f"    OK ({size_mb:.1f} MB)")
 
     print("\nDone. All files restored to their repository locations.")
 
