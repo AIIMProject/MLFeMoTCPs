@@ -54,8 +54,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 JSON_FILES = {
     "Fe-Mo/FullyCuratedParsedBriefSummary.json": (
         "Fe-Mo/FullyCuratedParsedBriefSummary.pkl", "df"),
-    "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.json": (
-        "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.pkl", "df"),
+    "Fe-Mo/validation_data/BriefSummary.json": (
+        "Fe-Mo/validation_data/BriefSummary.pkl", "df"),
     "Fe-Mo/inchulldft/inchulldft_BriefSummary.json": (
         "Fe-Mo/inchulldft/BriefSummary.pkl.gz", "df_gz"),
     "Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json": (

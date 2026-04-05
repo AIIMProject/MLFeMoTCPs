@@ -39,8 +39,8 @@ Stored as JSON inside the zip (converted from pkl by `Scripts/convert_pkl_to_jso
 | Zip path | Restored to | Description |
 |----------|-------------|-------------|
 | `Fe-Mo/FullyCuratedParsedBriefSummary.json` | `Fe-Mo/FullyCuratedParsedBriefSummary.pkl` | Curated DFT results, 291 training structures |
-| `Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.json` | `Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.pkl` | Curated DFT results, 14 validation structures |
-| `Fe-Mo/inchulldft/inchulldft_BriefSummary.json` | `Fe-Mo/inchulldft/BriefSummary.pkl.gz` | Extra validation data from a different HT framework |
+| `Fe-Mo/validation_data/BriefSummary.json` | `Fe-Mo/validation_data/BriefSummary.pkl` | Raw AMS DFT results for M/P/δ validation structures (14 entries); input to nb10 |
+| `Fe-Mo/inchulldft/inchulldft_BriefSummary.json` | `Fe-Mo/inchulldft/BriefSummary.pkl.gz` | Raw AMS DFT results for δ/R validation structures (21 entries); input to nb10 |
 | `Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-initial-rescaled-AtomsObjects.json` | `…AtomsObjects.pkl` | ASE Atoms objects, initial geometry |
 | `Fe-Mo/Atomsobjects/Fe-Mo-POSCAR-relaxed-all-rescaled-AtomsObjects.json` | `…AtomsObjects.pkl` | ASE Atoms objects, DFT-relaxed geometry |
 | `Fe-Mo/Atomsobjects/SUBLATICETAGS_POSCAR-initial.json` | `…POSCAR-initial.pkl` | Sublattice tags for CNAV averaging, initial geometry |

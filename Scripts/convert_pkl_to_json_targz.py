@@ -75,8 +75,8 @@ FILES = [
         "atoms": False,
     },
     {
-        "pkl": "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.pkl",
-        "zip_path": "Fe-Mo/validation_data/ValidationFullyCuratedParsedBriefSummary.json",
+        "pkl": "Fe-Mo/validation_data/BriefSummary.pkl",
+        "zip_path": "Fe-Mo/validation_data/BriefSummary.json",
         "atoms": False,
     },
     {
