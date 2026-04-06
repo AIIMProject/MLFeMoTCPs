@@ -39,8 +39,6 @@ clone_or_pull "git@git.noc.ruhr-uni-bochum.de:fortimtb/bopdftprojections.git" "$
 clone_or_pull "git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfoxfeaturizer.git"  "$DEPS_DIR/bopfoxfeaturizer"
 clone_or_pull "https://github.com/AIIMProject/PyCEF.git"                       "$DEPS_DIR/PyCEF"  "packaging"
 
-# bopfoxfeaturizer: remove ancient pymatgen==2021.2.16 pin (incompatible with Python 3.11+)
-apply_patch "$DEPS_DIR/bopfoxfeaturizer" "$SCRIPT_DIR/dependencies/bopfoxfeaturizer.patch"
 
 # python-ace: fix yaml-cpp GCC 13+ issue and Cython<3 pin for maxvolpy
 clone_or_pull "https://github.com/ICAMS/python-ace.git"                        "$DEPS_DIR/python-ace"
