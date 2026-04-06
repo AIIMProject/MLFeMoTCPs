@@ -36,13 +36,7 @@ apply_patch() {
 }
 
 clone_or_pull "git@git.noc.ruhr-uni-bochum.de:fortimtb/bopdftprojections.git" "$DEPS_DIR/bopdftprojections"
-
 clone_or_pull "git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfoxfeaturizer.git"  "$DEPS_DIR/bopfoxfeaturizer"
-# Install with --no-deps: bopfoxfeaturizer targets pymatgen 2021.2.16 which
-# is incompatible with Python 3.11+. All deps are provided by the environment.
-echo "Installing bopfoxfeaturizer (--no-deps)..."
-pip install --no-deps -e "$DEPS_DIR/bopfoxfeaturizer"
-
 clone_or_pull "https://github.com/AIIMProject/PyCEF.git"                       "$DEPS_DIR/PyCEF"  "packaging"
 
 # python-ace: requires patching, then compilation via setup.py

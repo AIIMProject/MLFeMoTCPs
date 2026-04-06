@@ -2,11 +2,10 @@
 # Then install remaining dependencies with: pip install -r requirements.txt
 
 -e ./dependencies/bopdftprojections
+-e ./dependencies/bopfoxfeaturizer
 -e ./dependencies/PyCEF
 
 # python-ace installed by setup_dependencies.sh (requires C++ compilation)
-# bopfoxfeaturizer installed by setup_dependencies.sh with --no-deps
-#   (written against pymatgen 2021.2.16; avoid pulling incompatible version)
 
 # Local packages
 -e ./Tools
