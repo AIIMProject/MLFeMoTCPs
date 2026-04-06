@@ -1,6 +1,10 @@
 # Run ./setup_dependencies.sh first to clone all repos and install python-ace.
 # Then install remaining dependencies with: pip install -r requirements.txt
 
+# Pin modern pymatgen first (has pre-built wheels for Python 3.11+)
+# Must come before bopfoxfeaturizer which also lists pymatgen as a dependency
+pymatgen>=2023.0
+
 -e ./dependencies/bopdftprojections
 -e ./dependencies/bopfoxfeaturizer
 -e ./dependencies/PyCEF
