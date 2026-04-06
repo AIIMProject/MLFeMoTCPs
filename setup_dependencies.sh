@@ -39,7 +39,7 @@ git -C "$DEPS_DIR/python-ace" apply --check "$SCRIPT_DIR/dependencies/python-ace
     || echo "Patch already applied or not needed, skipping."
 
 echo "Installing build-time dependencies for python-ace..."
-pip install "numpy<=1.26.4" Cython
+pip install "numpy<=1.26.4" "Cython<3"
 
 echo "Installing python-ace (compiling C++ extensions)..."
 cd "$DEPS_DIR/python-ace"
