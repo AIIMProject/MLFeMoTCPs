@@ -2,10 +2,10 @@
 git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopdftprojections.git
 git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopfoxfeaturizer.git
 git+https://github.com/ICAMS/python-ace.git
-git+https://github.com/AIIMProject/PyCEF.git@packaging
+git+git://git@github.com/AIIMProject/PyCEF.git@packaging
 
 # Optional: BopFox Fortran binary (requires manual compilation from source)
 # git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopfox.git
 
 # Local packages
-./Tools
+-e ./Tools

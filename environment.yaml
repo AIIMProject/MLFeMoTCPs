@@ -193,6 +193,6 @@ dependencies:
     - git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopfoxfeaturizer.git
     - git+https://github.com/ICAMS/python-ace.git
     - git+https://github.com/AIIMProject/PyCEF.git@packaging
-    - ./Tools
+    - -e ./Tools
 
 prefix: "/home/users/fortimtb/.local/python-envs/datasets_ml"
