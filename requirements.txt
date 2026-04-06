@@ -1,11 +1,12 @@
-# Python packages previously managed as git submodules
-git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopdftprojections.git
-git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopfoxfeaturizer.git
-git+https://github.com/ICAMS/python-ace.git
-git+git://git@github.com/AIIMProject/PyCEF.git@packaging
+# Python dependencies - run setup_dependencies.sh first to clone these repos
+# then install with: pip install -r requirements.txt
+-e ./dependencies/bopdftprojections
+-e ./dependencies/bopfoxfeaturizer
+-e ./dependencies/python-ace
+-e ./dependencies/PyCEF
 
 # Optional: BopFox Fortran binary (requires manual compilation from source)
-# git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopfox.git
+# clone with: git clone git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfox.git dependencies/bopfox
 
 # Local packages
 -e ./Tools

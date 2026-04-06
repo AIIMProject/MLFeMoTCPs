@@ -189,10 +189,10 @@ dependencies:
   - zstd=1.5.7=hb78ec9c_6
   - pip:
     - Cython==3.2.4
-    - git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopdftprojections.git
-    - git+ssh://git@git.noc.ruhr-uni-bochum.de/fortimtb/bopfoxfeaturizer.git
-    - git+https://github.com/ICAMS/python-ace.git
-    - git+https://github.com/AIIMProject/PyCEF.git@packaging
+    - -e ./dependencies/bopdftprojections
+    - -e ./dependencies/bopfoxfeaturizer
+    - -e ./dependencies/python-ace
+    - -e ./dependencies/PyCEF
     - -e ./Tools
 
 prefix: "/home/users/fortimtb/.local/python-envs/datasets_ml"
