@@ -29,18 +29,23 @@ clone_or_pull() {
 apply_patch() {
     local repo="$1"
     local patch="$2"
-    echo "Applying patch to $repo..."
+    echo "Applying patch to $(basename $repo)..."
     git -C "$repo" apply --check "$patch" 2>/dev/null \
         && git -C "$repo" apply "$patch" \
         || echo "Patch already applied or not needed, skipping."
 }
 
 clone_or_pull "git@git.noc.ruhr-uni-bochum.de:fortimtb/bopdftprojections.git" "$DEPS_DIR/bopdftprojections"
+
 clone_or_pull "git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfoxfeaturizer.git"  "$DEPS_DIR/bopfoxfeaturizer"
+# Install with --no-deps: bopfoxfeaturizer targets pymatgen 2021.2.16 which
+# is incompatible with Python 3.11+. All deps are provided by the environment.
+echo "Installing bopfoxfeaturizer (--no-deps)..."
+pip install --no-deps -e "$DEPS_DIR/bopfoxfeaturizer"
+
 clone_or_pull "https://github.com/AIIMProject/PyCEF.git"                       "$DEPS_DIR/PyCEF"  "packaging"
 
-
-# python-ace: fix yaml-cpp GCC 13+ issue and Cython<3 pin for maxvolpy
+# python-ace: requires patching, then compilation via setup.py
 clone_or_pull "https://github.com/ICAMS/python-ace.git"                        "$DEPS_DIR/python-ace"
 apply_patch "$DEPS_DIR/python-ace" "$SCRIPT_DIR/dependencies/python-ace.patch"
 
