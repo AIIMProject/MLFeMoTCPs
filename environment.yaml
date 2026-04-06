@@ -191,8 +191,8 @@ dependencies:
     - Cython==3.2.4
     - -e ./dependencies/bopdftprojections
     - -e ./dependencies/bopfoxfeaturizer
-    - -e ./dependencies/python-ace
     - -e ./dependencies/PyCEF
+    # python-ace installed via setup_dependencies.sh (python setup.py install)
     - -e ./Tools
 
 prefix: "/home/users/fortimtb/.local/python-envs/datasets_ml"

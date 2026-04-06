@@ -1,12 +1,12 @@
-# Python dependencies - run setup_dependencies.sh first to clone these repos
-# then install with: pip install -r requirements.txt
+# Run ./setup_dependencies.sh first to clone all repos and install python-ace.
+# Then install remaining dependencies with: pip install -r requirements.txt
+
 -e ./dependencies/bopdftprojections
 -e ./dependencies/bopfoxfeaturizer
--e ./dependencies/python-ace
 -e ./dependencies/PyCEF
 
-# Optional: BopFox Fortran binary (requires manual compilation from source)
-# clone with: git clone git@git.noc.ruhr-uni-bochum.de:fortimtb/bopfox.git dependencies/bopfox
+# python-ace is installed by setup_dependencies.sh via `python setup.py install`
+# (requires patching and C++ compilation, not compatible with pip install)
 
 # Local packages
 -e ./Tools
