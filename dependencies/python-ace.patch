@@ -5,9 +5,21 @@ index 588c855..530a40a 100644
 @@ -2,6 +2,7 @@
  #include <iomanip>
  #include <sstream>
-
+ 
 +#include "inttypes.h"
  #include "emitterutils.h"
  #include "exp.h"
  #include "indentation.h"
-
+diff --git a/setup.py b/setup.py
+index c35dadb..0c1a6d2 100644
+--- a/setup.py
++++ b/setup.py
+@@ -20,7 +20,7 @@ class InstallMaxVolPyLocalPackage(install):
+         install.run(self)
+         cmd = "cd lib/maxvolpy; python setup.py install; cd ../.."
+         if platform.system() != "Windows":
+-            cmd = "pip install Cython; " + cmd
++            cmd = "pip install \"Cython<3\"; " + cmd
+         returncode = subprocess.call(
+             cmd, shell=True
+         )
