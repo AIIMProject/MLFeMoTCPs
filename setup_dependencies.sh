@@ -43,6 +43,7 @@ pip install "numpy<=1.26.4" "Cython<3"
 
 echo "Installing python-ace (compiling C++ extensions)..."
 cd "$DEPS_DIR/python-ace"
+pip install .
 python setup.py install
 cd "$SCRIPT_DIR"
 
