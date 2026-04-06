@@ -4,6 +4,7 @@
 -e ./dependencies/bopfoxfeaturizer
 -e ./dependencies/PyCEF
 numpy<2
+seaborn
 
 # python-ace is installed by setup_dependencies.sh via `python setup.py install`
 # (requires patching and C++ compilation, not compatible with pip install)
