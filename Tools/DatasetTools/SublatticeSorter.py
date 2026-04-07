@@ -18,11 +18,11 @@ from .Tools import need_to_update
 
 def get_file_paths(dataset, searchs, csvfile ='LIST_OF_files.csv') -> list:
     csvfile = os.path.join(dataset, csvfile)
-    if os.path.exists(os.path.join(dataset, 'data')):
+    if False: #os.path.exists(os.path.join(dataset, 'data')):
         globsearch = f'{dataset}/data/**/{searchs}'
     else:
         globsearch = f'{dataset}/**/{searchs}'
-    if not need_to_update(csvfile):
+    if False: #not need_to_update(csvfile):
         with open(csvfile, 'r') as f:
             files = f.readlines()
     else:

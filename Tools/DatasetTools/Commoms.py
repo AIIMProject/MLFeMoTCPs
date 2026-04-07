@@ -15,6 +15,7 @@ import copy
 from tqdm.auto import tqdm
 import glob
 from itertools import permutations
+from ase import Atoms
 
 plt.rc('text', usetex=True)
 plt.rc('figure', figsize=(7, 5))
@@ -32,6 +33,9 @@ def load_fully_curated_briefsummary(dataset: str) -> pd.core.frame.DataFrame:
 
 def load_atoms_objects(dataset: str, case='inital', scaling='rescaled')-> pd.core.frame.DataFrame:
     system = dataset.replace('-', '')
-    atoms_object_location = os.path.join(dataset, 'Atomsobjects', f'{dataset}-{case}-{scaling}-AtomsObjects.pkl')
-    return pd.read_pickle(atoms_object_location)
+    atoms_object_location = os.path.join(dataset, 'Atomsobjects', f'{dataset}-{case}-{scaling}-AtomsObjects.json')
+    AtomsObjectsDF = pd.read_json(atoms_object_location)
+    AtomsObjectsDF['atoms'] = AtomsObjectsDF['atoms'].map(Atoms.fromdict)
+    return AtomsObjectsDF
+
 

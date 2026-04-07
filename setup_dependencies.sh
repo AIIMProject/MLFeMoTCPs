@@ -59,3 +59,4 @@ cd "$SCRIPT_DIR"
 echo ""
 echo "Done. Install remaining dependencies with:"
 echo "  pip install -r requirements.txt"
+
