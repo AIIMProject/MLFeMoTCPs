@@ -5,7 +5,11 @@ from Tools.DatasetTools.Commoms import *
 os.environ['PATH']+=':'+os.path.join(os.getcwd(),'dependencies/bopfox/src/')
 from dependencies.bopfoxfeaturizer.BopFoxFeaturizer.Featurizer import Featurizer, BopfoxFeatures
 
-from dependencies.bopdftprojections.bopdftprojections.projections import Projections, Canonicalmodel
+try:
+    from dependencies.bopdftprojections.bopdftprojections.projections import Projections, Canonicalmodel
+    has_bopdftprojections = True
+except ModuleNotFoundError as ME:
+    has_bopdftprojections = False
 import shutil
 
 
@@ -113,13 +117,14 @@ BS = load_fully_curated_briefsummary(dataset)
 
 # In[9]:
 
-P = Projections()
-C = Canonicalmodel()
-P.readbxmodels()
-P.get_bond_chunks()
-P.get_autobonds()
-P.get_all_onsite_levels()
-P.get_restructured_projections()
+if has_bopdftprojections:
+    P = Projections()
+    C = Canonicalmodel()
+    P.readbxmodels()
+    P.get_bond_chunks()
+    P.get_autobonds()
+    P.get_all_onsite_levels()
+    P.get_restructured_projections()
 
 
 # In[10]:
