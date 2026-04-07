@@ -177,7 +177,8 @@ for (model, definition), (case, atoms_df) in product(model_definitions.items(), 
             use_elements = set([s.replace(realelement, targetelement) for s in use_elements])
     components = ''.join(use_elements)
     modelsfile = os.path.join('models', f'{dataset}-{components}_{model}.bx')
-    create_modelfile(use_elements,modelsfile, modelname=model, **create_model_options,   )
+    if has_bopdftprojections:
+        create_modelfile(use_elements,modelsfile, modelname=model, **create_model_options,   )
     if 'replace atoms' in definition.keys():
         ApplyOnAtoms = atoms_df['atoms'].apply(replace_symbols, replacements = definition['replace atoms'])
     else:
