@@ -27,8 +27,8 @@ from matplotlib.lines import Line2D
 
 # fully curated briefsumary
 def load_fully_curated_briefsummary(dataset: str) -> pd.core.frame.DataFrame:
-    BSFile = os.path.join(f'{dataset}','FullyCuratedParsedBriefSummary.pkl')
-    return pd.read_pickle(BSFile)
+    BSFile = os.path.join(f'{dataset}','FullyCuratedParsedBriefSummary.json')
+    return pd.read_json(BSFile)
 
 
 def load_atoms_objects(dataset: str, case='inital', scaling='rescaled')-> pd.core.frame.DataFrame:
