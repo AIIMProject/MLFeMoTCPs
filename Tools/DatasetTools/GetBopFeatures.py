@@ -45,53 +45,53 @@ model_definitions = {
             'moments' : globalmoments
         }
     },
-    '0.7projections_0.5os_0scf': {
-        'model_maker_options' : {
-            'element_pairs_kwargs' : {
-                'bond_integral_scale': 0.7,
-            },
-            'atom_blocks_kwargs': {
-                'onsite_levels_scale' : 0.5,
-                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
-            },
-        },
-        'calculator_options':{
-            'moments' : globalmoments,
-            'scfsteps' : 0,
-        }
-    },
-    '0.7projections_0.5os_10scf_jii8.0': {
-        'model_maker_options' : {
-            'element_pairs_kwargs' : {
-                'bond_integral_scale': 0.7,
-            },
-            'atom_blocks_kwargs': {
-                'onsite_levels_scale' : 0.5,
-                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
-                'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
-            },
-        },
-        'calculator_options':{
-            'moments' : globalmoments,
-            'scfsteps' : 10,
-        }
-    },
-    '0.7projections_0.5os_100scf_jii8.0': {
-        'model_maker_options' : {
-            'element_pairs_kwargs' : {
-                'bond_integral_scale': 0.7,
-            },
-            'atom_blocks_kwargs': {
-                'onsite_levels_scale' : 0.5,
-                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
-                'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
-            },
-        },
-        'calculator_options':{
-            'moments' : globalmoments,
-            'scfsteps' : 100,
-        }
-    },
+    #'0.7projections_0.5os_0scf': {
+    #    'model_maker_options' : {
+    #        'element_pairs_kwargs' : {
+    #            'bond_integral_scale': 0.7,
+    #        },
+    #        'atom_blocks_kwargs': {
+    #            'onsite_levels_scale' : 0.5,
+    #            'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
+    #        },
+    #    },
+    #    'calculator_options':{
+    #        'moments' : globalmoments,
+    #        'scfsteps' : 0,
+    #    }
+    #},
+    #'0.7projections_0.5os_10scf_jii8.0': {
+    #    'model_maker_options' : {
+    #        'element_pairs_kwargs' : {
+    #            'bond_integral_scale': 0.7,
+    #        },
+    #        'atom_blocks_kwargs': {
+    #            'onsite_levels_scale' : 0.5,
+    #            'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
+    #            'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
+    #        },
+    #    },
+    #    'calculator_options':{
+    #        'moments' : globalmoments,
+    #        'scfsteps' : 10,
+    #    }
+    #},
+    #'0.7projections_0.5os_100scf_jii8.0': {
+    #    'model_maker_options' : {
+    #        'element_pairs_kwargs' : {
+    #            'bond_integral_scale': 0.7,
+    #        },
+    #        'atom_blocks_kwargs': {
+    #            'onsite_levels_scale' : 0.5,
+    #            'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
+    #            'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
+    #        },
+    #    },
+    #    'calculator_options':{
+    #        'moments' : globalmoments,
+    #        'scfsteps' : 100,
+    #    }
+    #},
 }
 cutoff = 'table'
 atoms = ['initial', 'relaxed']
