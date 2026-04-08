@@ -47,7 +47,8 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'atomic' : 'matminer_atomic_features.pkl',
     'dataset' : 'DatasetFeatures.pkl',
     'SOAP_canonicalW_small': 'soap_features__canonicalW__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
-    'SOAP_specific_small': 'soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
+#    'SOAP_specific_small': 'soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
+    'SOAP_specific_small':   'soap_features__specific__r_cut_4__n_max_5__l_max_4__sigma_0.1__rbf_gto__periodic_True.csv',
     'Pyscal' : 'CNAVPyscal.pkl',
     'ACE' :  f'{dataset}-ACE-CNAV.csv', 
     'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.csv', 
@@ -70,6 +71,8 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     DescriptorFileList = {name: os.path.join( f'{dataset}','Descriptors',f'{basename}') for name, basename in DescriptorList.items()}
     Features = {}
     for name, filename in DescriptorFileList.items():
+        if not os.path.exists(filename):
+            continue
         if filename[-3:] == 'pkl':
             Features[name] = pd.read_pickle(filename)
         elif filename[-3:] == 'csv': 
@@ -161,4 +164,5 @@ def filter_features(Features_DF: pd.core.frame.DataFrame, learning_curve = pd.co
     if 'params' not in learning_curve.columns:
         raise ValueError('the learning curve provided is not an evaluation of best features')
     columns = get_optimal_features(learning_curve, remove_structure = remove_structure)
+    columns = columns.intersection(Features_DF.columns)
     return Features_DF[columns]
