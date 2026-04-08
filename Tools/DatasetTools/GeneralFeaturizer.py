@@ -230,7 +230,8 @@ def featurize_dataframe(
         pdb.set_trace()
     progress = tqdm(_Features.items(), total = len(_Features.columns))
     for colid, feature in progress: # _Features.items():
-        result.append(featurize_series(feature, _coordination[feature.index], featurizer, debug = debug, **kwargs))
+        intersection = feature.index.intersection(_coordination.index)
+        result.append(featurize_series(feature[intersection], _coordination[intersection], featurizer, debug = debug, **kwargs))
         columns = result[-1].columns
         newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
         result[-1].columns = newcolumns
