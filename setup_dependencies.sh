@@ -37,7 +37,7 @@ apply_patch() {
 
 # Optional dependecy:
 # clone_or_pull "git@git.noc.ruhr-uni-bochum.de:fortimtb/bopdftprojections.git" "$DEPS_DIR/bopdftprojections"
-clone_or_pull "git@github.com:AIIMProject/BopfoxFeaturizer.git"  "$DEPS_DIR/bopfoxfeaturizer" "bypassbopfox"
+clone_or_pull "git@github.com:AIIMProject/BopfoxFeaturizer.git"  "$DEPS_DIR/bopfoxfeaturizer" "bypassbofox"
 clone_or_pull "https://github.com/AIIMProject/PyCEF.git"                       "$DEPS_DIR/PyCEF"  "packaging"
 
 # python-ace: requires patching, then compilation via setup.py
