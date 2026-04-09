@@ -100,7 +100,7 @@ echo ""
 echo ""
 echo "=============================="
 echo "Building models for Random Forest"
-MODELNAME="Random Forest" pytest  --nbmake -vv -s --nbmake-kernel=test_femomltcps --nbmake-timeout=0  \
+MODELNAME="Random Forest" pytest  --nbmake -vv -s --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb  \
   07_MachineLearn.ipynb \
   08_AnalysisModels.ipynb\
