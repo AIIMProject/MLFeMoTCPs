@@ -5,7 +5,7 @@ from pathlib import Path
     'Fe-Mo/FullyCuratedParsedBriefSummary.json', 
     'Fe-Mo/graphs/Fe-Mo-PredictionDifferences.pdf', 
     'Fe-Mo/graphs/Figure_Fe-Mo_NMConvexHulls_ExpRanges_NM.pdf', 
-    'Fe-Mo/graphs/Figure_Fe-Mo_Predictions_Validation.pdf, 
+    'Fe-Mo/graphs/Figure_Fe-Mo_Predictions_Validation.pdf', 
     'Fe-Mo/graphs/Figure_Fe-Mo_compare_predictions.pdf'
     ])
 
