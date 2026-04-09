@@ -69,7 +69,7 @@ export NBMAKE_KERNEL=test_mlfemotcps
 
 export SKIP_IMPORTANCES="SKIP"
 
-pytest  --nbmake -vv -s --nbmake-timeout=0  \
+pytest  --nbmake -vv -s  --nbmake-kernel=test_femomltcps --nbmake-timeout=0  \
   03_PrepareDataset.ipynb         \
   04_ComputeACEFeatures.ipynb     \
   04_ComputeACEFeatures.ipynb     \
@@ -82,7 +82,7 @@ echo ""
 echo ""
 echo "=============================="
 echo "Building models for Kernel Ridge"
-MODELNAME="Kernel Ridge" pytest  --nbmake -vv -s --nbmake-timeout=0  \
+MODELNAME="Kernel Ridge" pytest  --nbmake -vv -s  --nbmake-kernel=test_femomltcps --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb 
 
 echo ""
@@ -91,7 +91,7 @@ echo ""
 echo ""
 echo "=============================="
 echo "Building models for MLP"
-MODELNAME="MLP" pytest  --nbmake -vv -s --nbmake-timeout=0  \
+MODELNAME="MLP" pytest  --nbmake -vv -s  --nbmake-kernel=test_femomltcps --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb  \
 
 echo ""
@@ -100,7 +100,7 @@ echo ""
 echo ""
 echo "=============================="
 echo "Building models for Random Forest"
-MODELNAME="Random Forest" pytest  --nbmake -vv -s --nbmake-timeout=0  \
+MODELNAME="Random Forest" pytest  --nbmake -vv -s --nbmake-kernel=test_femomltcps --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb  \
   07_MachineLearn.ipynb \
   08_AnalysisModels.ipynb\
