@@ -59,5 +59,20 @@ cd "$SCRIPT_DIR"
 
 echo ""
 echo "Done. Install remaining dependencies with:"
-echo "  pip install -r requirements.txt"
+
+pip install -r requirements.txt &> /dev/null
+
+pytest  --nbmake -vv -s  03_PrepareDataset.ipynb 04_ComputeACEFeatures.ipynb 04_ComputeACEFeatures.ipynb\
+                         04_
+                         05_ComputeBOPFeatures.ipynb 07_MachineLearn-ModelSelection.ipynb
+
+pytest  --nbmake -vv -s           \
+  03_PrepareDataset.ipynb         \   
+  04_ComputeACEFeatures.ipynb     \
+  04_ComputeACEFeatures.ipynb     \
+  04_ComputeLibraryFeatures.ipynb \   
+  05_ComputeBOPFeatures.ipynb     \
+  07_MachineLearn-ModelSelection.ipynb                         
+  07_MachineLearn.ipynb
+  08_AnalysisModels.ipynb
 
