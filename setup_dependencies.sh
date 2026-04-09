@@ -58,9 +58,12 @@ cd "$SCRIPT_DIR"
 # cd "$DEPS_DIR/bopfox" && make && make install
 
 echo ""
-echo "Done. Install remaining dependencies with:"
+echo "Done. Installing dependencies"
 
 pip install -r requirements.txt &> /dev/null
+
+
+echo "done, now running tests to verify installation. This may take a while..."
 
 export NBMAKE_KERNEL=test_mlfemotcps
 
@@ -72,12 +75,15 @@ SKIP_IMPORTANCES="SKIP" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   05_ComputeBOPFeatures.ipynb     
 
 
+echo "Building models for Kernel Ridge"
 MODELNAME="Kernel Ridge" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb 
 
+echo "Building models for MLP"
 MODELNAME="MLP" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb  \
 
+echo "Building models for Random Forest"
 MODELNAME="Random Forest" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb  \
   07_MachineLearn.ipynb \
