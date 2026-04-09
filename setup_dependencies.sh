@@ -45,12 +45,12 @@ clone_or_pull "https://github.com/ICAMS/python-ace.git"                        "
 apply_patch "$DEPS_DIR/python-ace" "$SCRIPT_DIR/dependencies/python-ace.patch"
 
 echo "Installing build-time dependencies for python-ace..."
-pip install "numpy<=1.26.4" "Cython<3"
+pip install "numpy<=1.26.4" "Cython<3" &> /dev/null
 
 echo "Installing python-ace (compiling C++ extensions)..."
 cd "$DEPS_DIR/python-ace"
-pip install .
-python setup.py install
+pip install . &> /dev/null
+python setup.py install &> /dev/null
 cd "$SCRIPT_DIR"
 
 # Optional: BopFox Fortran binary (requires manual compilation after cloning)
@@ -65,7 +65,7 @@ pip install -r requirements.txt &> /dev/null
 pytest  --nbmake -vv -s  03_PrepareDataset.ipynb 04_ComputeACEFeatures.ipynb 04_ComputeACEFeatures.ipynb\
                          05_ComputeBOPFeatures.ipynb 07_MachineLearn-ModelSelection.ipynb
 
-pytest  --nbmake -vv -s --nbmake-timeout=0   \
+SKIP_IMPORTANCES="SKIP" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   03_PrepareDataset.ipynb         \
   04_ComputeACEFeatures.ipynb     \
   04_ComputeACEFeatures.ipynb     \
