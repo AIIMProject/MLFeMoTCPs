@@ -63,7 +63,6 @@ echo "Done. Install remaining dependencies with:"
 pip install -r requirements.txt &> /dev/null
 
 pytest  --nbmake -vv -s  03_PrepareDataset.ipynb 04_ComputeACEFeatures.ipynb 04_ComputeACEFeatures.ipynb\
-                         04_
                          05_ComputeBOPFeatures.ipynb 07_MachineLearn-ModelSelection.ipynb
 
 pytest  --nbmake -vv -s --nbmake-timeout=0   \
