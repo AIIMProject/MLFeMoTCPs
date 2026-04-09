@@ -72,13 +72,13 @@ SKIP_IMPORTANCES="SKIP" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   05_ComputeBOPFeatures.ipynb     
 
 
-MODELNAME="KernelRidge" pytest  --nbmake -vv -s --nbmake-timeout=0  \
+MODELNAME="Kernel Ridge" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb 
 
 MODELNAME="MLP" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb  \
 
-MODELNAME="RandomForest" pytest  --nbmake -vv -s --nbmake-timeout=0  \
+MODELNAME="Random Forest" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb  \
   07_MachineLearn.ipynb \
   08_AnalysisModels.ipynb\

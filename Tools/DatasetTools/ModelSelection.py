@@ -39,8 +39,10 @@ class ModelOptions:
 
     
     def load_model_options(self, modelname):
+        root = os.path.dirname(__file__)
         self.modeloptionsfilename = {
-                modelname: os.path.join(self.resultslocation, modelname+'_options.json')
+#                modelname: os.path.join(self.resultslocation, modelname+'_options.json')
+                modelname: os.path.join(root, modelname+'_options.json')
                 }
         if os.path.exists(self.modeloptionsfilename[modelname]):
             with open(self.modeloptionsfilename[modelname], 'r') as jsf:

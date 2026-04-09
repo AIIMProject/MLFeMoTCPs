@@ -35,7 +35,7 @@ class  Dataset():
         self.components = dataset.split('-')
         self.BS = load_fully_curated_briefsummary(dataset)
         if selectPhase is not None:
-            self.BS = self.BS[self.BS['Phase'] == selectphase]
+            self.BS = self.BS[self.BS['Phase'] == selectPhase]
         if remove_phases_query is not None:
             self.BS = self.BS.query(remove_phases_query)
         if selectMag is not None:
@@ -65,7 +65,7 @@ class  Dataset():
 
 
     def load_features(self, dataset) -> dict[str, pd.core.frame.DataFrame]:
-        features_dict = load_features(dataset)
+        features_dict = load_features_raw(dataset)
         features_dict.update({name+' no CNAV': clean_CNAVS(name, features) for name, features in features_dict.items() if notyetclean(name)})
         return features_dict
 

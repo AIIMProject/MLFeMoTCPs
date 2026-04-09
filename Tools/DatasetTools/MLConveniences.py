@@ -39,7 +39,7 @@ def  add_mag(features: pd.core.frame.DataFrame, magfeature: pd.core.series.Serie
     else:
         return features
 
-def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
+def load_features_raw(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     """loads features from prestablished pickles"""
 
     system = dataset.replace('-', '')
@@ -48,7 +48,7 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'dataset' : 'DatasetFeatures.pkl',
     'SOAP_canonicalW_small': 'soap_features__canonicalW__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
 #    'SOAP_specific_small': 'soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
-    'SOAP_specific_small':   'soap_features__specific__r_cut_4__n_max_6__l_max_5__sigma_0.1__rbf_gto__periodic_True.csv',
+    'SOAP_specific_small': 'soap_features__specific__r_cut_4__n_max_6__l_max_5__sigma_0.1__rbf_gto__periodic_True.csv',
     'Pyscal' : 'CNAVPyscal.pkl',
     'ACE' :  f'{dataset}-ACE-CNAV.csv', 
     'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.csv', 
