@@ -62,12 +62,23 @@ echo "Done. Install remaining dependencies with:"
 
 pip install -r requirements.txt &> /dev/null
 
+export NBMAKE_KERNEL=test_mlfemotcps
+
 SKIP_IMPORTANCES="SKIP" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   03_PrepareDataset.ipynb         \
   04_ComputeACEFeatures.ipynb     \
   04_ComputeACEFeatures.ipynb     \
   04_ComputeLibraryFeatures.ipynb \
-  05_ComputeBOPFeatures.ipynb     \
+  05_ComputeBOPFeatures.ipynb     
+
+
+MODELNAME="KernelRidge" pytest  --nbmake -vv -s --nbmake-timeout=0  \
+  07_MachineLearn-ModelSelection.ipynb 
+
+MODELNAME="MLP" pytest  --nbmake -vv -s --nbmake-timeout=0  \
+  07_MachineLearn-ModelSelection.ipynb  \
+
+MODELNAME="RandomForest" pytest  --nbmake -vv -s --nbmake-timeout=0  \
   07_MachineLearn-ModelSelection.ipynb  \
   07_MachineLearn.ipynb \
   08_AnalysisModels.ipynb\
