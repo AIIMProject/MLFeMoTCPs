@@ -66,13 +66,14 @@ pytest  --nbmake -vv -s  03_PrepareDataset.ipynb 04_ComputeACEFeatures.ipynb 04_
                          04_
                          05_ComputeBOPFeatures.ipynb 07_MachineLearn-ModelSelection.ipynb
 
-pytest  --nbmake -vv -s           \
-  03_PrepareDataset.ipynb         \   
+pytest  --nbmake -vv -s --nbmake-timeout=0   \
+  03_PrepareDataset.ipynb         \
   04_ComputeACEFeatures.ipynb     \
   04_ComputeACEFeatures.ipynb     \
-  04_ComputeLibraryFeatures.ipynb \   
+  04_ComputeLibraryFeatures.ipynb \
   05_ComputeBOPFeatures.ipynb     \
-  07_MachineLearn-ModelSelection.ipynb                         
-  07_MachineLearn.ipynb
-  08_AnalysisModels.ipynb
+  07_MachineLearn-ModelSelection.ipynb  \
+  07_MachineLearn.ipynb \
+  08_AnalysisModels.ipynb\
+  test
 
