@@ -65,7 +65,7 @@ pip install -r requirements.txt &> /dev/null
 
 echo "done, now running tests to verify installation. This may take a while..."
 
-pytest --nbmake -vv -s
+pytest --nbmake -vv -s test/
 
 #export NBMAKE_KERNEL=test_mlfemotcps
 #export SKIP_IMPORTANCES="SKIP"
