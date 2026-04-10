@@ -63,46 +63,47 @@ echo "Done. Installing dependencies"
 pip install -r requirements.txt &> /dev/null
 
 
-echo "done, now running tests to verify installation. This may take a while..."
+ebcho "done, now running tests to verify installation. This may take a while..."
 
-export NBMAKE_KERNEL=test_mlfemotcps
+pytest --nbmake -vv -s
 
-export SKIP_IMPORTANCES="SKIP"
-
-pytest  --nbmake -vv -s  --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
-  03_PrepareDataset.ipynb         \
-  04_ComputeACEFeatures.ipynb     \
-  04_ComputeACEFeatures.ipynb     \
-  04_ComputeLibraryFeatures.ipynb \
-  05_ComputeBOPFeatures.ipynb     
-
-echo ""
-echo ""
-echo ""
-echo ""
-echo "=============================="
-echo "Building models for Kernel Ridge"
-MODELNAME="Kernel Ridge" pytest  --nbmake -vv -s  --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
-  07_MachineLearn-ModelSelection.ipynb 
-
-echo ""
-echo ""
-echo ""
-echo ""
-echo "=============================="
-echo "Building models for MLP"
-MODELNAME="MLP" pytest  --nbmake -vv -s  --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
-  07_MachineLearn-ModelSelection.ipynb  \
-
-echo ""
-echo ""
-echo ""
-echo ""
-echo "=============================="
-echo "Building models for Random Forest"
-MODELNAME="Random Forest" pytest  --nbmake -vv -s --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
-  07_MachineLearn-ModelSelection.ipynb  \
-  07_MachineLearn.ipynb \
-  08_AnalysisModels.ipynb\
-  test
-
+#export NBMAKE_KERNEL=test_mlfemotcps
+#export SKIP_IMPORTANCES="SKIP"
+#
+#pytest  --nbmake -vv -s  --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
+#  03_PrepareDataset.ipynb         \
+#  04_ComputeACEFeatures.ipynb     \
+#  04_ComputeACEFeatures.ipynb     \
+#  04_ComputeLibraryFeatures.ipynb \
+#  05_ComputeBOPFeatures.ipynb     
+#
+#echo ""
+#echo ""
+#echo ""
+#echo ""
+#echo "=============================="
+#echo "Building models for Kernel Ridge"
+#MODELNAME="Kernel Ridge" pytest  --nbmake -vv -s  --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
+#  07_MachineLearn-ModelSelection.ipynb 
+#
+#echo ""
+#echo ""
+#echo ""
+#echo ""
+#echo "=============================="
+#echo "Building models for MLP"
+#MODELNAME="MLP" pytest  --nbmake -vv -s  --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
+#  07_MachineLearn-ModelSelection.ipynb  \
+#
+#echo ""
+#echo ""
+#echo ""
+#echo ""
+#echo "=============================="
+#echo "Building models for Random Forest"
+#MODELNAME="Random Forest" pytest  --nbmake -vv -s --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
+#  07_MachineLearn-ModelSelection.ipynb  \
+#  07_MachineLearn.ipynb \
+#  08_AnalysisModels.ipynb\
+#  test
+#

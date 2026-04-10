@@ -9,6 +9,9 @@ Jinja2
 setuptools<82
 matminer
 dscribe
+pytest
+nbmake
+pytest_order
 
 # python-ace is installed by setup_dependencies.sh via `python setup.py install`
 # (requires patching and C++ compilation, not compatible with pip install)
