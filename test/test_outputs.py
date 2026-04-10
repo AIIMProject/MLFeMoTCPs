@@ -35,7 +35,6 @@ def test_04(nbmake):
 @pytest.mark.order(3)
 def test_05(nbmake):
     run_notebook(nbmake,"05_ComputeBOPFeatures.ipynb")
-    )
 
 
 # ---- 07 (multiple configs) ----
