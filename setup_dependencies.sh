@@ -63,7 +63,7 @@ echo "Done. Installing dependencies"
 pip install -r requirements.txt &> /dev/null
 
 
-ebcho "done, now running tests to verify installation. This may take a while..."
+echo "done, now running tests to verify installation. This may take a while..."
 
 pytest --nbmake -vv -s
 
