@@ -14,6 +14,7 @@ import Tools.DatasetTools.GeneralFeaturizer as gf
 import unittest
 import warnings
 warnings.filterwarnings('error')
+warnings.filterwarnings('ignore', category=PendingDeprecationWarning)
 import ase
 from ase.build import bulk
 import copy 
