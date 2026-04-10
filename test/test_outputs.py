@@ -44,11 +44,12 @@ def test_05(nbmake):
     ["Kernel Ridge", "Random Forest", "MLP"],
     ids=["KR", "RF", "MLP"],
 )
+
 def test_07(nbmake, MODELNAME):
     run_notebook(nbmake, "07_MachineLearn-ModelSelection.ipynb",
         env={"MODELNAME": MODELNAME, "SKIP_IMPORTANCES": "SKIP"},
     )
-    run_notebook(nbmake, "07_MachineLearn.ipynb",
+    run_notebook(nbmake, "07_MachineLearn.ipynb")
 
 
 # ---- 08 ----
