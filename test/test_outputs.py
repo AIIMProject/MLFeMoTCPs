@@ -48,24 +48,24 @@ def test_05(nbmake, repo_root):
     ["Kernel Ridge", "Random Forest", "MLP"],
     ids=["KR", "RF", "MLP"],
 )
-
-def test_07(nbmake, repo_root, MODELNAME):
+def test_07A(nbmake, repo_root, MODELNAME):
     run_notebook(nbmake, "07_MachineLearn-ModelSelection.ipynb",
         env={"MODELNAME": MODELNAME, "SKIP_IMPORTANCES": "SKIP"},
     )
-#    assert os.path.exists("Fe-Mo/results/voting_regressor_KernelRidge.pkl")
-#    assert os.path.exists("Fe-Mo/results/voting_regressor_MLP.pkl")
-#    assert os.path.exists("Fe-Mo/results/voting_regressor_RandomForest.pkl")
-#    assert os.path.exists("Fe-Mo/graphs/Figure_Fe-Mo_VotedRegressor_EF_nmhcp_KernelRidge.pdf")
+    name = MODELNAME.replace(' ','')
+    assert os.path.exists(f"Fe-Mo/results/voting_regressor_{name}.pkl")
+
+@pytest.mark.order(5)
+def test_07B(nbmake, repo_root)
     run_notebook(nbmake, "07_MachineLearn.ipynb")
-#    assert os.path.exists("Fe-Mo/graphs/Fe-Mo_CNAV_only.pdf")
+    assert os.path.exists(repo_root / "Fe-Mo/graphs/Fe-Mo_CNAV_only.pdf")
 
 
 # ---- 08 ----
-@pytest.mark.order(5)
+@pytest.mark.order(6)
 def test_08(nbmake):
     run_notebook(nbmake, "08_AnalysisModels.ipynb")
 
-@pytest.mark.order(6)
+@pytest.mark.order(7)
 def test_08(nbmake):
     run_notebook(nbmake, "09_PrepareFeaturesPrediction.ipynb")
