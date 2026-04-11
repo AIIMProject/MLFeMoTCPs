@@ -65,3 +65,7 @@ def test_07(nbmake, MODELNAME):
 @pytest.mark.order(5)
 def test_08(nbmake):
     run_notebook(nbmake, "08_AnalysisModels.ipynb")
+
+@pytest.mark.order(6)
+def test_08(nbmake):
+    run_notebook(nbmake, "09_PrepareFeaturesPrediction.ipynb")
