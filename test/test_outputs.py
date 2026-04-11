@@ -49,7 +49,7 @@ def test_05(nbmake, repo_root):
     ids=["KR", "RF", "MLP"],
 )
 
-def test_07(nbmake, MODELNAME):
+def test_07(nbmake, repo_root, MODELNAME):
     run_notebook(nbmake, "07_MachineLearn-ModelSelection.ipynb",
         env={"MODELNAME": MODELNAME, "SKIP_IMPORTANCES": "SKIP"},
     )
