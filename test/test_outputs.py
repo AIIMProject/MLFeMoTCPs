@@ -56,7 +56,7 @@ def test_07A(nbmake, repo_root, MODELNAME):
     assert os.path.exists(f"Fe-Mo/results/voting_regressor_{name}.pkl")
 
 @pytest.mark.order(5)
-def test_07B(nbmake, repo_root)
+def test_07B(nbmake, repo_root):
     run_notebook(nbmake, "07_MachineLearn.ipynb")
     assert os.path.exists(repo_root / "Fe-Mo/graphs/Fe-Mo_CNAV_only.pdf")
 
@@ -67,5 +67,5 @@ def test_08(nbmake):
     run_notebook(nbmake, "08_AnalysisModels.ipynb")
 
 @pytest.mark.order(7)
-def test_08(nbmake):
+def test_09(nbmake):
     run_notebook(nbmake, "09_PrepareFeaturesPrediction.ipynb")
