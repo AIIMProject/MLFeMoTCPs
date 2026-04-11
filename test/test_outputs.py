@@ -3,7 +3,6 @@ import pytest
 
 # Ordered execution (requires pytest-order plugin)
 pytestmark = pytest.mark.order("session")
-working_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def run_notebook(nbmake, notebook, env=None):
@@ -21,25 +20,25 @@ def run_notebook(nbmake, notebook, env=None):
 
 # ---- 03 ----
 @pytest.mark.order(1)
-def test_03(nbmake):
+def test_03(nbmake, repo_root):
     run_notebook(nbmake, "03_PrepareDataset.ipynb")
-    assert os.path.exists(os.path.join(working_dir, "Fe-Mo/FullyCuratedParsedBriefSummary.json"))
+    assert (repo_root / "Fe-Mo/FullyCuratedParsedBriefSummary.json").exists()
 
 
 # ---- 04 ----
 @pytest.mark.order(2)
-def test_04(nbmake):
+def test_04(nbmake, repo_root):
     run_notebook(nbmake, "04_ComputeACEFeatures.ipynb")
-    assert os.path.exists(os.path.join(working_dir , "Fe-Mo/Descriptors/Fe-Mo-ACE-CNAV.csv"))
+    assert (repo_root / "Fe-Mo/Descriptors/Fe-Mo-ACE-CNAV.csv").exists()
     run_notebook(nbmake, "04_ComputeLibraryFeatures.ipynb")
-    assert os.path.exists(os.path.join(working_dir , "Fe-Mo/Descriptors/soap_features__specific__r_cut_4__n_max_6__l_max_5__sigma_0.1__rbf_gto__periodic_True.csv"))
+    assert (repo_root / "Fe-Mo/Descriptors/soap_features__specific__r_cut_4__n_max_6__l_max_5__sigma_0.1__rbf_gto__periodic_True.csv").exists()
 
 
 # ---- 05 (special env) ----
 @pytest.mark.order(3)
-def test_05(nbmake):
-    run_notebook(nbmake,"05_ComputeBOPFeatures.ipynb")
-    assert os.path.exists(os.path.join(working_dir , "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_0.7projections_0.5os_table_WUBIND_16.csv"))
+def test_05(nbmake, repo_root):
+    run_notebook(nbmake, "05_ComputeBOPFeatures.ipynb")
+    assert (repo_root / "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_0.7projections_0.5os_table_WUBIND_16.csv").exists()
 
 
 # ---- 07 (multiple configs) ----

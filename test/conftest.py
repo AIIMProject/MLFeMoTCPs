@@ -7,6 +7,12 @@ REPO_ROOT = Path(__file__).parent.parent
 
 
 @pytest.fixture
+def repo_root():
+    """Return the repository root directory."""
+    return REPO_ROOT
+
+
+@pytest.fixture
 def nbmake(request):
     """Run a notebook by path (relative to repo root) and raise on error."""
     timeout = int(request.config.getoption("--nbmake-timeout", default=300))
