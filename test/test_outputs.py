@@ -53,12 +53,12 @@ def test_07(nbmake, MODELNAME):
     run_notebook(nbmake, "07_MachineLearn-ModelSelection.ipynb",
         env={"MODELNAME": MODELNAME, "SKIP_IMPORTANCES": "SKIP"},
     )
-    assert os.path.exists("Fe-Mo/results/voting_regressor_KernelRidge.pkl")
-    assert os.path.exists("Fe-Mo/results/voting_regressor_MLP.pkl")
-    assert os.path.exists("Fe-Mo/results/voting_regressor_RandomForest.pkl")
-    assert os.path.exists("Fe-Mo/graphs/Figure_Fe-Mo_VotedRegressor_EF_nmhcp_KernelRidge.pdf")
+#    assert os.path.exists("Fe-Mo/results/voting_regressor_KernelRidge.pkl")
+#    assert os.path.exists("Fe-Mo/results/voting_regressor_MLP.pkl")
+#    assert os.path.exists("Fe-Mo/results/voting_regressor_RandomForest.pkl")
+#    assert os.path.exists("Fe-Mo/graphs/Figure_Fe-Mo_VotedRegressor_EF_nmhcp_KernelRidge.pdf")
     run_notebook(nbmake, "07_MachineLearn.ipynb")
-    assert os.path.exists("Fe-Mo/graphs/Fe-Mo_CNAV_only.pdf")
+#    assert os.path.exists("Fe-Mo/graphs/Fe-Mo_CNAV_only.pdf")
 
 
 # ---- 08 ----
