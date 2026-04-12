@@ -65,10 +65,11 @@ pip install -r requirements.txt &> /dev/null
 
 echo "done, now running tests to verify installation. This may take a while..."
 
+export NBMAKE_KERNEL=test_mlfemotcps
+#export CALC_IMPORTANCES
+
 pytest --nbmake -vv -s test/
 
-#export NBMAKE_KERNEL=test_mlfemotcps
-#export SKIP_IMPORTANCES="SKIP"
 #
 #pytest  --nbmake -vv -s  --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
 #  03_PrepareDataset.ipynb         \
