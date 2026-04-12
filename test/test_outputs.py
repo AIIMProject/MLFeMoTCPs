@@ -1,5 +1,8 @@
 import os
+import csv
 import pytest
+import pandas as pd
+import numpy as np
 
 # Ordered execution (requires pytest-order plugin)
 pytestmark = pytest.mark.order("session")
@@ -67,7 +70,24 @@ def test_08(nbmake):
     run_notebook(nbmake, "08_AnalysisModels.ipynb")
 
 @pytest.mark.order(7)
-def test_09(nbmake):
+def test_09(nbmake, repo_root):
     run_notebook(nbmake, "09_PrepareFeaturesPrediction.ipynb")
-    assert os.path.exist( repo_root / "Fe-Mo/data/Validation/inchull/delta/Fe_pv56.delta-AAAAAAAAAAAAAA.NM.vasp" )
-    assert os.path.exist( repo_root / "Fe-Mo/data/Validation/inchull/delta/Mo_sv56.delta-BBBBBBBBBBBBBB.NM.vasp" )
+    delta_path = repo_root / "Fe-Mo/data/Validation/inchull/delta"
+    assert os.path.exists(delta_path / "Fe_pv56.delta-AAAAAAAAAAAAAA.NM.vasp")
+    assert os.path.exists(delta_path / "Mo_sv56.delta-BBBBBBBBBBBBBB.NM.vasp")
+    # Validate a known inchull member from the saved dataframe index.
+    csv_path = delta_path / "EF_nmhcp__ACE.csv"
+    assert os.path.exists(csv_path)
+    inchull_delta = pd.read_csv(delta_path / 'EF_nmhcp__ACE.csv', index_col=0)
+    assert "Mo_sv56.delta-BBBBBBBBBBBBBB.NM" in inchull_delta.index
+    P_path = repo_root / "Fe-Mo/data/Validation/inchull/P/EF_nmhcp__ACE.csv"
+    assert os.path.exists(P_path)
+    inchull_P = pd.read_csv(P_path, index_col=0)
+    assert 'Fe_pv20Mo_sv36.P-ABBBBABABBAB.NM' in inchull_P.index
+    assert np.isclose(
+        inchull_P['EF_nmhcp__ACE']['Fe_pv20Mo_sv36.P-ABBBBABABBAB.NM'], 
+        0.0039, 
+        atol=0.0001
+    )
+
+
