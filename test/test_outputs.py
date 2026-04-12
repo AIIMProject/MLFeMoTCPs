@@ -69,3 +69,5 @@ def test_08(nbmake):
 @pytest.mark.order(7)
 def test_09(nbmake):
     run_notebook(nbmake, "09_PrepareFeaturesPrediction.ipynb")
+    assert os.path.exist( repo_root / "Fe-Mo/data/Validation/inchull/delta/Fe_pv56.delta-AAAAAAAAAAAAAA.NM.vasp" )
+    assert os.path.exist( repo_root / "Fe-Mo/data/Validation/inchull/delta/Mo_sv56.delta-BBBBBBBBBBBBBB.NM.vasp" )
