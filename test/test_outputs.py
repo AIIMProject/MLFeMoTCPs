@@ -92,5 +92,5 @@ def test_09(nbmake, repo_root):
 
 
 @pytest.mark.order(8)
-def test_10(nbmake, "10_ValidateValidationData.ipynb"):
+def test_10(nbmake, repo_root):
     run_notebook(nbmake, "10_ValidateValidationData.ipynb")
