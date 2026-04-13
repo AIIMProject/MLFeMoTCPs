@@ -41,10 +41,10 @@ def test_04B(nbmake, repo_root):
     soap_cnav_file = repo_root / "Fe-Mo/Descriptors/CNAV_soap_features__specific__r_cut_4__n_max_5__l_max_4__sigma_0.1__rbf_gto__periodic_True.csv"
     assert (soap_cnav_file).exists()
     soap_descrptors = pd.read_csv(soap_cnav_file, index_col=0)
-    assert 'Fe_pv4Mo_sv20.C36-ABBBB.FM' in soap_cnav_file.index
-    np.isclose(soap_cnav_file['SOAP_0_0']['Fe_pv4Mo_sv20.C36-ABBBB.FM' ], 0.0033, atol=1e-4)
-    assert 'Fe_pv53.R.NM' in soap_cnav_file.index
-    np.isclose(soap_cnav_file['SOAP_0_0']['Fe_pv53.R.NM' ], 0.0197, atol=1e-4)
+    assert 'Fe_pv4Mo_sv20.C36-ABBBB.FM' in soap_descrptors.index
+    np.isclose(soap_descrptors['SOAP_0_0']['Fe_pv4Mo_sv20.C36-ABBBB.FM' ], 0.0033, atol=1e-4)
+    assert 'Fe_pv53.R.NM' in soap_descrptors.index
+    np.isclose(soap_descrptors['SOAP_0_0']['Fe_pv53.R.NM' ], 0.0197, atol=1e-4)
 
 
 
