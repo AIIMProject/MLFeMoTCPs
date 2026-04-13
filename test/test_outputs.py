@@ -118,7 +118,7 @@ def test_10(nbmake, repo_root):
 
 @pytest.mark.order(10)
 def test_11(nbmake, repo_root):
-    # run_notebook(nbmake, "11_ValidatePredictions.ipynb")
+    run_notebook(nbmake, "11_ValidatePredictions.ipynb")
     assert os.path.exists('Fe-Mo/graphs/Figure_Fe-Mo_Predictions_Validation.pdf')
     assert os.path.exists('Fe-Mo/data/Validation/rmse.json')
     validation_rmse = pd.read_json('Fe-Mo/data/Validation/rmse.json', typ='series', orient='index')
