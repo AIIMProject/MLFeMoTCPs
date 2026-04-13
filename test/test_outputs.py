@@ -3,6 +3,7 @@ import csv
 import pytest
 import pandas as pd
 import numpy as np
+import pdb
 
 # Ordered execution (requires pytest-order plugin)
 pytestmark = pytest.mark.order("session")
@@ -94,7 +95,7 @@ def test_09(nbmake, repo_root):
     ace_P_path = repo_root / "Fe-Mo/data/Validation/inchull/P/EF_nmhcp__ACE.csv"
     assert os.path.exists(ace_P_path)
     inchull_ace_P = pd.read_csv(ace_P_path, index_col=0)
-    assert 'Fe_pv20Mo_sv36.P-ABBBBABABBAB.NM' in inchull_P.index
+    assert 'Fe_pv20Mo_sv36.P-ABBBBABABBAB.NM' in inchull_ace_P.index
     assert np.isclose(
         inchull_ace_P['EF_nmhcp__ACE']['Fe_pv20Mo_sv36.P-ABBBBABABBAB.NM'], 
         0.0039, 
@@ -103,10 +104,10 @@ def test_09(nbmake, repo_root):
     soap_P_path = repo_root / "Fe-Mo/data/Validation/inchull/P/EF_nmhcp__SOAP_specific_small.csv"
     assert os.path.exists(ace_P_path)
     inchull_soap_P = pd.read_csv(soap_P_path, index_col=0)
-    assert 'Fe_pv20Mo_sv36.P-ABBBBABABBAB.NM' in inchull_soap_P.index
+    assert 'Fe_pv28Mo_sv28.P-AAABBBAABBAB.NM' in inchull_soap_P.index
     assert np.isclose(
-        inchull_soap_P['EF_nmhcp__ACE'][''], 
-        0.0039, 
+        inchull_soap_P['EF_nmhcp__SOAP_specific_small']['Fe_pv28Mo_sv28.P-AAABBBAABBAB.NM'], 
+        0.0064, 
         atol=0.0001
     )
 
@@ -114,3 +115,27 @@ def test_09(nbmake, repo_root):
 @pytest.mark.order(9)
 def test_10(nbmake, repo_root):
     run_notebook(nbmake, "10_ValidateValidationData.ipynb")
+
+@pytest.mark.order(10)
+def test_11(nbmake, repo_root):
+    # run_notebook(nbmake, "11_ValidatePredictions.ipynb")
+    assert os.path.exists('Fe-Mo/graphs/Figure_Fe-Mo_Predictions_Validation.pdf')
+    assert os.path.exists('Fe-Mo/data/Validation/rmse.json')
+    validation_rmse = pd.read_json('Fe-Mo/data/Validation/rmse.json', typ='series', orient='index')
+    ref_rmse = {
+ "('0.7dprojections_0.5os_16_MAG=0', 'R')":0.0214393604,
+ "('0.7dprojections_0.5os_16_MAG=0', 'P')":0.0357590895,
+ "('0.7dprojections_0.5os_16_MAG=0', 'delta')":0.0616466451,
+ "('0.7dprojections_0.5os_16_MAG=0', 'M')":0.0472114773,
+ "('ACE_lmax=321_MAG=0', 'R')":0.0345354761,
+ "('ACE_lmax=321_MAG=0', 'P')":0.0251519909,
+ "('ACE_lmax=321_MAG=0', 'delta')":0.0532422492,
+ "('ACE_lmax=321_MAG=0', 'M')":0.0167460524,
+ "('SOAP_specific_small_specific_small_MAG=0', 'R')":0.0170015054,
+ "('SOAP_specific_small_specific_small_MAG=0', 'P')":0.0277703918,
+ "('SOAP_specific_small_specific_small_MAG=0', 'delta')":0.0680979289,
+ "('SOAP_specific_small_specific_small_MAG=0', 'M')":0.0109298833
+}
+    assert len(validation_rmse) == len(ref_rmse)
+    for index, val in ref_rmse.items():
+        assert np.isclose(val, validation_rmse[index])
