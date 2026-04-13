@@ -1,5 +1,4 @@
 # DatasetsML — Fe-Mo TCP Phase Stability from Machine Learning
-
 **Paper**: *Data-efficient machine-learning of complex Fe–Mo intermetallics using domain knowledge of chemistry and crystallography*  
 **Authors**: Mariano Forti, Alesya Malakhova, Yury Lysogorskiy, Wenhao Zhang, Jean-Claude Crivello, Jean-Marc Joubert, Ralf Drautz, Thomas Hammerschmidt  
 **Journal**: npj Computational Materials (accepted)  
@@ -12,7 +11,7 @@
 
 This repository accompanies the above paper. It provides the machine-learning pipeline used to predict the formation energies and sublattice occupancies of complex TCP (topologically close-packed) intermetallic phases in the Fe–Mo binary system.
 
-The core idea is that encoding **domain knowledge** at three levels — chemistry (Vegard's law volume scaling), crystallography (coordination-number-resolved averaging, CNavg), and local bonding (BOP, ACE, SOAP descriptors) — enables data-efficient predictions for complex TCP phases (R, M, P, δ with 11–14 Wyckoff sites) from models trained on only simple TCP phases (A15, C15, C14, C36, σ, χ, μ with 2–5 Wyckoff sites) using fewer than 300 DFT calculations.
+The motodology exploits **domain knowledge** at three levels — chemistry (Vegard's law volume scaling), crystallography (coordination-number-resolved averaging, CNavg), and local bonding (BOP, ACE, SOAP descriptors) — enables data-efficient predictions for complex TCP phases (R, M, P, δ with 11–14 Wyckoff sites) from models trained on only simple TCP phases (A15, C15, C14, C36, σ, χ, μ with 2–5 Wyckoff sites) using fewer than 300 DFT calculations.
 
 ---
 
@@ -21,16 +20,15 @@ The core idea is that encoding **domain knowledge** at three levels — chemistr
 ```
 DatasetsML_2.0/
 ├── Fe-Mo/
-│   ├── FullyCuratedParsedBriefSummary.pkl   # Curated DFT dataset
-│   ├── Atomsobjects/                        # ASE Atoms objects
-│   ├── Descriptors/                         # Pre-computed feature files
+│   ├── CuratedParsedBriefSummary.json   # Curated DFT dataset @ Zenodo archive
+│   ├── Atomsobjects/Fe-Mo-POSCAR.initial-rescaled-AtomsObjects.json #  ASE Atoms objects, initial guess structures
+│   ├── Atomsobjects/Fe-Mo-POSCAR.initial-rescaled-AtomsObjects.json #  ASE Atoms objects, optimized structures
+│   ├── Descriptors/                         # Pre-computed BOP feature files, 
 │   ├── results/                             # Feature selection results, predictions
 │   ├── graphs/                              # Generated figures
 │   └── data/Validation/                     # DFT validation data
 ├── Tools/                                   # datasetsml-tools Python package
 ├── Scripts/                                 # Standalone scripts (feature selection)
-├── Manuscript/                              # LaTeX source of the paper
-├── models/                                  # BOPfox model parameter files (.bx)
 ├── dependencies/                            # External packages (see below)
 ├── environment.yaml                         # Full conda environment
 └── environment_public.yaml                  # Environment without private packages
@@ -53,8 +51,8 @@ Notebooks are numbered to indicate execution order. The main publishable pipelin
 | `05_ComputeBOPFeatures.ipynb` | Compute BOP moment descriptors | Atoms objects, **BOPfox** (see below) |
 | `07_MachineLearn-ModelSelection.ipynb` | Build ensemble ML models from feature selection results | Descriptor files, `concatenation_results_*.pkl` |
 | `08_AnalysisModels.ipynb` | Analyse and compare fitted models | Model outputs |
-| `09_PrepareFeaturesPrediction.ipynb` | Prepare descriptors for complex phases | Zenodo data files |
-| `10_ValidateValidationData.ipynb` | Validate against DFT reference data | Validation data + model predictions |
+| `09_PrepareFeaturesPrediction.ipynb` | Generates R,P,M, $\delta$ configurations, computes descriptors, predicts formation enthalpies, generates validation data | Fitted ensamble models |
+| `10_ValidateValidationData.ipynb` | Checks existence of DFT for validation data, formats for final model validation | Validation data + model predictions |
 | `11_ValidatePredictions.ipynb` | Final prediction validation | Predictions + DFT validation |
 | `15_A_Thermodynamics.ipynb` | Thermodynamic analysis (Bragg–Williams) | Model predictions |
 
@@ -67,7 +65,7 @@ Legacy and experimental notebooks are in the `legacy/` folder.
 ### 1. Clone the repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/AIIMProject/MLFeMoTCPs.git
 cd DatasetsML_2.0
 ```
 
