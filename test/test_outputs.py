@@ -65,7 +65,7 @@ def test_05(nbmake, repo_root):
 )
 def test_07A(nbmake, repo_root, MODELNAME):
     run_notebook(nbmake, "07_MachineLearn-ModelSelection.ipynb",
-        env={"MODELNAME": MODELNAME, "SKIP_IMPORTANCES": "SKIP"},
+        env={"MODELNAME": MODELNAME}#, "CALC_IMPORTANCES": "NO"},
     )
     name = MODELNAME.replace(' ','')
     assert os.path.exists(f"Fe-Mo/results/voting_regressor_{name}.pkl")
