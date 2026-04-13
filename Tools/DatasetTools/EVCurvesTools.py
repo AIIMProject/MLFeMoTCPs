@@ -488,13 +488,13 @@ class Evcurves(object):
         saved_list = os.path.join(self.dataset, 'list_of_outcars.csv')
 #        fullsearchstring = f'{self.dataset}/rawdata/*/bulk/*/volume_relaxed/{self.search_str}'
         fullsearchstring = f'{self.dataset}/**/{self.search_str}'
-        if not need_to_update(saved_list):
+        if False: #not need_to_update(saved_list):
             logger.debug(f'reading list of energy-volume curves from {saved_list}')
             list_of_files = pd.read_csv(saved_list,  header=None).squeeze('columns')
         else:
             list_of_files = pd.Series(glob.glob(fullsearchstring,  recursive=True))
             list_of_files.name = 'full_path'
-            list_of_files.to_csv(saved_list, header=False, index=False)
+            #list_of_files.to_csv(saved_list, header=False, index=False)
         search_results = pd.Series([])
         for index, filepath in list_of_files.items():
             if re.match('.*___BACKUP___.*', filepath):
