@@ -47,20 +47,24 @@ class  Dataset():
         if load_features_only is not None:
             Features = { this_feature: Features[this_feature] for this_feature in load_features_only}
         self.Features = Features
-        self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
-        self.Features = {group: feature.loc[self.allindex] for group, feature in self.Features.items()}
-        self.Features.update({
-            name: add_dataset_feature(features, self.Features['dataset'][['Mag', 'Structure']]) for name, features in self.Features.items()
-            })
+        #self.allindex = pd.concat(list(self.Features.values())+[self.BS], axis=1).dropna().index
+        #self.Features = {group: feature.loc[self.allindex] for group, feature in self.Features.items()}
+        for name, features in self.Features.items():
+            intersection = features.index.intersection(self.BS.index)
+            self.Features[name] = features.loc[intersection]
+            if name != 'dataset':
+                self.Features[name] = pd.concat([self.Features[name], self.Features['dataset'][[ 'Mag', 'Structure' ]].loc[intersection]], axis = 1)
+            rs = np.random.RandomState(np.random.MT19937(np.random.SeedSequence(42)))
+            randomfeatures = np.random.rand(len(intersection), )#.shape[0])
+            self.Features[name]['random'] = randomfeatures
+        #self.Features.update({
+        #    name: add_dataset_feature(features, self.Features['dataset'][['Mag', 'Structure']]) for name, features in self.Features.items()
+        #    })
         self.target_name = target_name
-        self.target = self.BS[target_name].loc[self.allindex]
+        self.target = self.BS[target_name]#.loc[self.allindex]
         self.resultslocation = load_results_location(self.dataset)
-        self.StructureNames = self.BS['Phase'].loc[self.allindex]
-        rs = np.random.RandomState(np.random.MT19937(np.random.SeedSequence(42)))
-        randomfeatures = np.random.rand(self.target.shape[0])
-        for feature in self.Features.values():
-            feature['random'] = randomfeatures
-        
+        self.StructureNames = self.BS['Phase']#.loc[self.allindex]
+        self.allindex = self.BS.index
 #        samplelocation = os.path.join(dataset, 'samplesplit.pkl')
 
 

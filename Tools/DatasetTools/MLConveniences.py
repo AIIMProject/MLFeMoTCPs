@@ -51,7 +51,7 @@ def load_features_raw(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     'ACE' :  f'{dataset}-ACE-CNAV.csv', 
     'Canonical ACE' : f'{dataset}-canonical-ACE-CNAV.csv', 
     'Canonical BOP': f'CNAV_parallel_{dataset}_initial_canonical_table_WUBIND_16.csv', 
-    '0.7dProjections 0.5OS BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_table_WUBIND_16.csv', 
+    '0.7dProjections 0.5OS BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_0scf_table_WUBIND_16.csv', 
     #'Pyscal' : 'CNAVPyscal.pkl',
     #   'SOAP_specific_small': 'soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
     #    'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.csv', 
@@ -160,9 +160,11 @@ def get_optimal_features(FeatureScoreData:pd.core.frame.DataFrame, remove_struct
 #    thisatmin = FeatureScoreData['test'].argmin()
 #    return FeatureScoreData.index[:thisatmin]
 
+
 def filter_features(Features_DF: pd.core.frame.DataFrame, learning_curve = pd.core.frame.DataFrame, remove_structure=False):
     if 'params' not in learning_curve.columns:
         raise ValueError('the learning curve provided is not an evaluation of best features')
     columns = get_optimal_features(learning_curve, remove_structure = remove_structure)
     columns = columns.intersection(Features_DF.columns)
     return Features_DF[columns]
+
