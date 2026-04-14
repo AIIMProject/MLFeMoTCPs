@@ -53,7 +53,8 @@ def test_04B(nbmake, repo_root):
 @pytest.mark.order(4)
 def test_05(nbmake, repo_root):
     run_notebook(nbmake, "05_ComputeBOPFeatures.ipynb")
-    assert (repo_root / "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_0.7projections_0.5os_table_WUBIND_16.csv").exists()
+    assert (repo_root / "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_relaxed_0.7projections_0.5os_0scf_table_WUBIND_16.csv").exists()
+    assert (repo_root / "Fe-Mo/Descriptors/CNAV_parallel_Fe-Mo_initial_0.7projections_0.5os_0scf_table_WUBIND_16.csv").exists()
 
 
 # ---- 07 (multiple configs) ----
