@@ -64,11 +64,12 @@ def test_05(nbmake, repo_root):
     ids=["KR", "RF", "MLP"],
 )
 def test_07A(nbmake, repo_root, MODELNAME):
+    name = MODELNAME.replace(' ','')
+    assert os.path.exists(f"Fe-Mo/results/voting_regressor_{name}.pkl")
     run_notebook(nbmake, "07_MachineLearn-ModelSelection.ipynb",
         env={"MODELNAME": MODELNAME}#, "CALC_IMPORTANCES": "NO"},
     )
-    name = MODELNAME.replace(' ','')
-    assert os.path.exists(f"Fe-Mo/results/voting_regressor_{name}.pkl")
+    assert os.path.exists(f"Fe-Mo/results/refitted_voting_regressor_{name}.pkl")
 
 @pytest.mark.order(6)
 def test_07B(nbmake, repo_root):
