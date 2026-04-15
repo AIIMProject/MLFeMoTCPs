@@ -27,8 +27,9 @@ if [ ! -f FeMo_TCP_dataset.zip ]; then
   if [ -f $HOME/mariano/CuadernoTrabajo/DatasetsML_2.0/FeMo_TCP_dataset.zip ]; then
     cp $HOME/mariano/CuadernoTrabajo/DatasetsML_2.0/FeMo_TCP_dataset.zip .
   else
-     wget -O FeMo_TCP_dataset.zip $ZIP
-  unzip FeMo_TCP_dataset.zip
+    wget -O FeMo_TCP_dataset.zip $ZIP
+    unzip FeMo_TCP_dataset.zip
+  fi
 fi
 
 #echo "Dlownloading DESCRIPTION"
