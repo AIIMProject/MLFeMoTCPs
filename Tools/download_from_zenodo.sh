@@ -22,10 +22,11 @@ RECORD='https://zenodo.org/records/19427673/'
 FILES=$RECORD/'files/'
 ZIP=$FILES'FeMo_TCP_dataset.zip'
 DESCRIPTION=$RECORD'ZENODO_DESCRIPTION.md'
+LOCAL_FALLBACK=$HOME/CuadernoTrabajo/DatasetsML_2.0/zenodo_upload/FeMo_TCP_dataset.zip
 
 if [ ! -f FeMo_TCP_dataset.zip ]; then
-  if [ -f /home/mariano/CuadernoTrabajo/DatasetsML_2.0/zenodo_upload/FeMo_TCP_dataset.zip ]; then
-    cp /home/mariano/CuadernoTrabajo/DatasetsML_2.0/zenodo_upload/FeMo_TCP_dataset.zip .
+  if [ -f $LOCAL_FALLBACK ]; then
+    cp $LOCAL_FALLBACK .
   else
     wget -O FeMo_TCP_dataset.zip $ZIP
   fi
