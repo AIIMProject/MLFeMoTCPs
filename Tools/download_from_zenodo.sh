@@ -24,13 +24,13 @@ ZIP=$FILES'FeMo_TCP_dataset.zip'
 DESCRIPTION=$RECORD'ZENODO_DESCRIPTION.md'
 
 if [ ! -f FeMo_TCP_dataset.zip ]; then
-  if [ -f $HOME/mariano/CuadernoTrabajo/DatasetsML_2.0/FeMo_TCP_dataset.zip ]; then
-    cp $HOME/mariano/CuadernoTrabajo/DatasetsML_2.0/FeMo_TCP_dataset.zip .
+  if [ -f /home/mariano/CuadernoTrabajo/DatasetsML_2.0/zenodo_upload/FeMo_TCP_dataset.zip ]; then
+    cp /home/mariano/CuadernoTrabajo/DatasetsML_2.0/zenodo_upload/FeMo_TCP_dataset.zip .
   else
     wget -O FeMo_TCP_dataset.zip $ZIP
-    unzip FeMo_TCP_dataset.zip
   fi
 fi
+unzip FeMo_TCP_dataset
 
 #echo "Dlownloading DESCRIPTION"
 #if [ ! -f ZENODO_DESCRIPTION.md ]; then
