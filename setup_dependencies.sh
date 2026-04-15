@@ -62,6 +62,9 @@ echo "Done. Installing dependencies"
 
 pip install -r requirements.txt &> /dev/null
 
+echo "Downloading raw data from Zenodo..."
+bash Tools/download_from_zenodo.sh
+
 
 echo "done, now running tests to verify installation. This may take a while..."
 
