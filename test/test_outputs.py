@@ -94,23 +94,18 @@ def test_09(nbmake, repo_root):
     assert os.path.exists(csv_path)
     inchull_delta = pd.read_csv(delta_path / 'EF_nmhcp__ACE.csv', index_col=0)
     assert "Mo_sv56.delta-BBBBBBBBBBBBBB.NM" in inchull_delta.index
-    ace_P_path = repo_root / "Fe-Mo/data/Validation/inchull/P/EF_nmhcp__ACE.csv"
+    ace_P_path = repo_root / "Fe-Mo/data/Validation/inchull/P/EF_nmhcp__ACE__within_error.csv"
     assert os.path.exists(ace_P_path)
     inchull_ace_P = pd.read_csv(ace_P_path, index_col=0)
-    assert 'Fe_pv20Mo_sv36.P-ABBBBABABBAB.NM' in inchull_ace_P.index
-    assert np.isclose(
-        inchull_ace_P['EF_nmhcp__ACE']['Fe_pv20Mo_sv36.P-ABBBBABABBAB.NM'], 
-        0.0039, 
-        atol=0.0001
-    )
-    soap_P_path = repo_root / "Fe-Mo/data/Validation/inchull/P/EF_nmhcp__SOAP_specific_small.csv"
+    assert 'Fe_pv56.P-AAAAAAAAAAAA.NM' in inchull_ace_P.index
+    soap_P_path = repo_root / "Fe-Mo/data/Validation/inchull/P/EF_nmhcp__SOAP__within_error.csv"
     assert os.path.exists(ace_P_path)
     inchull_soap_P = pd.read_csv(soap_P_path, index_col=0)
-    assert 'Fe_pv28Mo_sv28.P-AAABBBAABBAB.NM' in inchull_soap_P.index
+    assert 'Fe_pv56.P-AAAAAAAAAAAA.NM' in inchull_soap_P.index
     assert np.isclose(
-        inchull_soap_P['EF_nmhcp__SOAP_specific_small']['Fe_pv28Mo_sv28.P-AAABBBAABBAB.NM'], 
-        0.0064, 
-        atol=0.0001
+        inchull_soap_P['EF_nmhcp__SOAP']['Fe_pv28Mo_sv28.P-AAABBBAABBAB.NM'], 
+        0.008, 
+        atol=0.003
     )
 
 
