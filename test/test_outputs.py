@@ -138,8 +138,8 @@ def test_10(nbmake, repo_root):
 def test_11(nbmake, repo_root):
     run_notebook(nbmake, "11_ValidatePredictions.ipynb")
     assert os.path.exists('Fe-Mo/graphs/Figure_Fe-Mo_Predictions_Validation.pdf')
-    assert os.path.exists('Fe-Mo/data/Validation/rmse.json')
-    validation_rmse = pd.read_json('Fe-Mo/data/Validation/rmse__NM.json', typ='series', orient='index')
+    assert os.path.exists('Fe-Mo/data/Validation/rmse__MAG=0.json')
+    validation_rmse = pd.read_json('Fe-Mo/data/Validation/rmse__MAG=0.json', typ='series', orient='index')
     ref_rmse = {
  "('0.7dprojections_0.5os', 'R')":0.0214393604,
  "('0.7dprojections_0.5os', 'P')":0.0357590895,
