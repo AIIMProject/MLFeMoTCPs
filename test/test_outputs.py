@@ -158,3 +158,12 @@ def test_11(nbmake, repo_root):
     for index, val in ref_rmse.items():
         assert np.isclose(val, validation_rmse[index], 
     rtol=0.5)
+
+
+@pytest.mark.order(10)
+def test_15(nbmake, repo_root):
+    run_notebook(nbmake, "15_A_Thermodynamics.ipynb")
+    assert os.path.exists(repo_root/'Fe-Mo/results/OCCUPANCY_PREDICTION__R__T=1700__ACE__MAG=0.csv')
+    DG=pd.read_csv('Fe-Mo/results/OCCUPANCY_PREDICTION__R__T=1700__ACE__MAG=0.csv', index_col=0)
+    assert 'A@$c_2$' in DG.columns
+
