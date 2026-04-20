@@ -10,6 +10,6 @@ setup(
     include_package_data=True,
     install_requires=[
         "nbformat>=4.2.0",
-        "scikit-learn>=1.5",
+        "scikit-learn", #>=1.5",
     ],
 )
