@@ -1,8 +1,8 @@
 # DatasetsML — Fe-Mo TCP Phase Stability from Machine Learning
 **Paper**: *Data-efficient machine-learning of complex Fe–Mo intermetallics using domain knowledge of chemistry and crystallography*  
 **Authors**: Mariano Forti, Alesya Malakhova, Yury Lysogorskiy, Wenhao Zhang, Jean-Claude Crivello, Jean-Marc Joubert, Ralf Drautz, Thomas Hammerschmidt  
-**Research article**: [![DOI](https://doi.org/10.1038/s41524-026-02070-5)](https://doi.org/10.1038/s41524-026-02070-5)
-**Data**: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19427673.svg)](https://doi.org/10.5281/zenodo.19427673).
+**Research article**: ![DOI](https://doi.org/10.1038/s41524-026-02070-5)
+**Data**: ![DOI](https://doi.org/10.5281/zenodo.19427673).
 
 ---
 
