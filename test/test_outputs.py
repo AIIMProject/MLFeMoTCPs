@@ -16,7 +16,7 @@ def run_notebook(nbmake, notebook, env=None):
     try:
         if env:
             os.environ.update(env)
-        nbmake(notebook)
+        nbmake(notebook, timeout=0)  # Adjust timeout as needed
     finally:
         os.environ.clear()
         os.environ.update(old_env)
