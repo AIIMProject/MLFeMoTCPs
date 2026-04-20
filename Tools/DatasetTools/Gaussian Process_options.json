@@ -1,0 +1,1 @@
+{ "Gaussian Process" : {"regressor__alpha": [1e-10, 1e-5, 1e-2]} }

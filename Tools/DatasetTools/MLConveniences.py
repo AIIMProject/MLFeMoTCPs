@@ -39,26 +39,28 @@ def  add_mag(features: pd.core.frame.DataFrame, magfeature: pd.core.series.Serie
     else:
         return features
 
-def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
+def load_features_raw(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
     """loads features from prestablished pickles"""
 
     system = dataset.replace('-', '')
     DescriptorList = {
     'atomic' : 'matminer_atomic_features.pkl',
     'dataset' : 'DatasetFeatures.pkl',
-    'SOAP_canonicalW_small': 'soap_features__canonicalW__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
-    'SOAP_specific_small': 'soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
+    'SOAP_canonicalW_small': 'CNAV_soap_features__canonicalW__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
+    'SOAP_specific_small': 'CNAV_soap_features__specific__r_cut_4__n_max_5__l_max_4__sigma_0.1__rbf_gto__periodic_True.csv',
     'ACE' :  f'{dataset}-ACE-CNAV.csv', 
-    'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.csv', 
-    'NOZERO_NOONE-ACE' :  f'{dataset}-NOZERO_NOONE-ACE-CNAV.csv', 
-    'NOZERO_NOONE_NOTWO-ACE' :  f'{dataset}-NOZERO_NOONE_NOTWO-ACE-CNAV.csv', 
-    'NOTHREE-ACE' :  f'{dataset}-NOTHREE-ACE-CNAV.csv', 
-    'NOTHREE-NOTWO-ACE' :  f'{dataset}-NOTHREE_NOTWO-ACE-CNAV.csv', 
-    'NOTHREE-NOTWO_NOONE-ACE' :  f'{dataset}-NOTHREE_NOTWO_NOONE-ACE-CNAV.csv', 
     'Canonical ACE' : f'{dataset}-canonical-ACE-CNAV.csv', 
     'Canonical BOP': f'CNAV_parallel_{dataset}_initial_canonical_table_WUBIND_16.csv', 
-    '0.7dProjections 0.5OS BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_table_WUBIND_16.csv', 
-    '0.7spProjections 0.5OS BOP': f'CNAV_parallel_{dataset}_initial_0.7spProjections_0.5os_table_WUBIND_16.csv', 
+    '0.7dProjections 0.5OS BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_0scf_table_WUBIND_16.csv', 
+    #'Pyscal' : 'CNAVPyscal.pkl',
+    #   'SOAP_specific_small': 'soap_features__specific__rcut_4__nmax_5__lmax_4__sigma_0.1__rbf_gto__periodic_True__crossover_True.csv',
+    #    'NOZERO-ACE' :  f'{dataset}-NOZERO-ACE-CNAV.csv', 
+    #    'NOZERO_NOONE-ACE' :  f'{dataset}-NOZERO_NOONE-ACE-CNAV.csv', 
+    #    'NOZERO_NOONE_NOTWO-ACE' :  f'{dataset}-NOZERO_NOONE_NOTWO-ACE-CNAV.csv', 
+    #    'NOTHREE-ACE' :  f'{dataset}-NOTHREE-ACE-CNAV.csv', 
+    #    'NOTHREE-NOTWO-ACE' :  f'{dataset}-NOTHREE_NOTWO-ACE-CNAV.csv', 
+    #    'NOTHREE-NOTWO_NOONE-ACE' :  f'{dataset}-NOTHREE_NOTWO_NOONE-ACE-CNAV.csv', 
+    #    '0.7spProjections 0.5OS BOP': f'CNAV_parallel_{dataset}_initial_0.7spProjections_0.5os_table_WUBIND_16.csv', 
     #    '0.7dProjections 10scf 8.0jii BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_10scf_jii8.0_table_WUBIND_16.csv', 
     # this creates problem because the bop calculations has problems for some samples.
     #    '0.7dProjections 100scf 8.0jii BOP': f'CNAV_parallel_{dataset}_initial_0.7projections_0.5os_100scf_jii8.0_table_WUBIND_16.csv', 
@@ -85,7 +87,7 @@ def load_features(dataset: str) -> dict[str, pd.core.frame.DataFrame]:
 def score_fitted_model(fittedmodel, xtrain,  xtest, ytrain,ytest):
     predict_train = fittedmodel.predict(xtrain)
     predict_test = fittedmodel.predict(xtest)
-    return {'test': np.sqrt(mean_squared_error(ytest, predict_test)), 'train': np.sqrt(mean_squared_error(ytrain, predict_train))}
+    return {'test': mean_squared_error(ytest, predict_test, squared = False), 'train':mean_squared_error(ytrain, predict_train, squared = False)}
 
 def load_results_location(dataset:str) -> str:
     """simply makes the results location"""
@@ -158,8 +160,11 @@ def get_optimal_features(FeatureScoreData:pd.core.frame.DataFrame, remove_struct
 #    thisatmin = FeatureScoreData['test'].argmin()
 #    return FeatureScoreData.index[:thisatmin]
 
+
 def filter_features(Features_DF: pd.core.frame.DataFrame, learning_curve = pd.core.frame.DataFrame, remove_structure=False):
     if 'params' not in learning_curve.columns:
         raise ValueError('the learning curve provided is not an evaluation of best features')
     columns = get_optimal_features(learning_curve, remove_structure = remove_structure)
+    columns = columns.intersection(Features_DF.columns)
     return Features_DF[columns]
+

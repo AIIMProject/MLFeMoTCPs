@@ -5,7 +5,11 @@ from Tools.DatasetTools.Commoms import *
 os.environ['PATH']+=':'+os.path.join(os.getcwd(),'dependencies/bopfox/src/')
 from dependencies.bopfoxfeaturizer.BopFoxFeaturizer.Featurizer import Featurizer, BopfoxFeatures
 
-from dependencies.bopdftprojections.bopdftprojections.projections import Projections, Canonicalmodel
+try:
+    from dependencies.bopdftprojections.bopdftprojections.projections import Projections, Canonicalmodel
+    has_bopdftprojections = True
+except ModuleNotFoundError as ME:
+    has_bopdftprojections = False
 import shutil
 
 
@@ -27,20 +31,20 @@ model_definitions = {
         'replace atoms' : {'Fe': 'W', 'Mo': 'W'},
         'moments' : globalmoments
     },
-    '0.7projections_0.5os': {
-        'model_maker_options' : {
-            'element_pairs_kwargs' : {
-                'bond_integral_scale': 0.7,
-            },
-            'atom_blocks_kwargs': {
-                'onsite_levels_scale' : 0.5,
-                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
-            },
-        },
-        'calculator_options' : {
-            'moments' : globalmoments
-        }
-    },
+#    '0.7projections_0.5os': {
+#        'model_maker_options' : {
+#            'element_pairs_kwargs' : {
+#                'bond_integral_scale': 0.7,
+#            },
+#            'atom_blocks_kwargs': {
+#                'onsite_levels_scale' : 0.5,
+#                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
+#            },
+#        },
+#        'calculator_options' : {
+#            'moments' : globalmoments
+#        }
+#    },
     '0.7projections_0.5os_0scf': {
         'model_maker_options' : {
             'element_pairs_kwargs' : {
@@ -56,38 +60,38 @@ model_definitions = {
             'scfsteps' : 0,
         }
     },
-    '0.7projections_0.5os_10scf_jii8.0': {
-        'model_maker_options' : {
-            'element_pairs_kwargs' : {
-                'bond_integral_scale': 0.7,
-            },
-            'atom_blocks_kwargs': {
-                'onsite_levels_scale' : 0.5,
-                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
-                'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
-            },
-        },
-        'calculator_options':{
-            'moments' : globalmoments,
-            'scfsteps' : 10,
-        }
-    },
-    '0.7projections_0.5os_100scf_jii8.0': {
-        'model_maker_options' : {
-            'element_pairs_kwargs' : {
-                'bond_integral_scale': 0.7,
-            },
-            'atom_blocks_kwargs': {
-                'onsite_levels_scale' : 0.5,
-                'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
-                'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
-            },
-        },
-        'calculator_options':{
-            'moments' : globalmoments,
-            'scfsteps' : 100,
-        }
-    },
+    #'0.7projections_0.5os_10scf_jii8.0': {
+    #    'model_maker_options' : {
+    #        'element_pairs_kwargs' : {
+    #            'bond_integral_scale': 0.7,
+    #        },
+    #        'atom_blocks_kwargs': {
+    #            'onsite_levels_scale' : 0.5,
+    #            'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
+    #            'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
+    #        },
+    #    },
+    #    'calculator_options':{
+    #        'moments' : globalmoments,
+    #        'scfsteps' : 10,
+    #    }
+    #},
+    #'0.7projections_0.5os_100scf_jii8.0': {
+    #    'model_maker_options' : {
+    #        'element_pairs_kwargs' : {
+    #            'bond_integral_scale': 0.7,
+    #        },
+    #        'atom_blocks_kwargs': {
+    #            'onsite_levels_scale' : 0.5,
+    #            'select_orbitals' : {'Fe': 'd', 'Mo' : 'd'},
+    #            'onsite_energy' : {'Fe': 8.0, 'Mo': 8.0}
+    #        },
+    #    },
+    #    'calculator_options':{
+    #        'moments' : globalmoments,
+    #        'scfsteps' : 100,
+    #    }
+    #},
 }
 cutoff = 'table'
 atoms = ['initial', 'relaxed']
@@ -117,13 +121,14 @@ BS = load_fully_curated_briefsummary(dataset)
 
 # In[9]:
 
-P = Projections()
-C = Canonicalmodel()
-P.readbxmodels()
-P.get_bond_chunks()
-P.get_autobonds()
-P.get_all_onsite_levels()
-P.get_restructured_projections()
+if has_bopdftprojections:
+    P = Projections()
+    C = Canonicalmodel()
+    P.readbxmodels()
+    P.get_bond_chunks()
+    P.get_autobonds()
+    P.get_all_onsite_levels()
+    P.get_restructured_projections()
 
 
 # In[10]:
@@ -164,7 +169,7 @@ for (model, definition), (case, atoms_df) in product(model_definitions.items(), 
     if 'moments' in definition.keys():
         thismoments = definition['moments']
     else:
-        thismoments = 16
+        thismoments = globalmoments
     if (model, thismoments, case) in results.keys():
         continue
     create_model_options = {}
@@ -176,24 +181,27 @@ for (model, definition), (case, atoms_df) in product(model_definitions.items(), 
             use_elements = set([s.replace(realelement, targetelement) for s in use_elements])
     components = ''.join(use_elements)
     modelsfile = os.path.join('models', f'{dataset}-{components}_{model}.bx')
-    create_modelfile(use_elements,modelsfile, modelname=model, **create_model_options,   )
+    if has_bopdftprojections:
+        create_modelfile(use_elements,modelsfile, modelname=model, **create_model_options,   )
     if 'replace atoms' in definition.keys():
         ApplyOnAtoms = atoms_df['atoms'].apply(replace_symbols, replacements = definition['replace atoms'])
     else:
         ApplyOnAtoms = atoms_df.atoms
     print('atoms: ', case, 'model: ', model, '  cutoff: ', cutoff, ' moments:', thismoments)
-    resultspickle[(model, thismoments, case)] = os.path.join(dataset, 'Descriptors', f'parallel_{dataset}_{case}_{model}_{cutoff}_WUBIND_{thismoments}.pkl')
+    modelkey = model.replace('_0scf','')
+    resultspickle[(modelkey, thismoments, case)] = os.path.join(dataset, 'Descriptors', f'parallel_{dataset}_{case}_{model}_{cutoff}_WUBIND_{thismoments}.pkl')
     log_files_loc = os.path.join(dataset, 'results', model)
+    cwd = os.getcwd()
+    binary = os.path.join(cwd, 'dependencies', 'bopfox','src', 'bopfox'),
     if not os.path.exists(log_files_loc):
         os.makedirs(log_files_loc)
-    if not os.path.exists(resultspickle[(model, thismoments, case)]):
-        cwd = os.getcwd()
+    if not os.path.exists(resultspickle[(modelkey, thismoments, case)]):
         BOPC = BopfoxFeatures(
             ApplyOnAtoms,modelsfile, modelname=model,
             cutoffby=cutoff, 
-            binary = os.path.join(cwd, 'dependencies', 'bopfox','src', 'bopfox'),
             savelog=True,
             printsc=True,
+            binary = binary, 
             **definition['calculator_options']
             )
         BOPC.featurize_dataframe(input_pickle=resultspickle, output_pickle=resultspickle, max_workers=12)
@@ -201,10 +209,10 @@ for (model, definition), (case, atoms_df) in product(model_definitions.items(), 
         if len(logfiles) > 0:
             for file in logfiles:
                 os.rename(file, os.path.join(log_files_loc, file))
-        results[(model, thismoments, case)] = BOPC.RESULTS #pd.read_pickle(resultspickle[model]) 
-        results[(model, thismoments, case)].to_pickle(resultspickle[(model, thismoments, case)])
+        results[(modelkey, thismoments, case)] = BOPC.RESULTS #pd.read_pickle(resultspickle[model]) 
+        results[(modelkey, thismoments, case)].to_pickle(resultspickle[(model, thismoments, case)])
     else:
-        results[(model, thismoments, case)] = pd.read_pickle(resultspickle[(model, thismoments, case)])
+        results[(modelkey, thismoments, case)] = pd.read_pickle(resultspickle[(modelkey, thismoments, case)])
 
 
 #In[]
@@ -212,6 +220,10 @@ np.set_printoptions(precision=2,linewidth=125)
 
 
 removenans = [result.dropna(inplace=True) for (model, moments, case), result in results.items()]
+
+print('after removenans')
+for key, result in results.items():
+    print (key, result.shape)
 
 
 examplemodel = ('0.7projections_0.5os', 16, 'initial')

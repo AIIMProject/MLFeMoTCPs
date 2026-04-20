@@ -194,13 +194,14 @@ def get_shape_factors(
         ) -> pd.core.frame.DataFrame:
     B1 = BOP.filter(regex='bn_1_.*')
     B2 = BOP.filter(regex='bn_2_.*')
-    SF = pd.DataFrame([], index=B1.index)
+    shape_factors = {}
     for (name, B1CN), (_, B2CN ) in zip(B1.items(), B2.items()):
         sfname = name.split('_')[-1]
         VALIDB2 = B2CN != 0
-        SF['sf_'+sfname] = B1CN
-        SF['sf_'+sfname][VALIDB2] = B1CN[VALIDB2] / B2CN[VALIDB2]
-    return SF
+        sf_column = B1CN.copy()
+        sf_column.loc[VALIDB2] = B1CN.loc[VALIDB2] / B2CN.loc[VALIDB2]
+        shape_factors['sf_'+sfname] = sf_column
+    return pd.DataFrame(shape_factors, index=B1.index)
 
 def featurize_series(
         _Feature: pd.core.series.Series, 
@@ -231,7 +232,8 @@ def featurize_dataframe(
         pdb.set_trace()
     progress = tqdm(_Features.items(), total = len(_Features.columns))
     for colid, feature in progress: # _Features.items():
-        result.append(featurize_series(feature, _coordination[feature.index], featurizer, debug = debug, **kwargs))
+        intersection = feature.index.intersection(_coordination.index)
+        result.append(featurize_series(feature[intersection], _coordination[intersection], featurizer, debug = debug, **kwargs))
         columns = result[-1].columns
         newcolumns = [f'{colid}{thiscol}' for thiscol in columns]
         result[-1].columns = newcolumns
