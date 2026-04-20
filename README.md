@@ -89,7 +89,7 @@ pip install -e Tools/
 
 ### 4. Download large data files from Zenodo
 
-Download the data archive from [Zenodo DOI: 10.5281/zenodo.XXXXXXX](https://doi.org/10.5281/zenodo.XXXXXXX) and place the files in the appropriate directories as described in `ZENODO_MANIFEST.md`.
+Download the data archive from [Zenodo DOI: 10.5281/zenodo.19427673](https://doi.org/10.5281/zenodo.19427673) and place the files in the appropriate directories as described in `ZENODO_MANIFEST.md`.
 
 ---
 
