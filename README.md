@@ -2,8 +2,8 @@
 **Paper**: *Data-efficient machine-learning of complex Fe–Mo intermetallics using domain knowledge of chemistry and crystallography*  
 **Authors**: Mariano Forti, Alesya Malakhova, Yury Lysogorskiy, Wenhao Zhang, Jean-Claude Crivello, Jean-Marc Joubert, Ralf Drautz, Thomas Hammerschmidt  
 **Journal**: npj Computational Materials (accepted)  
-**DOI**: *(to be added upon publication)*  
-**Data**: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX) *(to be updated)*
+**DOI**: *(https://doi.org/10.1038/s41524-026-02070-5)*  
+**Data**: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19427673.svg)](https://doi.org/10.5281/zenodo.19427673).
 
 ---
 
