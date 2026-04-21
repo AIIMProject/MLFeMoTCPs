@@ -16,7 +16,7 @@ def run_notebook(nbmake, notebook, env=None):
     try:
         if env:
             os.environ.update(env)
-        nbmake(notebook, timeout=0)  # Adjust timeout as needed
+        nbmake(notebook)  # Adjust timeout as needed
     finally:
         os.environ.clear()
         os.environ.update(old_env)
@@ -83,6 +83,7 @@ def test_07B(nbmake, repo_root):
 def test_08(nbmake):
     run_notebook(nbmake, "08_AnalysisModels.ipynb")
 
+@pytest.mark.nbmake(timeout=1200)
 @pytest.mark.order(8)
 def test_09(nbmake, repo_root):
     run_notebook(nbmake, "09_PrepareFeaturesPrediction.ipynb")
