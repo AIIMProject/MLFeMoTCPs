@@ -71,7 +71,7 @@ echo "done, now running tests to verify installation. This may take a while..."
 export NBMAKE_KERNEL=test_mlfemotcps
 #export CALC_IMPORTANCES
 
-pytest --nbmake -vv --durations=10 -s test/
+pytest --nbmake -vv --nbmake-timeout=0 --durations=10 -s test/
 
 #
 #pytest  --nbmake -vv -s  --nbmake-kernel=test_mlfemotcps --nbmake-timeout=0  \
